@@ -27,21 +27,30 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=project.settings
+      - DJANGO_COLLECTSTATIC=1
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=adminpass123
+      - DJANGO_ALLOWED_HOSTS=backend,localhost,127.0.0.1
     depends_on:
       db:
         condition: service_healthy
-    # development fallback: backend folder doesn't contain a Django project
-    # override the default CMD to serve files so the service becomes reachable.
-    command: ["python","-m","http.server","8000"]
+    command: ["python","manage.py","runserver","0.0.0.0:8000"]
 
   frontend:
-    image: nginx:alpine
+    build: ./frontend
     volumes:
-      - ./frontend:/usr/share/nginx/html:ro
+      - ./frontend:/app
+      - /app/node_modules
     ports:
-      - "3000:80"
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
     depends_on:
       - backend
+    command: ["npm", "start"]
 
 volumes:
   postgres_data:
