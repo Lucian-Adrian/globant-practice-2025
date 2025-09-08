@@ -1,0 +1,42 @@
+from django.contrib import admin
+from . import models
+
+@admin.register(models.Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ("first_name", "last_name", "email", "status", "enrollment_date")
+    search_fields = ("first_name", "last_name", "email")
+    list_filter = ("status",)
+
+@admin.register(models.Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ("first_name", "last_name", "email", "hire_date")
+    search_fields = ("first_name", "last_name", "email")
+
+@admin.register(models.Vehicle)
+class VehicleAdmin(admin.ModelAdmin):
+    list_display = ("license_plate", "make", "model", "year", "category", "is_available")
+    list_filter = ("category", "is_available")
+    search_fields = ("license_plate", "make", "model")
+
+@admin.register(models.Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ("name", "category", "price", "required_lessons")
+    search_fields = ("name",)
+
+@admin.register(models.Enrollment)
+class EnrollmentAdmin(admin.ModelAdmin):
+    list_display = ("student", "course", "status", "enrollment_date")
+    list_filter = ("status", "course__category")
+    search_fields = ("student__first_name", "student__last_name", "course__name")
+
+@admin.register(models.Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ("enrollment", "instructor", "vehicle", "scheduled_time", "status")
+    list_filter = ("status", "instructor")
+    date_hierarchy = "scheduled_time"
+
+@admin.register(models.Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ("enrollment", "amount", "payment_method", "payment_date")
+    list_filter = ("payment_method", "payment_date")
+    search_fields = ("enrollment__student__first_name", "enrollment__student__last_name")

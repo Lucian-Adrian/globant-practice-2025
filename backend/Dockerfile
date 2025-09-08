@@ -11,7 +11,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Ensure entrypoint script is executable
+RUN chmod +x /app/entrypoint.sh
+
 EXPOSE 8000
 
-# For development, we use Django's built-in runserver.
+# Default command (can be overridden in docker-compose)
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
