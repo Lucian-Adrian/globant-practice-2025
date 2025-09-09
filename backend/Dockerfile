@@ -11,8 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Ensure entrypoint script is executable
-RUN chmod +x /app/entrypoint.sh
+# Normalize line endings and ensure entrypoint script is executable (Windows dev safety)
+RUN sed -i 's/\r$//' /app/entrypoint.sh \
+	&& chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
