@@ -35,7 +35,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["python","manage.py","runserver","0.0.0.0:8000"]
+  # Use /bin/sh to execute entrypoint script even if Windows line endings accidentally persist
+  entrypoint: ["/bin/sh","/app/entrypoint.sh"]
+  command: ["python","manage.py","runserver","0.0.0.0:8000"]
 
   frontend:
     build: ./frontend
