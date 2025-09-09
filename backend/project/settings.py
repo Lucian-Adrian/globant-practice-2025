@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # CSRF middleware can be disabled for API-only dev via DISABLE_CSRF flag below
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -80,9 +81,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        # Provide sane defaults so the container works out-of-the-box if .env is missing
+        'NAME': os.getenv('POSTGRES_DB', 'drivingschool'),
+        'USER': os.getenv('POSTGRES_USER', 'drivingschool'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'drivingschoolpwd'),
         'HOST': os.getenv('DB_HOST', 'db'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
@@ -138,4 +140,28 @@ CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    # Open permissions for initial development to avoid 403/permission denied.
+    # IMPORTANT: tighten before production (e.g., IsAuthenticated / token auth).
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ],
+    # Remove authentication classes so CSRF/session isn't enforced for unsafe methods.
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
 }
+
+# Extra permissive CORS / CSRF dev settings to prevent forbidden errors while iterating
+CORS_ALLOW_CREDENTIALS = True
+# If frontend served from another origin (e.g., http://localhost:3000)
+_frontend = os.getenv('FRONTEND_ORIGIN', 'http://localhost:3000')
+CSRF_TRUSTED_ORIGINS = [h for h in [
+    _frontend,
+    'http://localhost',
+    'http://127.0.0.1'
+] if h]
+
+# Dev flag to disable CSRF protection (ONLY for local development!)
+DISABLE_CSRF = os.getenv('DISABLE_CSRF', '1') == '1'
+
+if DISABLE_CSRF:
+    # Remove CsrfViewMiddleware dynamically so unsafe methods don't raise 403
+    MIDDLEWARE = [m for m in MIDDLEWARE if m != 'django.middleware.csrf.CsrfViewMiddleware']

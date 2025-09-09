@@ -1,18 +1,21 @@
 FROM python:3.9-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-	PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
+# dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Normalize potential CRLF endings in scripts (safe if file not present)
-RUN find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} + || true
+# Ensure entrypoint script is executable
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
-# Default command now provided via docker-compose for startup sequence
+# Default command (can be overridden in docker-compose)
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

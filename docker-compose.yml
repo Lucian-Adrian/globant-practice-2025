@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:13-alpine
@@ -6,9 +8,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: drivingschool
+      POSTGRES_USER: drivingschool
+      POSTGRES_PASSWORD: drivingschoolpwd
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -16,8 +18,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
+    build: ./backend
     volumes:
       - ./backend:/app
     ports:
@@ -30,35 +31,26 @@ services:
       DJANGO_SUPERUSER_USERNAME: admin
       DJANGO_SUPERUSER_EMAIL: admin@example.com
       DJANGO_SUPERUSER_PASSWORD: adminpass123
-      DJANGO_ALLOWED_HOSTS: backend,localhost,127.0.0.1
+      DJANGO_ALLOWED_HOSTS: backend,localhost,127.0.0.1,0.0.0.0
+      POSTGRES_DB: drivingschool
+      POSTGRES_USER: drivingschool
+      POSTGRES_PASSWORD: drivingschoolpwd
+      DB_HOST: db
+      FRONTEND_ORIGIN: http://localhost:3000
     depends_on:
       db:
         condition: service_healthy
-    command:
-      - /bin/sh
-      - -c
-      - |
-        set -e
-        python wait_for_db.py
-        python manage.py migrate --noinput
-        if [ "$DJANGO_COLLECTSTATIC" = "1" ]; then python manage.py collectstatic --noinput; fi
-        if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then \
-          python manage.py shell -c "from django.contrib.auth import get_user_model;import os;U=get_user_model();u=os.environ['DJANGO_SUPERUSER_USERNAME'];(U.objects.filter(username=u).exists()) or U.objects.create_superuser(u, os.environ.get('DJANGO_SUPERUSER_EMAIL','admin@example.com'), os.environ['DJANGO_SUPERUSER_PASSWORD'])"; \
-        fi
-        python manage.py runserver 0.0.0.0:8000
-    restart: unless-stopped
+    command: ["python","manage.py","runserver","0.0.0.0:8000"]
 
   frontend:
-    build:
-      context: ./frontend
+    build: ./frontend
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
       - "3000:3000"
     environment:
-      CHOKIDAR_USEPOLLING: "true"
-      VITE_API_BASE: http://backend:8000
+      - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
     depends_on:
