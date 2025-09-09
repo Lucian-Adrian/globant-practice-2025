@@ -9,14 +9,16 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy entrypoint first to a stable location outside bind-mounted code
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh \
+	&& chmod +x /entrypoint.sh
 
-# Normalize line endings and ensure entrypoint script is executable (Windows dev safety)
-RUN sed -i 's/\r$//' /app/entrypoint.sh \
-	&& chmod +x /app/entrypoint.sh
+# Copy rest of the backend source
+COPY . .
 
 EXPOSE 8000
 
-# Default command (can be overridden in docker-compose)
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Use root-level entrypoint (not shadowed by volume mount)
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
