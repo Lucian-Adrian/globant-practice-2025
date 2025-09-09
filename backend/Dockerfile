@@ -1,24 +1,18 @@
 FROM python:3.9-slim
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+	PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy entrypoint first to a stable location outside bind-mounted code
-COPY entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//' /entrypoint.sh \
-	&& chmod +x /entrypoint.sh
-
-# Copy rest of the backend source
 COPY . .
+
+# Normalize potential CRLF endings in scripts (safe if file not present)
+RUN find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} + || true
 
 EXPOSE 8000
 
-# Use root-level entrypoint (not shadowed by volume mount)
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Default command now provided via docker-compose for startup sequence

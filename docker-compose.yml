@@ -34,7 +34,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Use Dockerfile's ENTRYPOINT/CMD; override only if needed
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        python wait_for_db.py
+        python manage.py migrate --noinput
+        if [ "$DJANGO_COLLECTSTATIC" = "1" ]; then python manage.py collectstatic --noinput; fi
+        if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then \
+          python manage.py shell -c "from django.contrib.auth import get_user_model;import os;U=get_user_model();u=os.environ['DJANGO_SUPERUSER_USERNAME'];(U.objects.filter(username=u).exists()) or U.objects.create_superuser(u, os.environ.get('DJANGO_SUPERUSER_EMAIL','admin@example.com'), os.environ['DJANGO_SUPERUSER_PASSWORD'])"; \
+        fi
+        python manage.py runserver 0.0.0.0:8000
     restart: unless-stopped
 
   frontend:
