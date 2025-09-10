@@ -15,6 +15,12 @@ const translations = {
   signUp: "Sign Up",
   invalidPhone: "Invalid phone number",
   invalidEmail: "Invalid email address"
+  , submitting: "Submitting..."
+  , signupSuccess: "Registration successful"
+  , signupFailed: "Registration failed"
+  , networkError: "Network error. Please try again."
+  , requiredField: "This field is required"
+  , debugLabel: "Debug info"
   },
   ro: {
     welcome: "Bine ați venit la Portalul Școlii",
@@ -32,6 +38,12 @@ const translations = {
   signUp: "Înregistrează-te",
   invalidPhone: "Număr de telefon invalid",
   invalidEmail: "Adresă de email invalidă"
+  , submitting: "Se trimite..."
+  , signupSuccess: "Înregistrare reușită"
+  , signupFailed: "Înregistrare eșuată"
+  , networkError: "Eroare de rețea. Reîncercați."
+  , requiredField: "Câmp obligatoriu"
+  , debugLabel: "Informații debug"
   },
   ru: {
     welcome: "Добро пожаловать в школьный портал",
@@ -49,6 +61,12 @@ const translations = {
   signUp: "Зарегистрироваться",
   invalidPhone: "Неверный номер телефона",
   invalidEmail: "Неверный адрес электронной почты"
+  , submitting: "Отправка..."
+  , signupSuccess: "Регистрация успешна"
+  , signupFailed: "Ошибка регистрации"
+  , networkError: "Сетевая ошибка. Повторите попытку."
+  , requiredField: "Обязательное поле"
+  , debugLabel: "Отладочная информация"
   }
 };
 
