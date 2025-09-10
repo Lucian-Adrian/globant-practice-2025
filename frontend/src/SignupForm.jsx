@@ -17,12 +17,28 @@ const sanitizePhone = (raw) => {
   return v;
 };
 
+// Helpers for safe local-date comparisons
+const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+const yyyyMmDdLocal = (d) => {
+  // Local YYYY-MM-DD (no UTC shift)
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const MIN_AGE_YEARS = 15;
+
 const SignupForm = () => {
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '+373', // ✅ default Moldovan prefix
+    phone: '+373', // default prefix
     dob: '',
     status: ''
   });
@@ -41,13 +57,19 @@ const SignupForm = () => {
   const [debugInfo, setDebugInfo] = useState(null);
   const { t, lang, toggleLanguage } = useLanguage();
 
-  // Reusable email validator
   const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
 
-  // Compute overall validity (useful to disable the button proactively)
+  // Precompute today + cutoff (today - 15 years), both at local midnight
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const cutoff = useMemo(() => {
+    const c = new Date(today);
+    c.setFullYear(c.getFullYear() - MIN_AGE_YEARS);
+    return c;
+  }, [today]);
+
+  // Disable submit early if obviously incomplete/invalid
   const formIsComplete = useMemo(() => {
     const { firstName, lastName, email, phone, dob, status } = form;
-    // Phone must be more than just '+' or '+373'
     const phoneLooksFilled = phone && phone !== '+' && phone !== '+373';
     return Boolean(
       firstName.trim() &&
@@ -60,12 +82,16 @@ const SignupForm = () => {
   }, [form]);
 
   const formIsValid = useMemo(() => {
-    // Run quick client-side checks (email/phone formats)
     if (!formIsComplete) return false;
     if (!isEmail(form.email)) return false;
     if (!isValidPhoneNumber(form.phone)) return false;
+    // Age validation (client-side quick check)
+    if (!form.dob) return false;
+    const dobDate = startOfDay(new Date(form.dob));
+    if (dobDate > today) return false;     // future
+    if (dobDate > cutoff) return false;    // too young
     return true;
-  }, [formIsComplete, form]);
+  }, [formIsComplete, form, today, cutoff]);
 
   const setFieldError = (name, message) =>
     setErrors((prev) => ({ ...prev, [name]: message }));
@@ -77,7 +103,6 @@ const SignupForm = () => {
       const v = sanitizePhone(value);
       setForm((p) => ({ ...p, phone: v }));
 
-      // Live phone validation
       if (!v.trim() || v === '+' || v === '+373') {
         setFieldError('phone', t.required || 'This field is required');
       } else if (!isValidPhoneNumber(v)) {
@@ -90,14 +115,12 @@ const SignupForm = () => {
 
     setForm((p) => ({ ...p, [name]: value }));
 
-    // Live email validation
     if (name === 'email') {
       if (!value.trim()) setFieldError('email', t.required || 'This field is required');
       else if (!isEmail(value)) setFieldError('email', t.invalidEmail || 'Invalid email');
       else setFieldError('email', '');
     }
 
-    // Generic required validation for other fields
     if (['firstName', 'lastName', 'dob', 'status'].includes(name)) {
       if (!value) setFieldError(name, t.required || 'This field is required');
       else setFieldError(name, '');
@@ -108,7 +131,6 @@ const SignupForm = () => {
     const { name, value } = e.target;
 
     if (name === 'phone') {
-      // If cleared or just '+', put back default prefix
       setForm((p) => {
         if (!p.phone || p.phone === '+') return { ...p, phone: '+373' };
         return p;
@@ -120,11 +142,28 @@ const SignupForm = () => {
       return;
     }
 
-    // Mark empties on blur
+    if (name === 'dob') {
+      if (!value) {
+        setFieldError('dob', t.required || 'This field is required');
+        return;
+      }
+      const dobDate = startOfDay(new Date(value));
+      if (dobDate > today) {
+        setFieldError('dob', t.invalidDob || 'Date cannot be in the future');
+      } else if (dobDate > cutoff) {
+        setFieldError('dob', t.tooYoung || `You must be at least ${MIN_AGE_YEARS} years old`);
+      } else {
+        setFieldError('dob', '');
+      }
+      return;
+    }
+
     if (!value) setFieldError(name, t.required || 'This field is required');
   };
 
   const validateAll = () => {
+    const dobDate = form.dob ? startOfDay(new Date(form.dob)) : null;
+
     const newErrors = {
       firstName: form.firstName.trim() ? '' : (t.required || 'This field is required'),
       lastName: form.lastName.trim() ? '' : (t.required || 'This field is required'),
@@ -135,9 +174,17 @@ const SignupForm = () => {
         (!form.phone || form.phone === '+' || form.phone === '+373')
           ? (t.required || 'This field is required')
           : isValidPhoneNumber(form.phone) ? '' : (t.invalidPhone || 'Invalid phone number'),
-      dob: form.dob ? '' : (t.required || 'This field is required'),
+      dob:
+        !form.dob
+          ? (t.required || 'This field is required')
+          : dobDate > today
+            ? (t.invalidDob || 'Date cannot be in the future')
+            : dobDate > cutoff
+              ? (t.tooYoung || `You must be at least ${MIN_AGE_YEARS} years old`)
+              : '',
       status: form.status ? '' : (t.required || 'This field is required'),
     };
+
     setErrors(newErrors);
     return Object.values(newErrors).every((msg) => !msg);
   };
@@ -147,18 +194,16 @@ const SignupForm = () => {
     setApiMessage(null);
     setDebugInfo(null);
 
-    // Hard gate: everything required + valid
     const allGood = validateAll();
     if (!allGood) return;
 
-    // Normalize to E.164 if valid (already checked)
+    // Normalize to E.164
     let normalizedPhone = form.phone;
     const phoneObj = parsePhoneNumberFromString(form.phone);
-    if (phoneObj?.isValid()) normalizedPhone = phoneObj.number; // e.g. +373xxxxxxxx
+    if (phoneObj?.isValid()) normalizedPhone = phoneObj.number;
 
     try {
       setSubmitting(true);
-      // Backend does not yet expose /students/register/; DRF ViewSet accepts POST at /students/
       const response = await fetch('/api/students/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,13 +221,13 @@ const SignupForm = () => {
       try { data = await response.json(); } catch (_) {}
 
       if (response.ok) {
-        setApiMessage(data.message || t.signupSuccess || 'Signed up successfully.');
+        setApiMessage(data.message || (t.signupSuccess || 'Signed up successfully.'));
         setDebugInfo(data);
         setForm({
           firstName: '',
           lastName: '',
           email: '',
-          phone: '+373', // ✅ reset to default prefix
+          phone: '+373',
           dob: '',
           status: ''
         });
@@ -206,6 +251,10 @@ const SignupForm = () => {
       setSubmitting(false);
     }
   };
+
+  // For the date picker UX: block future dates and enforce 15+ years.
+  // Using 'max' = cutoff (today - 15y) automatically prevents future DOBs too.
+  const maxDobForPicker = yyyyMmDdLocal(cutoff);
 
   return (
     <form
@@ -286,7 +335,7 @@ const SignupForm = () => {
           onBlur={handleBlur}
           required
           aria-invalid={!!errors.dob}
-          max={new Date().toISOString().split('T')[0]}
+          max={maxDobForPicker} // ✅ must be born on/before this date (>=15 years old)
         />
         {errors.dob && <span style={{ color: 'red' }}>{errors.dob}</span>}
       </Field>
