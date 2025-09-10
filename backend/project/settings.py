@@ -26,7 +26,15 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-dev-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 
-ALLOWED_HOSTS = [h for h in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if h] or ["*"]
+# Allow all by default for local dev; if DJANGO_ALLOWED_HOSTS is set, make sure
+# common dev hosts are included to support Docker compose networking & Vite proxy.
+_allowed = [h for h in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if h]
+ALLOWED_HOSTS = _allowed or ["*"]
+if "*" not in ALLOWED_HOSTS:
+    # Add typical hosts seen in local/dev and container-to-container requests
+    for h in ("backend", "localhost", "127.0.0.1"):
+        if h not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(h)
 
 
 # Application definition
