@@ -6,6 +6,9 @@ import {
   Resource,
   List,
   Datagrid,
+  TopToolbar,
+  Button,
+  CreateButton,
   TextField,
   EmailField,
   DateField,
@@ -22,6 +25,9 @@ import {
   ReferenceInput,
   fetchUtils,
   required,
+  useListContext,
+  useNotify,
+  useRefresh,
 } from 'react-admin';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
@@ -69,6 +75,80 @@ const buildQuery = (params) => {
   }
 
   return query.toString();
+};
+
+// Build only filter + sort query (no pagination) for export
+const buildFilterSortQuery = (filterValues, sort) => {
+  const query = new URLSearchParams();
+  if (filterValues) {
+    Object.entries(filterValues).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === '') return;
+      const m = k.match(/^(.*)_(gte|lte|gt|lt)$/);
+      const key = m ? `${m[1]}__${m[2]}` : k;
+      query.set(key, String(v));
+    });
+  }
+  if (sort && sort.field) {
+    const { field, order } = sort;
+    const ordering = order === 'DESC' ? `-${field}` : field;
+    query.set('ordering', ordering);
+  }
+  return query.toString();
+};
+
+const StudentListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const notify = useNotify();
+  const refresh = useRefresh();
+
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/students/export/${qs ? `?${qs}` : ''}`;
+    // Trigger file download in a new tab
+    window.open(url, '_blank');
+  };
+
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/students/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} students`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      // Reset input so the same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <TopToolbar>
+  <CreateButton />
+      <Button label="Import CSV" onClick={onImportClick} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept=".csv,text/csv"
+        style={{ display: 'none' }}
+      />
+      <Button label="Export CSV" onClick={onExport} />
+    </TopToolbar>
+  );
 };
 
 
@@ -177,7 +257,7 @@ const studentRowStyle = (record, index) => {
 
 // Students
 const StudentList = (props) => (
-  <List {...props} aside={<StudentListAside />} filters={[]}>
+  <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
     <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
       <NumberField source="id" />
       <TextField source="first_name" />
