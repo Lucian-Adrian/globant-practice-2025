@@ -1,3 +1,5 @@
+import StudentListAside from './students/StudentListAside';
+
 import * as React from 'react';
 import {
   Admin,
@@ -41,15 +43,34 @@ const httpClient = (url, options = {}) => {
 const buildQuery = (params) => {
   const { page, perPage } = params.pagination || { page: 1, perPage: 25 };
   const query = new URLSearchParams();
+
+  // paginație
   query.set('page', String(page));
   query.set('page_size', String(perPage));
+
+  // filtre (mapăm *_gte -> __gte etc., pentru DRF)
   if (params.filter) {
     Object.entries(params.filter).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') query.set(k, String(v));
+      if (v === undefined || v === null || v === '') return;
+
+      // detectăm sufixele uzuale și le convertim la notatia DRF
+      const m = k.match(/^(.*)_(gte|lte|gt|lt)$/);
+      const key = m ? `${m[1]}__${m[2]}` : k;
+
+      query.set(key, String(v));
     });
   }
+
+  // sortare (RA -> DRF: ?ordering=field | -field)
+  if (params.sort && params.sort.field) {
+    const { field, order } = params.sort;
+    const ordering = order === 'DESC' ? `-${field}` : field;
+    query.set('ordering', ordering);
+  }
+
   return query.toString();
 };
+
 
 const dataProvider = {
   getList: async (resource, params) => {
@@ -138,10 +159,26 @@ const STUDENT_STATUS = [
 
 const PAYMENT_METHODS = ['CASH','CARD','TRANSFER'].map(v => ({ id: v, name: v }));
 
+// Stiluri de culoare pentru fiecare status de student
+const studentRowStyle = (record, index) => {
+  if (!record) return {};
+  switch (record.status) {
+    case 'ACTIVE':
+      return { backgroundColor: 'rgba(96, 165, 250, 0.15)' };   // albastru pal
+    case 'INACTIVE':
+      return { backgroundColor: 'rgba(251, 191, 36, 0.15)' };   // galben pal
+    case 'GRADUATED':
+      return { backgroundColor: 'rgba(134, 239, 172, 0.15)' };  // verde pal
+    default:
+      return {};
+  }
+};
+
+
 // Students
 const StudentList = (props) => (
-  <List {...props}>
-    <Datagrid rowClick="edit">
+  <List {...props} aside={<StudentListAside />} filters={[]}>
+    <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
       <NumberField source="id" />
       <TextField source="first_name" />
       <TextField source="last_name" />
@@ -153,6 +190,7 @@ const StudentList = (props) => (
     </Datagrid>
   </List>
 );
+
 
 const StudentEdit = (props) => (
   <Edit {...props}>

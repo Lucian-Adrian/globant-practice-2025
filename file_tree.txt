@@ -1,4 +1,5 @@
-/.env
+/.env.example
+/.gitattributes
 /.gitignore
 /backend
 /backend/Dockerfile
@@ -208,4 +209,14 @@
 /docker-compose.yml
 /file_tree.txt
 /frontend
+/frontend/.gitignore
+/frontend/Dockerfile
+/frontend/index.html
+/frontend/package.json
+/frontend/README.md
+/frontend/src
+/frontend/src/App.js
+/frontend/src/App.jsx
+/frontend/src/main.jsx
+/frontend/vite.config.js
 /README.md
