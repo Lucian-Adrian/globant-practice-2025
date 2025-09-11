@@ -14,12 +14,14 @@ const translations = {
     inactive: "Inactive",
   signUp: "Sign Up",
   invalidPhone: "Invalid phone number",
-  invalidEmail: "Invalid email address"
+  invalidEmail: "Invalid email address",
+  required: "This field is required",
+  invalidDob: "You cannot select a future date",
+  tooYoung: "You must be at least 15 years old"
   , submitting: "Submitting..."
   , signupSuccess: "Registration successful"
   , signupFailed: "Registration failed"
   , networkError: "Network error. Please try again."
-  , requiredField: "This field is required"
   , debugLabel: "Debug info"
   },
   ro: {
@@ -37,12 +39,14 @@ const translations = {
     inactive: "Inactiv",
   signUp: "Înregistrează-te",
   invalidPhone: "Număr de telefon invalid",
-  invalidEmail: "Adresă de email invalidă"
+  invalidEmail: "Adresă de email invalidă",
+  required: "Acest câmp este obligatoriu",
+  invalidDob: "Nu puteți selecta o dată din viitor",
+  tooYoung: "Trebuie să aveți cel puțin 15 ani"
   , submitting: "Se trimite..."
   , signupSuccess: "Înregistrare reușită"
   , signupFailed: "Înregistrare eșuată"
   , networkError: "Eroare de rețea. Reîncercați."
-  , requiredField: "Câmp obligatoriu"
   , debugLabel: "Informații debug"
   },
   ru: {
@@ -60,12 +64,14 @@ const translations = {
     inactive: "Неактивный",
   signUp: "Зарегистрироваться",
   invalidPhone: "Неверный номер телефона",
-  invalidEmail: "Неверный адрес электронной почты"
+  invalidEmail: "Неверный адрес электронной почты",
+  required: "Это обязательное поле",
+  invalidDob: "Вы не можете выбрать дату в будущем",
+  tooYoung: "Вам должно быть не менее 15 лет"
   , submitting: "Отправка..."
   , signupSuccess: "Регистрация успешна"
   , signupFailed: "Ошибка регистрации"
   , networkError: "Сетевая ошибка. Повторите попытку."
-  , requiredField: "Обязательное поле"
   , debugLabel: "Отладочная информация"
   }
 };

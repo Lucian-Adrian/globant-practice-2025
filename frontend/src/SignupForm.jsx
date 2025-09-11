@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useLanguage } from './LanguageContext';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 
-// ✅ Keep Field outside to avoid remount
+//  Keep Field outside to avoid remount
 const Field = ({ label, children }) => (
   <label style={{ display: 'flex', flexDirection: 'column', fontSize: '.9rem', gap: '.25rem' }}>
     <span>{label}</span>
@@ -43,13 +43,14 @@ const SignupForm = () => {
     status: ''
   });
 
+  // Store error KEYS (and optional params), not final strings → re-translate on language switch
   const [errors, setErrors] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    dob: '',
-    status: ''
+    firstName: null,
+    lastName: null,
+    email: null,
+    phone: null,
+    dob: null,
+    status: null
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -93,8 +94,25 @@ const SignupForm = () => {
     return true;
   }, [formIsComplete, form, today, cutoff]);
 
-  const setFieldError = (name, message) =>
-    setErrors((prev) => ({ ...prev, [name]: message }));
+  const setFieldError = (name, key = null, params = undefined) =>
+    setErrors((prev) => ({ ...prev, [name]: key ? { key, params } : null }));
+
+  // Translate an error key (with optional params) into a string using current language
+  const renderError = (err) => {
+    if (!err || !err.key) return '';
+    const years = err.params?.years ?? MIN_AGE_YEARS;
+    const dict = {
+      required: t.required || 'This field is required',
+      invalidEmail: t.invalidEmail || 'Invalid email address',
+      invalidPhone: t.invalidPhone || 'Invalid phone number',
+      invalidDob: t.invalidDob || 'You cannot select a future date',
+      // Prefer template if present, else fall back to non-template or English
+      tooYoung: t.tooYoungTpl
+        ? t.tooYoungTpl.replace('{years}', String(years))
+        : (t.tooYoung || `You must be at least ${years} years old`),
+    };
+    return dict[err.key] || '';
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,11 +122,11 @@ const SignupForm = () => {
       setForm((p) => ({ ...p, phone: v }));
 
       if (!v.trim() || v === '+' || v === '+373') {
-        setFieldError('phone', t.required || 'This field is required');
+        setFieldError('phone', 'required');
       } else if (!isValidPhoneNumber(v)) {
-        setFieldError('phone', t.invalidPhone || 'Invalid phone number');
+        setFieldError('phone', 'invalidPhone');
       } else {
-        setFieldError('phone', '');
+        setFieldError('phone', null);
       }
       return;
     }
@@ -116,14 +134,14 @@ const SignupForm = () => {
     setForm((p) => ({ ...p, [name]: value }));
 
     if (name === 'email') {
-      if (!value.trim()) setFieldError('email', t.required || 'This field is required');
-      else if (!isEmail(value)) setFieldError('email', t.invalidEmail || 'Invalid email');
-      else setFieldError('email', '');
+      if (!value.trim()) setFieldError('email', 'required');
+      else if (!isEmail(value)) setFieldError('email', 'invalidEmail');
+      else setFieldError('email', null);
     }
 
     if (['firstName', 'lastName', 'dob', 'status'].includes(name)) {
-      if (!value) setFieldError(name, t.required || 'This field is required');
-      else setFieldError(name, '');
+      if (!value) setFieldError(name, 'required');
+      else setFieldError(name, null);
     }
   };
 
@@ -136,53 +154,53 @@ const SignupForm = () => {
         return p;
       });
       const v = value || '+373';
-      if (!v || v === '+' || v === '+373') setFieldError('phone', t.required || 'This field is required');
-      else if (!isValidPhoneNumber(v)) setFieldError('phone', t.invalidPhone || 'Invalid phone number');
-      else setFieldError('phone', '');
+      if (!v || v === '+' || v === '+373') setFieldError('phone', 'required');
+      else if (!isValidPhoneNumber(v)) setFieldError('phone', 'invalidPhone');
+      else setFieldError('phone', null);
       return;
     }
 
     if (name === 'dob') {
       if (!value) {
-        setFieldError('dob', t.required || 'This field is required');
+        setFieldError('dob', 'required');
         return;
       }
       const dobDate = startOfDay(new Date(value));
       if (dobDate > today) {
-        setFieldError('dob', t.invalidDob || 'Date cannot be in the future');
+        setFieldError('dob', 'invalidDob');
       } else if (dobDate > cutoff) {
-        setFieldError('dob', t.tooYoung || `You must be at least ${MIN_AGE_YEARS} years old`);
+        setFieldError('dob', 'tooYoung', { years: MIN_AGE_YEARS });
       } else {
-        setFieldError('dob', '');
+        setFieldError('dob', null);
       }
       return;
     }
 
-    if (!value) setFieldError(name, t.required || 'This field is required');
+    if (!value) setFieldError(name, 'required');
   };
 
   const validateAll = () => {
     const dobDate = form.dob ? startOfDay(new Date(form.dob)) : null;
 
     const newErrors = {
-      firstName: form.firstName.trim() ? '' : (t.required || 'This field is required'),
-      lastName: form.lastName.trim() ? '' : (t.required || 'This field is required'),
+      firstName: form.firstName.trim() ? null : { key: 'required' },
+      lastName: form.lastName.trim() ? null : { key: 'required' },
       email: !form.email.trim()
-        ? (t.required || 'This field is required')
-        : isEmail(form.email) ? '' : (t.invalidEmail || 'Invalid email'),
+        ? { key: 'required' }
+        : isEmail(form.email) ? null : { key: 'invalidEmail' },
       phone:
         (!form.phone || form.phone === '+' || form.phone === '+373')
-          ? (t.required || 'This field is required')
-          : isValidPhoneNumber(form.phone) ? '' : (t.invalidPhone || 'Invalid phone number'),
+          ? { key: 'required' }
+          : isValidPhoneNumber(form.phone) ? null : { key: 'invalidPhone' },
       dob:
         !form.dob
-          ? (t.required || 'This field is required')
+          ? { key: 'required' }
           : dobDate > today
-            ? (t.invalidDob || 'Date cannot be in the future')
+            ? { key: 'invalidDob' }
             : dobDate > cutoff
-              ? (t.tooYoung || `You must be at least ${MIN_AGE_YEARS} years old`)
-              : '',
-      status: form.status ? '' : (t.required || 'This field is required'),
+              ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } }
+              : null,
+      status: form.status ? null : { key: 'required' },
     };
 
     setErrors(newErrors);
@@ -232,12 +250,12 @@ const SignupForm = () => {
           status: ''
         });
         setErrors({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          dob: '',
-          status: ''
+          firstName: null,
+          lastName: null,
+          email: null,
+          phone: null,
+          dob: null,
+          status: null
         });
       } else {
         const backendError = data.error || data.detail || JSON.stringify(data);
@@ -284,7 +302,7 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.firstName}
         />
-        {errors.firstName && <span style={{ color: 'red' }}>{errors.firstName}</span>}
+        {errors.firstName && <span style={{ color: 'red' }}>{renderError(errors.firstName)}</span>}
       </Field>
 
       <Field label={t.lastName}>
@@ -296,7 +314,7 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.lastName}
         />
-        {errors.lastName && <span style={{ color: 'red' }}>{errors.lastName}</span>}
+        {errors.lastName && <span style={{ color: 'red' }}>{renderError(errors.lastName)}</span>}
       </Field>
 
       <Field label={t.email}>
@@ -309,7 +327,7 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.email}
         />
-        {errors.email && <span style={{ color: 'red' }}>{errors.email}</span>}
+        {errors.email && <span style={{ color: 'red' }}>{renderError(errors.email)}</span>}
       </Field>
 
       <Field label={t.phone}>
@@ -323,7 +341,7 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.phone}
         />
-        {errors.phone && <span style={{ color: 'red' }}>{errors.phone}</span>}
+        {errors.phone && <span style={{ color: 'red' }}>{renderError(errors.phone)}</span>}
       </Field>
 
       <Field label={t.dob}>
@@ -337,7 +355,7 @@ const SignupForm = () => {
           aria-invalid={!!errors.dob}
           max={maxDobForPicker} // ✅ must be born on/before this date (>=15 years old)
         />
-        {errors.dob && <span style={{ color: 'red' }}>{errors.dob}</span>}
+        {errors.dob && <span style={{ color: 'red' }}>{renderError(errors.dob)}</span>}
       </Field>
 
       <Field label={t.status}>
@@ -353,7 +371,7 @@ const SignupForm = () => {
           <option value="active">{t.active}</option>
           <option value="inactive">{t.inactive}</option>
         </select>
-        {errors.status && <span style={{ color: 'red' }}>{errors.status}</span>}
+        {errors.status && <span style={{ color: 'red' }}>{renderError(errors.status)}</span>}
       </Field>
 
       <button
