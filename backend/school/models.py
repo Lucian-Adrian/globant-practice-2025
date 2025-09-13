@@ -30,6 +30,10 @@ class Instructor(models.Model):
     phone_number = models.CharField(max_length=20)
     hire_date = models.DateField()
     license_categories = models.CharField(max_length=100)
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Activ'), ('INACTIVE', 'Inactiv'), ('GRADUATED', 'Absolvit'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

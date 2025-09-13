@@ -11,7 +11,7 @@ class StudentSerializer(serializers.ModelSerializer):
 class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructor
-        fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories"]
+        fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories", "status"]
 
 
 class VehicleSerializer(serializers.ModelSerializer):

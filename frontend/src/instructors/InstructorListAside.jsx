@@ -6,14 +6,12 @@ import { FilterList, FilterListItem } from 'react-admin';
 import { endOfYesterday, startOfWeek, subWeeks, startOfMonth, subMonths } from 'date-fns';
 import { LanguageContext } from '../i18n';
 
-// Culori pentru status-urile studenților
 const STATUS_COLORS = {
-  ACTIVE: '#60a5fa',     // albastru
-  INACTIVE: '#fbbf24',  // galben
-  GRADUATED: '#86efac', // verde
+  ACTIVE: '#60a5fa',
+  INACTIVE: '#fbbf24',
+  GRADUATED: '#86efac',
 };
 
-// Componentă pentru afișat text + bulină colorată
 const StatusLabel = ({ text, colorKey }) => (
   <Stack direction="row" alignItems="center" spacing={1}>
     <Typography variant="body1" sx={{ fontSize: 16 }}>{text}</Typography>
@@ -30,7 +28,7 @@ const StatusLabel = ({ text, colorKey }) => (
   </Stack>
 );
 
-export default function StudentListAside() {
+export default function InstructorListAside() {
   const { t } = React.useContext(LanguageContext);
 
   return (
@@ -45,53 +43,39 @@ export default function StudentListAside() {
       }}
     >
       <CardContent sx={{ pt: 1 }}>
-        {/* LAST ACTIVITY */}
         <FilterList label={t('filters.last_activity')} icon={<AccessTimeIcon />}>
           <FilterListItem
             label={t('filters.today')}
-            value={{
-              enrollment_date_gte: endOfYesterday().toISOString(),
-              enrollment_date_lte: undefined,
-            }}
+            value={{ hire_date_gte: endOfYesterday().toISOString(), hire_date_lte: undefined }}
           />
           <FilterListItem
             label={t('filters.this_week')}
-            value={{
-              enrollment_date_gte: startOfWeek(new Date()).toISOString(),
-              enrollment_date_lte: undefined,
-            }}
+            value={{ hire_date_gte: startOfWeek(new Date()).toISOString(), hire_date_lte: undefined }}
           />
           <FilterListItem
             label={t('filters.last_week')}
             value={{
-              enrollment_date_gte: subWeeks(startOfWeek(new Date()), 1).toISOString(),
-              enrollment_date_lte: startOfWeek(new Date()).toISOString(),
+              hire_date_gte: subWeeks(startOfWeek(new Date()), 1).toISOString(),
+              hire_date_lte: startOfWeek(new Date()).toISOString(),
             }}
           />
           <FilterListItem
             label={t('filters.this_month')}
-            value={{
-              enrollment_date_gte: startOfMonth(new Date()).toISOString(),
-              enrollment_date_lte: undefined,
-            }}
+            value={{ hire_date_gte: startOfMonth(new Date()).toISOString(), hire_date_lte: undefined }}
           />
           <FilterListItem
             label={t('filters.last_month')}
             value={{
-              enrollment_date_gte: subMonths(startOfMonth(new Date()), 1).toISOString(),
-              enrollment_date_lte: startOfMonth(new Date()).toISOString(),
+              hire_date_gte: subMonths(startOfMonth(new Date()), 1).toISOString(),
+              hire_date_lte: startOfMonth(new Date()).toISOString(),
             }}
           />
           <FilterListItem
             label={t('filters.earlier')}
-            value={{
-              enrollment_date_gte: undefined,
-              enrollment_date_lte: subMonths(startOfMonth(new Date()), 1).toISOString(),
-            }}
+            value={{ hire_date_gte: undefined, hire_date_lte: subMonths(startOfMonth(new Date()), 1).toISOString() }}
           />
         </FilterList>
 
-        {/* STATUS */}
         <FilterList label={t('filters.status')} icon={<TrendingUpIcon />}>
           <FilterListItem
             label={<StatusLabel text={t('filters.active')} colorKey="ACTIVE" />}
@@ -100,10 +84,6 @@ export default function StudentListAside() {
           <FilterListItem
             label={<StatusLabel text={t('filters.inactive')} colorKey="INACTIVE" />}
             value={{ status: 'INACTIVE' }}
-          />
-          <FilterListItem
-            label={<StatusLabel text={t('filters.graduated')} colorKey="GRADUATED" />}
-            value={{ status: 'GRADUATED' }}
           />
         </FilterList>
       </CardContent>
