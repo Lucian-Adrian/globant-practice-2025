@@ -257,7 +257,9 @@ const studentRowStyle = (record, index) => {
 
 // Students
 const StudentList = (props) => (
+  
   <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
+  
     <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
       <NumberField source="id" />
       <TextField source="first_name" />
