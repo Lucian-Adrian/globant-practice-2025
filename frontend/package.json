@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.15.15",
+    "libphonenumber-js": "^1.12.15",
     "papaparse": "^5.5.3",
     "ra-data-simple-rest": "^4.16.6",
     "react": "^18.3.1",

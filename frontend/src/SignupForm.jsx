@@ -1,6 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import { useLanguage } from './LanguageContext';
-import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
+import {
+  MIN_STUDENT_AGE_YEARS as MIN_AGE_YEARS,
+    MAX_YEARS_AGO,
+  sanitizePhone,
+  startOfDay,
+  yyyyMmDdLocal,
+    yearsAgo,
+  validatePhone,
+  validateEmail,
+  validateStudentDob,
+  normalizePhoneE164,
+} from './validation/validators';
 
 //  Keep Field outside to avoid remount
 const Field = ({ label, children }) => (
@@ -10,28 +21,7 @@ const Field = ({ label, children }) => (
   </label>
 );
 
-// Helper: allow only one leading "+" and digits
-const sanitizePhone = (raw) => {
-  let v = raw.replace(/[^\d+]/g, '');
-  if (v.includes('+')) v = '+' + v.replace(/\+/g, ''); // collapse extras
-  return v;
-};
-
-// Helpers for safe local-date comparisons
-const startOfDay = (d) => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-};
-const yyyyMmDdLocal = (d) => {
-  // Local YYYY-MM-DD (no UTC shift)
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const MIN_AGE_YEARS = 15;
+// MIN_AGE_YEARS now comes from shared validators
 
 const SignupForm = () => {
   const [form, setForm] = useState({
@@ -58,7 +48,7 @@ const SignupForm = () => {
   const [debugInfo, setDebugInfo] = useState(null);
   const { t, lang, toggleLanguage } = useLanguage();
 
-  const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
+  // Email validation centralized in validators
 
   // Precompute today + cutoff (today - 15 years), both at local midnight
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -84,13 +74,10 @@ const SignupForm = () => {
 
   const formIsValid = useMemo(() => {
     if (!formIsComplete) return false;
-    if (!isEmail(form.email)) return false;
-    if (!isValidPhoneNumber(form.phone)) return false;
-    // Age validation (client-side quick check)
-    if (!form.dob) return false;
-    const dobDate = startOfDay(new Date(form.dob));
-    if (dobDate > today) return false;     // future
-    if (dobDate > cutoff) return false;    // too young
+    if (!validateEmail(form.email).ok) return false;
+    if (!validatePhone(form.phone).ok) return false;
+    const dobRes = validateStudentDob(form.dob, { today, minAgeYears: MIN_AGE_YEARS });
+    if (!dobRes.ok) return false;
     return true;
   }, [formIsComplete, form, today, cutoff]);
 
@@ -110,6 +97,9 @@ const SignupForm = () => {
       tooYoung: t.tooYoungTpl
         ? t.tooYoungTpl.replace('{years}', String(years))
         : (t.tooYoung || `You must be at least ${years} years old`),
+      tooOld: t.tooOldTpl
+        ? t.tooOldTpl.replace('{years}', String(years))
+        : (t.tooOld || `Date cannot be more than ${years} years ago`),
     };
     return dict[err.key] || '';
   };
@@ -123,7 +113,7 @@ const SignupForm = () => {
 
       if (!v.trim() || v === '+' || v === '+373') {
         setFieldError('phone', 'required');
-      } else if (!isValidPhoneNumber(v)) {
+      } else if (!validatePhone(v).ok) {
         setFieldError('phone', 'invalidPhone');
       } else {
         setFieldError('phone', null);
@@ -134,9 +124,8 @@ const SignupForm = () => {
     setForm((p) => ({ ...p, [name]: value }));
 
     if (name === 'email') {
-      if (!value.trim()) setFieldError('email', 'required');
-      else if (!isEmail(value)) setFieldError('email', 'invalidEmail');
-      else setFieldError('email', null);
+      const res = validateEmail(value);
+      setFieldError('email', res.ok ? null : res.error.key, res.error?.params);
     }
 
     if (['firstName', 'lastName', 'dob', 'status'].includes(name)) {
@@ -155,24 +144,14 @@ const SignupForm = () => {
       });
       const v = value || '+373';
       if (!v || v === '+' || v === '+373') setFieldError('phone', 'required');
-      else if (!isValidPhoneNumber(v)) setFieldError('phone', 'invalidPhone');
+      else if (!validatePhone(v).ok) setFieldError('phone', 'invalidPhone');
       else setFieldError('phone', null);
       return;
     }
 
     if (name === 'dob') {
-      if (!value) {
-        setFieldError('dob', 'required');
-        return;
-      }
-      const dobDate = startOfDay(new Date(value));
-      if (dobDate > today) {
-        setFieldError('dob', 'invalidDob');
-      } else if (dobDate > cutoff) {
-        setFieldError('dob', 'tooYoung', { years: MIN_AGE_YEARS });
-      } else {
-        setFieldError('dob', null);
-      }
+      const res = validateStudentDob(value, { today, minAgeYears: MIN_AGE_YEARS });
+      setFieldError('dob', res.ok ? null : res.error.key, res.error?.params);
       return;
     }
 
@@ -182,24 +161,16 @@ const SignupForm = () => {
   const validateAll = () => {
     const dobDate = form.dob ? startOfDay(new Date(form.dob)) : null;
 
+    const emailRes = validateEmail(form.email);
+    const phoneRes = validatePhone(form.phone);
+    const dobRes = validateStudentDob(form.dob, { today, minAgeYears: MIN_AGE_YEARS });
+
     const newErrors = {
       firstName: form.firstName.trim() ? null : { key: 'required' },
       lastName: form.lastName.trim() ? null : { key: 'required' },
-      email: !form.email.trim()
-        ? { key: 'required' }
-        : isEmail(form.email) ? null : { key: 'invalidEmail' },
-      phone:
-        (!form.phone || form.phone === '+' || form.phone === '+373')
-          ? { key: 'required' }
-          : isValidPhoneNumber(form.phone) ? null : { key: 'invalidPhone' },
-      dob:
-        !form.dob
-          ? { key: 'required' }
-          : dobDate > today
-            ? { key: 'invalidDob' }
-            : dobDate > cutoff
-              ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } }
-              : null,
+      email: emailRes.ok ? null : emailRes.error,
+      phone: phoneRes.ok ? null : phoneRes.error,
+      dob: dobRes.ok ? null : dobRes.error,
       status: form.status ? null : { key: 'required' },
     };
 
@@ -216,9 +187,7 @@ const SignupForm = () => {
     if (!allGood) return;
 
     // Normalize to E.164
-    let normalizedPhone = form.phone;
-    const phoneObj = parsePhoneNumberFromString(form.phone);
-    if (phoneObj?.isValid()) normalizedPhone = phoneObj.number;
+  const normalizedPhone = normalizePhoneE164(form.phone);
 
     try {
       setSubmitting(true);
@@ -270,8 +239,8 @@ const SignupForm = () => {
     }
   };
 
-  // For the date picker UX: block future dates and enforce 15+ years.
-  // Using 'max' = cutoff (today - 15y) automatically prevents future DOBs too.
+  // For the date picker UX: enforce [today-125y .. today-15y]
+  const minDobForPicker = yyyyMmDdLocal(yearsAgo(MAX_YEARS_AGO, today));
   const maxDobForPicker = yyyyMmDdLocal(cutoff);
 
   return (
@@ -353,6 +322,7 @@ const SignupForm = () => {
           onBlur={handleBlur}
           required
           aria-invalid={!!errors.dob}
+          min={minDobForPicker}
           max={maxDobForPicker} // ✅ must be born on/before this date (>=15 years old)
         />
         {errors.dob && <span style={{ color: 'red' }}>{renderError(errors.dob)}</span>}
