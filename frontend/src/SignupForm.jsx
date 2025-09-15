@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useLanguage } from './LanguageContext';
+import { useTranslation } from 'react-i18next';
 import {
   MIN_STUDENT_AGE_YEARS as MIN_AGE_YEARS,
     MAX_YEARS_AGO,
@@ -46,7 +46,7 @@ const SignupForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [apiMessage, setApiMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const { t, lang, toggleLanguage } = useLanguage();
+  const { t, i18n } = useTranslation(['common', 'validation']);
 
   // Email validation centralized in validators
 
@@ -84,25 +84,8 @@ const SignupForm = () => {
   const setFieldError = (name, key = null, params = undefined) =>
     setErrors((prev) => ({ ...prev, [name]: key ? { key, params } : null }));
 
-  // Translate an error key (with optional params) into a string using current language
-  const renderError = (err) => {
-    if (!err || !err.key) return '';
-    const years = err.params?.years ?? MIN_AGE_YEARS;
-    const dict = {
-      required: t.required || 'This field is required',
-      invalidEmail: t.invalidEmail || 'Invalid email address',
-      invalidPhone: t.invalidPhone || 'Invalid phone number',
-      invalidDob: t.invalidDob || 'You cannot select a future date',
-      // Prefer template if present, else fall back to non-template or English
-      tooYoung: t.tooYoungTpl
-        ? t.tooYoungTpl.replace('{years}', String(years))
-        : (t.tooYoung || `You must be at least ${years} years old`),
-      tooOld: t.tooOldTpl
-        ? t.tooOldTpl.replace('{years}', String(years))
-        : (t.tooOld || `Date cannot be more than ${years} years ago`),
-    };
-    return dict[err.key] || '';
-  };
+  // Error i18n mapping is handled directly with t from the 'validation' namespace
+  const renderError = (err) => (err && err.key ? t(err.key, { ns: 'validation', ...(err.params || {}) }) : '');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -253,16 +236,16 @@ const SignupForm = () => {
       }}
     >
       <div style={{ position: 'absolute', top: 20, right: 20 }}>
-        <select value={lang} onChange={e => toggleLanguage(e.target.value)}>
+        <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
           <option value="en">English</option>
           <option value="ro">Română</option>
           <option value="ru">Русский</option>
         </select>
       </div>
 
-      <h2>{t.signupTitle}</h2>
+  <h2>{t('signupTitle')}</h2>
 
-      <Field label={t.firstName}>
+  <Field label={t('firstName')}>
         <input
           name="firstName"
           value={form.firstName}
@@ -274,7 +257,7 @@ const SignupForm = () => {
         {errors.firstName && <span style={{ color: 'red' }}>{renderError(errors.firstName)}</span>}
       </Field>
 
-      <Field label={t.lastName}>
+  <Field label={t('lastName')}>
         <input
           name="lastName"
           value={form.lastName}
@@ -286,7 +269,7 @@ const SignupForm = () => {
         {errors.lastName && <span style={{ color: 'red' }}>{renderError(errors.lastName)}</span>}
       </Field>
 
-      <Field label={t.email}>
+  <Field label={t('email')}>
         <input
           name="email"
           type="email"
@@ -299,7 +282,7 @@ const SignupForm = () => {
         {errors.email && <span style={{ color: 'red' }}>{renderError(errors.email)}</span>}
       </Field>
 
-      <Field label={t.phone}>
+  <Field label={t('phone')}>
         <input
           name="phone"
           type="tel"
@@ -313,7 +296,7 @@ const SignupForm = () => {
         {errors.phone && <span style={{ color: 'red' }}>{renderError(errors.phone)}</span>}
       </Field>
 
-      <Field label={t.dob}>
+  <Field label={t('dob')}>
         <input
           name="dob"
           type="date"
@@ -328,7 +311,7 @@ const SignupForm = () => {
         {errors.dob && <span style={{ color: 'red' }}>{renderError(errors.dob)}</span>}
       </Field>
 
-      <Field label={t.status}>
+  <Field label={t('status')}>
         <select
           name="status"
           value={form.status}
@@ -337,9 +320,9 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.status}
         >
-          <option value="">{t.selectStatus}</option>
-          <option value="active">{t.active}</option>
-          <option value="inactive">{t.inactive}</option>
+          <option value="">{t('selectStatus')}</option>
+          <option value="active">{t('active')}</option>
+          <option value="inactive">{t('inactive')}</option>
         </select>
         {errors.status && <span style={{ color: 'red' }}>{renderError(errors.status)}</span>}
       </Field>
@@ -349,18 +332,18 @@ const SignupForm = () => {
         disabled={submitting || !formIsValid}
         style={{ padding: '0.65rem 1rem', fontSize: '1rem', cursor: formIsValid && !submitting ? 'pointer' : 'not-allowed' }}
       >
-        {submitting ? t.submitting : t.signUp}
+  {submitting ? t('submitting') : t('signUp')}
       </button>
 
       {apiMessage && (
-        <div style={{ marginTop: '.5rem', color: apiMessage.startsWith(t.signupSuccess) ? 'green' : 'red' }}>
+        <div style={{ marginTop: '.5rem', color: apiMessage.startsWith(t('signupSuccess')) ? 'green' : 'red' }}>
           {apiMessage}
         </div>
       )}
 
       {debugInfo && (
         <pre style={{ background: '#f7f7f7', padding: '.5rem', fontSize: '.7rem', overflowX: 'auto' }}>
-          {t.debugLabel}: {JSON.stringify(debugInfo, null, 2)}
+          {t('debugLabel')}: {JSON.stringify(debugInfo, null, 2)}
         </pre>
       )}
     </form>
