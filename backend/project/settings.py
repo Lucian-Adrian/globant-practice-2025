@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'corsheaders',
     'school',
 ]
@@ -146,8 +147,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
+    # Use a pagination class compatible with react-admin (?page & ?page_size)
+    'DEFAULT_PAGINATION_CLASS': 'school.pagination.StandardResultsSetPagination',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+    ],
     # Open permissions for initial development to avoid 403/permission denied.
     # IMPORTANT: tighten before production (e.g., IsAuthenticated / token auth).
     'DEFAULT_PERMISSION_CLASSES': [
