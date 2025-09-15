@@ -29,6 +29,7 @@ import {
   useNotify,
   useRefresh,
 } from 'react-admin';
+import { raEmail, raPhone, raStudentDob, raInstructorHireDate } from './validation/raValidators';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -150,6 +151,42 @@ const StudentListActions = () => {
     </TopToolbar>
   );
 };
+const ImportActions = ({ endpoint, label = 'Import CSV' }) => {
+  const fileInputRef = React.useRef(null);
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/${endpoint}/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} ${endpoint}`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+  return (
+    <>
+      <Button label={label} onClick={onImportClick} />
+      <input type="file" ref={fileInputRef} onChange={onFileChange} accept=".csv,text/csv" style={{ display: 'none' }} />
+    </>
+  );
+};
+
 
 
 const dataProvider = {
@@ -279,9 +316,9 @@ const StudentEdit = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
+      <TextInput source="email" validate={[required(), raEmail]} />
+      <TextInput source="phone_number" validate={[required(), raPhone()]} />
+      <DateInput source="date_of_birth" validate={[required(), raStudentDob]} />
       <SelectInput source="status" choices={STUDENT_STATUS} />
     </SimpleForm>
   </Edit>
@@ -292,17 +329,24 @@ const StudentCreate = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
+      <TextInput source="email" validate={[required(), raEmail]} />
+      <TextInput source="phone_number" validate={[required(), raPhone()]} />
+      <DateInput source="date_of_birth" validate={[required(), raStudentDob]} />
       <SelectInput source="status" choices={STUDENT_STATUS} />
     </SimpleForm>
   </Create>
 );
 
 // Instructors
+const InstructorListActions = () => (
+  <TopToolbar>
+    <CreateButton />
+    <ImportActions endpoint="instructors" />
+  </TopToolbar>
+);
+
 const InstructorList = (props) => (
-  <List {...props}>
+  <List {...props} actions={<InstructorListActions />}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="first_name" />
@@ -320,9 +364,9 @@ const InstructorEdit = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="hire_date" validate={[required()]} />
+      <TextInput source="email" validate={[required(), raEmail]} />
+      <TextInput source="phone_number" validate={[required(), raPhone()]} />
+      <DateInput source="hire_date" validate={[required(), raInstructorHireDate]} />
       <TextInput source="license_categories" />
     </SimpleForm>
   </Edit>
@@ -333,17 +377,24 @@ const InstructorCreate = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="hire_date" validate={[required()]} />
+      <TextInput source="email" validate={[required(), raEmail]} />
+      <TextInput source="phone_number" validate={[required(), raPhone()]} />
+      <DateInput source="hire_date" validate={[required(), raInstructorHireDate]} />
       <TextInput source="license_categories" />
     </SimpleForm>
   </Create>
 );
 
 // Vehicles
+const VehicleListActions = () => (
+  <TopToolbar>
+    <CreateButton />
+    <ImportActions endpoint="vehicles" />
+  </TopToolbar>
+);
+
 const VehicleList = (props) => (
-  <List {...props}>
+  <List {...props} actions={<VehicleListActions />}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="make" />
