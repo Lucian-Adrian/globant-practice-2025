@@ -126,6 +126,28 @@ class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export filtered/sorted instructors to CSV; no pagination."""
+        qs = self.filter_queryset(self.get_queryset())
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'hire_date', 'license_categories']
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id,
+                obj.first_name,
+                obj.last_name,
+                obj.email,
+                obj.phone_number,
+                obj.hire_date.isoformat() if obj.hire_date else '',
+                obj.license_categories,
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=instructors.csv'
+        return resp
+
     @decorators.action(detail=False, methods=["post"], url_path="import")
     def import_csv(self, request):
         """Import instructors from uploaded CSV.
@@ -181,6 +203,28 @@ class InstructorViewSet(FullCrudViewSet):
 class VehicleViewSet(FullCrudViewSet):
     queryset = Vehicle.objects.all().order_by('-year')
     serializer_class = VehicleSerializer
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export filtered/sorted vehicles to CSV; no pagination."""
+        qs = self.filter_queryset(self.get_queryset())
+        fields = ['id', 'make', 'model', 'license_plate', 'year', 'category', 'is_available']
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id,
+                obj.make,
+                obj.model,
+                obj.license_plate,
+                obj.year,
+                obj.category,
+                'true' if obj.is_available else 'false',
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=vehicles.csv'
+        return resp
 
     @decorators.action(detail=False, methods=["post"], url_path="import")
     def import_csv(self, request):

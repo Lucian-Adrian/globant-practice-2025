@@ -24,12 +24,14 @@ import {
   SelectInput,
   ReferenceInput,
   fetchUtils,
-  required,
   useListContext,
   useNotify,
   useRefresh,
 } from 'react-admin';
-import { raEmail, raPhone, raStudentDob, raInstructorHireDate } from './validation/raValidators';
+import { raEmail, raPhone, raDob, raHireDate, req } from './validation/raValidators';
+import { YEARS_125, YEARS_15, yyyyMmDdYearsAgo } from './constants';
+import PhoneFieldRA from './components/PhoneFieldRA';
+import DisabledUntilValidToolbar from './components/DisabledUntilValidToolbar';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -313,37 +315,60 @@ const StudentList = (props) => (
 
 const StudentEdit = (props) => (
   <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required(), raEmail]} />
-      <TextInput source="phone_number" validate={[required(), raPhone()]} />
-      <DateInput source="date_of_birth" validate={[required(), raStudentDob]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="date_of_birth"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+          max: yyyyMmDdYearsAgo(YEARS_15),
+        }}
+        validate={[req, raDob()]}
+      />
+      <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
   </Edit>
 );
 
 const StudentCreate = (props) => (
   <Create {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required(), raEmail]} />
-      <TextInput source="phone_number" validate={[required(), raPhone()]} />
-      <DateInput source="date_of_birth" validate={[required(), raStudentDob]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="date_of_birth"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+          max: yyyyMmDdYearsAgo(YEARS_15),
+        }}
+        validate={[req, raDob()]}
+      />
+      <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
   </Create>
 );
 
 // Instructors
-const InstructorListActions = () => (
-  <TopToolbar>
-    <CreateButton />
-    <ImportActions endpoint="instructors" />
-  </TopToolbar>
-);
+const InstructorListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/instructors/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+  return (
+    <TopToolbar>
+      <CreateButton />
+      <ImportActions endpoint="instructors" />
+      <Button label="Export CSV" onClick={onExport} />
+    </TopToolbar>
+  );
+};
 
 const InstructorList = (props) => (
   <List {...props} actions={<InstructorListActions />}>
@@ -361,37 +386,58 @@ const InstructorList = (props) => (
 
 const InstructorEdit = (props) => (
   <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required(), raEmail]} />
-      <TextInput source="phone_number" validate={[required(), raPhone()]} />
-      <DateInput source="hire_date" validate={[required(), raInstructorHireDate]} />
-      <TextInput source="license_categories" />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="hire_date"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+        }}
+        validate={[req, raHireDate({ allowFuture: true })]}
+      />
+      <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
   </Edit>
 );
 
 const InstructorCreate = (props) => (
   <Create {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required(), raEmail]} />
-      <TextInput source="phone_number" validate={[required(), raPhone()]} />
-      <DateInput source="hire_date" validate={[required(), raInstructorHireDate]} />
-      <TextInput source="license_categories" />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="hire_date"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+        }}
+        validate={[req, raHireDate({ allowFuture: true })]}
+      />
+      <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
   </Create>
 );
 
 // Vehicles
-const VehicleListActions = () => (
-  <TopToolbar>
-    <CreateButton />
-    <ImportActions endpoint="vehicles" />
-  </TopToolbar>
-);
+const VehicleListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/vehicles/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+  return (
+    <TopToolbar>
+      <CreateButton />
+      <ImportActions endpoint="vehicles" />
+      <Button label="Export CSV" onClick={onExport} />
+    </TopToolbar>
+  );
+};
 
 const VehicleList = (props) => (
   <List {...props} actions={<VehicleListActions />}>
@@ -409,12 +455,12 @@ const VehicleList = (props) => (
 
 const VehicleEdit = (props) => (
   <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="make" validate={[required()]} />
-      <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
-      <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+  <TextInput source="make" validate={[req]} />
+  <TextInput source="model" validate={[req]} />
+  <TextInput source="license_plate" validate={[req]} />
+  <NumberInput source="year" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
   </Edit>
@@ -422,12 +468,12 @@ const VehicleEdit = (props) => (
 
 const VehicleCreate = (props) => (
   <Create {...props}>
-    <SimpleForm>
-      <TextInput source="make" validate={[required()]} />
-      <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
-      <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+  <TextInput source="make" validate={[req]} />
+  <TextInput source="model" validate={[req]} />
+  <TextInput source="license_plate" validate={[req]} />
+  <NumberInput source="year" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
   </Create>
@@ -449,24 +495,24 @@ const CourseList = (props) => (
 
 const CourseEdit = (props) => (
   <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+  <TextInput source="name" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <TextInput source="description" multiline rows={3} />
-      <NumberInput source="price" validate={[required()]} />
-      <NumberInput source="required_lessons" validate={[required()]} />
+  <NumberInput source="price" validate={[req]} />
+  <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
   </Edit>
 );
 
 const CourseCreate = (props) => (
   <Create {...props}>
-    <SimpleForm>
-      <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+  <TextInput source="name" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <TextInput source="description" multiline rows={3} />
-      <NumberInput source="price" validate={[required()]} />
-      <NumberInput source="required_lessons" validate={[required()]} />
+  <NumberInput source="price" validate={[req]} />
+  <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
   </Create>
 );
@@ -487,12 +533,12 @@ const PaymentList = (props) => (
 
 const PaymentEdit = (props) => (
   <Edit {...props}>
-    <SimpleForm>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
       </ReferenceInput>
-      <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <NumberInput source="amount" validate={[req]} />
+      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
   </Edit>
@@ -500,12 +546,12 @@ const PaymentEdit = (props) => (
 
 const PaymentCreate = (props) => (
   <Create {...props}>
-    <SimpleForm>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
       </ReferenceInput>
-      <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <NumberInput source="amount" validate={[req]} />
+      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
   </Create>

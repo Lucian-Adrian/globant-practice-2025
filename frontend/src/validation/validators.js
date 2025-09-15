@@ -28,6 +28,9 @@ export const yearsAgo = (years, from = new Date()) => {
   return d;
 };
 
+// Helper: return local YYYY-MM-DD representing (today - N years)
+export const yyyyMmDdYearsAgo = (years, from = new Date()) => yyyyMmDdLocal(yearsAgo(years, from));
+
 // Basic validators
 export const isEmail = (v) => /^(?!\s)[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v || '');
 
@@ -47,7 +50,11 @@ export const isPhoneEmpty = (value, empties = ['+', '+373']) => {
 // Phone validator
 export const validatePhone = (value, { empties = ['+', '+373'] } = {}) => {
   if (isPhoneEmpty(value, empties)) return { ok: false, error: { key: 'required' } };
-  return isValidPhoneNumber(value)
+  const v = String(value || '').trim();
+  // Enforce +373 prefix and digits only after, per product requirement
+  if (!/^\+373\d+$/.test(v)) return { ok: false, error: { key: 'invalidPhone' } };
+  // Optionally still run libphonenumber validation for extra safety
+  return isValidPhoneNumber(v)
     ? { ok: true, error: null }
     : { ok: false, error: { key: 'invalidPhone' } };
 };
@@ -85,12 +92,12 @@ export const validateStudentDob = (
 // Instructor hire date validator: not in future, and not more than MAX_YEARS_AGO years ago
 export const validateInstructorHireDate = (
   value,
-  { today = startOfDay(new Date()), maxYearsAgo = MAX_YEARS_AGO } = {}
+  { today = startOfDay(new Date()), maxYearsAgo = MAX_YEARS_AGO, allowFuture = false } = {}
 ) => {
   if (!value) return { ok: false, error: { key: 'required' } };
   const d = startOfDay(new Date(value));
   if (Number.isNaN(d.getTime())) return { ok: false, error: { key: 'invalidHireDate' } };
-  if (d > today) return { ok: false, error: { key: 'invalidHireDate' } }; // no future dates
+  if (!allowFuture && d > today) return { ok: false, error: { key: 'invalidHireDate' } }; // no future dates
   const oldest = yearsAgo(maxYearsAgo, today);
   if (d < oldest) return { ok: false, error: { key: 'tooOld', params: { years: maxYearsAgo } } };
   return { ok: true, error: null };
