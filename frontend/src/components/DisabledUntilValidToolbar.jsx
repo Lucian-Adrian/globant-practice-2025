@@ -6,9 +6,10 @@ const DisabledUntilValidToolbar = ({ isEdit = false, ...props }) => {
   const { control, trigger } = useFormContext();
   const { isValid, isSubmitting, isDirty, errors } = useFormState({
     control,
-    subscription: { isValid: true, isSubmitting: true, isDirty: true },
+    subscription: { isValid: true, isSubmitting: true, isDirty: true, errors: true },
   });
-  const disabled = (!isValid) || isSubmitting || (isEdit && !isDirty);
+  const hasErrors = !!(errors && Object.keys(errors).length > 0);
+  const disabled = hasErrors || (!isValid) || isSubmitting || (isEdit && !isDirty);
   // Ensure initial validation runs so isValid reflects current values (e.g., Edit forms)
   useEffect(() => {
     // Fire after fields register
