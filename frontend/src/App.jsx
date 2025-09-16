@@ -14,8 +14,6 @@ import {
   DateField,
   NumberField,
   BooleanField,
-  Edit,
-  Create,
   SimpleForm,
   TextInput,
   NumberInput,
@@ -24,11 +22,16 @@ import {
   SelectInput,
   ReferenceInput,
   fetchUtils,
-  required,
   useListContext,
   useNotify,
   useRefresh,
+  HttpError,
 } from 'react-admin';
+import { CreateSmart, EditSmart } from './components/SmartCrudWrappers';
+import { raEmail, raPhone, raDob, raHireDate, req } from './validation/raValidators';
+import { YEARS_125, YEARS_15, yyyyMmDdYearsAgo } from './constants';
+import PhoneFieldRA from './components/PhoneFieldRA';
+import DisabledUntilValidToolbar from './components/DisabledUntilValidToolbar';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -40,10 +43,81 @@ const mapResource = (resource) => {
   return `${name}/`;
 };
 
-const httpClient = (url, options = {}) => {
+// Normalize DRF error responses so RA shows a clear toast and inline field errors.
+// Strategy:
+// - Catch fetchJson HttpError
+// - Derive a human message using priority: json.message > json.detail > first field error > statusText > generic
+// - Re-throw new HttpError(message, status, body) where body is the full parsed JSON (unchanged)
+//   so RA can map field-level errors (e.g., { email: ["already exists"] }) to matching inputs.
+const httpClient = async (url, options = {}) => {
   const opts = { ...options };
   opts.headers = new Headers(opts.headers || { 'Content-Type': 'application/json' });
-  return fetchUtils.fetchJson(url, opts);
+
+  const deriveMessage = (body, fallback, status) => {
+    // Prefer explicit message/detail from API
+    if (body && typeof body === 'object') {
+      const msg = typeof body.message === 'string' ? body.message.trim() : '';
+      if (msg) return msg;
+      const det = typeof body.detail === 'string' ? body.detail.trim() : '';
+      if (det) return det;
+      // Otherwise pick first field error (arrays or strings)
+      for (const [k, v] of Object.entries(body)) {
+        if (k === 'message' || k === 'detail') continue;
+        if (Array.isArray(v) && v.length) {
+          const first = v.find((x) => typeof x === 'string');
+          if (first) return first;
+        }
+        if (typeof v === 'string' && v.trim()) return v.trim();
+      }
+    }
+    // Generic but meaningful fallback for 5xx
+    if (typeof status === 'number' && status >= 500) {
+      return 'A server error occurred. Please try again.';
+    }
+    return fallback || 'Request failed';
+  };
+
+  try {
+    return await fetchUtils.fetchJson(url, opts);
+  } catch (error) {
+    // fetchJson throws HttpError-like objects with status and body
+    const status = error?.status ?? 0;
+    let body = error?.body;
+    // Attempt to parse body if it's a JSON string
+    if (typeof body === 'string') {
+      try {
+        const parsed = JSON.parse(body);
+        body = parsed;
+      } catch {
+        // leave body as string
+      }
+    }
+    const statusText = error?.statusText || error?.message || '';
+    const message = deriveMessage(body, statusText, status);
+
+    // React-Admin expects server-side validation errors under body.errors
+    // in the shape: { errors: { field: 'message', other: '...' } }
+    // DRF typically returns: { field: ['msg1', 'msg2'], other: 'msg' }
+    // Map DRF field errors to RA format ONLY for 400/409/422 statuses.
+    let mappedBody = body;
+    if ([400, 409, 422].includes(Number(status)) && body && typeof body === 'object' && !Array.isArray(body)) {
+      const errors = {};
+      Object.entries(body).forEach(([key, value]) => {
+        if (key === 'message' || key === 'detail') return; // keep these for top-level messages
+        if (Array.isArray(value)) {
+          const first = value.find((v) => typeof v === 'string' && v.trim());
+          if (first) errors[key] = first.trim();
+        } else if (typeof value === 'string' && value.trim()) {
+          errors[key] = value.trim();
+        }
+      });
+      if (Object.keys(errors).length > 0) {
+        mappedBody = { ...body, errors };
+      }
+    }
+
+    throw new HttpError(message, status, mappedBody);
+  }
 };
 
 const buildQuery = (params) => {
@@ -150,6 +224,42 @@ const StudentListActions = () => {
     </TopToolbar>
   );
 };
+const ImportActions = ({ endpoint, label = 'Import CSV' }) => {
+  const fileInputRef = React.useRef(null);
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/${endpoint}/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} ${endpoint}`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+  return (
+    <>
+      <Button label={label} onClick={onImportClick} />
+      <input type="file" ref={fileInputRef} onChange={onFileChange} accept=".csv,text/csv" style={{ display: 'none' }} />
+    </>
+  );
+};
+
 
 
 const dataProvider = {
@@ -275,34 +385,64 @@ const StudentList = (props) => (
 
 
 const StudentEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+  <EditSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="date_of_birth"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+          max: yyyyMmDdYearsAgo(YEARS_15),
+        }}
+        validate={[req, raDob()]}
+      />
+      <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
-  </Edit>
+  </EditSmart>
 );
 
 const StudentCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+  <CreateSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="date_of_birth"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+          max: yyyyMmDdYearsAgo(YEARS_15),
+        }}
+        validate={[req, raDob()]}
+      />
+      <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
-  </Create>
+  </CreateSmart>
 );
 
 // Instructors
+const InstructorListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/instructors/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+  return (
+    <TopToolbar>
+      <CreateButton />
+      <ImportActions endpoint="instructors" />
+      <Button label="Export CSV" onClick={onExport} />
+    </TopToolbar>
+  );
+};
+
 const InstructorList = (props) => (
-  <List {...props}>
+  <List {...props} actions={<InstructorListActions />}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="first_name" />
@@ -316,34 +456,62 @@ const InstructorList = (props) => (
 );
 
 const InstructorEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="hire_date" validate={[required()]} />
-      <TextInput source="license_categories" />
+  <EditSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="hire_date"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+        }}
+        validate={[req, raHireDate({ allowFuture: true })]}
+      />
+      <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
-  </Edit>
+  </EditSmart>
 );
 
 const InstructorCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="hire_date" validate={[required()]} />
-      <TextInput source="license_categories" />
+  <CreateSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+    <TextInput source="first_name" validate={[req]} />
+    <TextInput source="last_name" validate={[req]} />
+    <TextInput source="email" validate={[req, raEmail]} />
+  <PhoneFieldRA source="phone_number" validate={[req, raPhone()]} />
+      <DateInput
+        source="hire_date"
+        inputProps={{
+          min: yyyyMmDdYearsAgo(YEARS_125),
+        }}
+        validate={[req, raHireDate({ allowFuture: true })]}
+      />
+      <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
-  </Create>
+  </CreateSmart>
 );
 
 // Vehicles
+const VehicleListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/vehicles/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+  return (
+    <TopToolbar>
+      <CreateButton />
+      <ImportActions endpoint="vehicles" />
+      <Button label="Export CSV" onClick={onExport} />
+    </TopToolbar>
+  );
+};
+
 const VehicleList = (props) => (
-  <List {...props}>
+  <List {...props} actions={<VehicleListActions />}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="make" />
@@ -357,29 +525,29 @@ const VehicleList = (props) => (
 );
 
 const VehicleEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="make" validate={[required()]} />
-      <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
-      <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+  <EditSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+  <TextInput source="make" validate={[req]} />
+  <TextInput source="model" validate={[req]} />
+  <TextInput source="license_plate" validate={[req]} />
+  <NumberInput source="year" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
-  </Edit>
+  </EditSmart>
 );
 
 const VehicleCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
-      <TextInput source="make" validate={[required()]} />
-      <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
-      <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+  <CreateSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+  <TextInput source="make" validate={[req]} />
+  <TextInput source="model" validate={[req]} />
+  <TextInput source="license_plate" validate={[req]} />
+  <NumberInput source="year" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
-  </Create>
+  </CreateSmart>
 );
 
 // Courses (exposed as "classes")
@@ -397,27 +565,27 @@ const CourseList = (props) => (
 );
 
 const CourseEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+  <EditSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
+  <TextInput source="name" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <TextInput source="description" multiline rows={3} />
-      <NumberInput source="price" validate={[required()]} />
-      <NumberInput source="required_lessons" validate={[required()]} />
+  <NumberInput source="price" validate={[req]} />
+  <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
-  </Edit>
+  </EditSmart>
 );
 
 const CourseCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
-      <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+  <CreateSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
+  <TextInput source="name" validate={[req]} />
+  <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <TextInput source="description" multiline rows={3} />
-      <NumberInput source="price" validate={[required()]} />
-      <NumberInput source="required_lessons" validate={[required()]} />
+  <NumberInput source="price" validate={[req]} />
+  <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
-  </Create>
+  </CreateSmart>
 );
 
 // Payments
@@ -435,27 +603,27 @@ const PaymentList = (props) => (
 );
 
 const PaymentEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
+  <EditSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
       </ReferenceInput>
-      <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <NumberInput source="amount" validate={[req]} />
+      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
-  </Edit>
+  </EditSmart>
 );
 
 const PaymentCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
+  <CreateSmart {...props}>
+    <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
       </ReferenceInput>
-      <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <NumberInput source="amount" validate={[req]} />
+      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
-  </Create>
+  </CreateSmart>
 );

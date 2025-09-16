@@ -17,7 +17,11 @@ const translations = {
   invalidEmail: "Invalid email address",
   required: "This field is required",
   invalidDob: "You cannot select a future date",
-  tooYoung: "You must be at least 15 years old"
+  tooYoung: "You must be at least 15 years old",
+  // Optional templates; if provided they override the above with dynamic years
+  tooYoungTpl: "You must be at least {years} years old",
+  tooOld: "Date cannot be more than 125 years ago",
+  tooOldTpl: "Date cannot be more than {years} years ago"
   , submitting: "Submitting..."
   , signupSuccess: "Registration successful"
   , signupFailed: "Registration failed"
@@ -42,7 +46,10 @@ const translations = {
   invalidEmail: "Adresă de email invalidă",
   required: "Acest câmp este obligatoriu",
   invalidDob: "Nu puteți selecta o dată din viitor",
-  tooYoung: "Trebuie să aveți cel puțin 15 ani"
+  tooYoung: "Trebuie să aveți cel puțin 15 ani",
+  tooYoungTpl: "Trebuie să aveți cel puțin {years} ani",
+  tooOld: "Data nu poate fi mai veche de 125 de ani",
+  tooOldTpl: "Data nu poate fi mai veche de {years} ani"
   , submitting: "Se trimite..."
   , signupSuccess: "Înregistrare reușită"
   , signupFailed: "Înregistrare eșuată"
@@ -67,7 +74,10 @@ const translations = {
   invalidEmail: "Неверный адрес электронной почты",
   required: "Это обязательное поле",
   invalidDob: "Вы не можете выбрать дату в будущем",
-  tooYoung: "Вам должно быть не менее 15 лет"
+  tooYoung: "Вам должно быть не менее 15 лет",
+  tooYoungTpl: "Вам должно быть не менее {years} лет",
+  tooOld: "Дата не может быть старше 125 лет",
+  tooOldTpl: "Дата не может быть старше {years} лет"
   , submitting: "Отправка..."
   , signupSuccess: "Регистрация успешна"
   , signupFailed: "Ошибка регистрации"

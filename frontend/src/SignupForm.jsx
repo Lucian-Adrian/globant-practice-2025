@@ -1,6 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { useLanguage } from './LanguageContext';
-import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
+import { useTranslation } from 'react-i18next';
+import {
+  MIN_STUDENT_AGE_YEARS as MIN_AGE_YEARS,
+    MAX_YEARS_AGO,
+  sanitizePhone,
+  startOfDay,
+  yyyyMmDdLocal,
+    yearsAgo,
+  validatePhone,
+  validateEmail,
+  validateStudentDob,
+  normalizePhoneE164,
+} from './validation/validators';
 
 //  Keep Field outside to avoid remount
 const Field = ({ label, children }) => (
@@ -10,28 +21,7 @@ const Field = ({ label, children }) => (
   </label>
 );
 
-// Helper: allow only one leading "+" and digits
-const sanitizePhone = (raw) => {
-  let v = raw.replace(/[^\d+]/g, '');
-  if (v.includes('+')) v = '+' + v.replace(/\+/g, ''); // collapse extras
-  return v;
-};
-
-// Helpers for safe local-date comparisons
-const startOfDay = (d) => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-};
-const yyyyMmDdLocal = (d) => {
-  // Local YYYY-MM-DD (no UTC shift)
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const MIN_AGE_YEARS = 15;
+// MIN_AGE_YEARS now comes from shared validators
 
 const SignupForm = () => {
   const [form, setForm] = useState({
@@ -56,9 +46,9 @@ const SignupForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [apiMessage, setApiMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const { t, lang, toggleLanguage } = useLanguage();
+  const { t, i18n } = useTranslation(['common', 'validation']);
 
-  const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
+  // Email validation centralized in validators
 
   // Precompute today + cutoff (today - 15 years), both at local midnight
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -84,35 +74,18 @@ const SignupForm = () => {
 
   const formIsValid = useMemo(() => {
     if (!formIsComplete) return false;
-    if (!isEmail(form.email)) return false;
-    if (!isValidPhoneNumber(form.phone)) return false;
-    // Age validation (client-side quick check)
-    if (!form.dob) return false;
-    const dobDate = startOfDay(new Date(form.dob));
-    if (dobDate > today) return false;     // future
-    if (dobDate > cutoff) return false;    // too young
+    if (!validateEmail(form.email).ok) return false;
+    if (!validatePhone(form.phone).ok) return false;
+    const dobRes = validateStudentDob(form.dob, { today, minAgeYears: MIN_AGE_YEARS });
+    if (!dobRes.ok) return false;
     return true;
   }, [formIsComplete, form, today, cutoff]);
 
   const setFieldError = (name, key = null, params = undefined) =>
     setErrors((prev) => ({ ...prev, [name]: key ? { key, params } : null }));
 
-  // Translate an error key (with optional params) into a string using current language
-  const renderError = (err) => {
-    if (!err || !err.key) return '';
-    const years = err.params?.years ?? MIN_AGE_YEARS;
-    const dict = {
-      required: t.required || 'This field is required',
-      invalidEmail: t.invalidEmail || 'Invalid email address',
-      invalidPhone: t.invalidPhone || 'Invalid phone number',
-      invalidDob: t.invalidDob || 'You cannot select a future date',
-      // Prefer template if present, else fall back to non-template or English
-      tooYoung: t.tooYoungTpl
-        ? t.tooYoungTpl.replace('{years}', String(years))
-        : (t.tooYoung || `You must be at least ${years} years old`),
-    };
-    return dict[err.key] || '';
-  };
+  // Error i18n mapping is handled directly with t from the 'validation' namespace
+  const renderError = (err) => (err && err.key ? t(err.key, { ns: 'validation', ...(err.params || {}) }) : '');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -123,7 +96,7 @@ const SignupForm = () => {
 
       if (!v.trim() || v === '+' || v === '+373') {
         setFieldError('phone', 'required');
-      } else if (!isValidPhoneNumber(v)) {
+      } else if (!validatePhone(v).ok) {
         setFieldError('phone', 'invalidPhone');
       } else {
         setFieldError('phone', null);
@@ -134,9 +107,8 @@ const SignupForm = () => {
     setForm((p) => ({ ...p, [name]: value }));
 
     if (name === 'email') {
-      if (!value.trim()) setFieldError('email', 'required');
-      else if (!isEmail(value)) setFieldError('email', 'invalidEmail');
-      else setFieldError('email', null);
+      const res = validateEmail(value);
+      setFieldError('email', res.ok ? null : res.error.key, res.error?.params);
     }
 
     if (['firstName', 'lastName', 'dob', 'status'].includes(name)) {
@@ -155,24 +127,14 @@ const SignupForm = () => {
       });
       const v = value || '+373';
       if (!v || v === '+' || v === '+373') setFieldError('phone', 'required');
-      else if (!isValidPhoneNumber(v)) setFieldError('phone', 'invalidPhone');
+      else if (!validatePhone(v).ok) setFieldError('phone', 'invalidPhone');
       else setFieldError('phone', null);
       return;
     }
 
     if (name === 'dob') {
-      if (!value) {
-        setFieldError('dob', 'required');
-        return;
-      }
-      const dobDate = startOfDay(new Date(value));
-      if (dobDate > today) {
-        setFieldError('dob', 'invalidDob');
-      } else if (dobDate > cutoff) {
-        setFieldError('dob', 'tooYoung', { years: MIN_AGE_YEARS });
-      } else {
-        setFieldError('dob', null);
-      }
+      const res = validateStudentDob(value, { today, minAgeYears: MIN_AGE_YEARS });
+      setFieldError('dob', res.ok ? null : res.error.key, res.error?.params);
       return;
     }
 
@@ -182,24 +144,16 @@ const SignupForm = () => {
   const validateAll = () => {
     const dobDate = form.dob ? startOfDay(new Date(form.dob)) : null;
 
+    const emailRes = validateEmail(form.email);
+    const phoneRes = validatePhone(form.phone);
+    const dobRes = validateStudentDob(form.dob, { today, minAgeYears: MIN_AGE_YEARS });
+
     const newErrors = {
       firstName: form.firstName.trim() ? null : { key: 'required' },
       lastName: form.lastName.trim() ? null : { key: 'required' },
-      email: !form.email.trim()
-        ? { key: 'required' }
-        : isEmail(form.email) ? null : { key: 'invalidEmail' },
-      phone:
-        (!form.phone || form.phone === '+' || form.phone === '+373')
-          ? { key: 'required' }
-          : isValidPhoneNumber(form.phone) ? null : { key: 'invalidPhone' },
-      dob:
-        !form.dob
-          ? { key: 'required' }
-          : dobDate > today
-            ? { key: 'invalidDob' }
-            : dobDate > cutoff
-              ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } }
-              : null,
+      email: emailRes.ok ? null : emailRes.error,
+      phone: phoneRes.ok ? null : phoneRes.error,
+      dob: dobRes.ok ? null : dobRes.error,
       status: form.status ? null : { key: 'required' },
     };
 
@@ -216,9 +170,7 @@ const SignupForm = () => {
     if (!allGood) return;
 
     // Normalize to E.164
-    let normalizedPhone = form.phone;
-    const phoneObj = parsePhoneNumberFromString(form.phone);
-    if (phoneObj?.isValid()) normalizedPhone = phoneObj.number;
+  const normalizedPhone = normalizePhoneE164(form.phone);
 
     try {
       setSubmitting(true);
@@ -270,8 +222,8 @@ const SignupForm = () => {
     }
   };
 
-  // For the date picker UX: block future dates and enforce 15+ years.
-  // Using 'max' = cutoff (today - 15y) automatically prevents future DOBs too.
+  // For the date picker UX: enforce [today-125y .. today-15y]
+  const minDobForPicker = yyyyMmDdLocal(yearsAgo(MAX_YEARS_AGO, today));
   const maxDobForPicker = yyyyMmDdLocal(cutoff);
 
   return (
@@ -284,16 +236,16 @@ const SignupForm = () => {
       }}
     >
       <div style={{ position: 'absolute', top: 20, right: 20 }}>
-        <select value={lang} onChange={e => toggleLanguage(e.target.value)}>
+        <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
           <option value="en">English</option>
           <option value="ro">Română</option>
           <option value="ru">Русский</option>
         </select>
       </div>
 
-      <h2>{t.signupTitle}</h2>
+  <h2>{t('signupTitle')}</h2>
 
-      <Field label={t.firstName}>
+  <Field label={t('firstName')}>
         <input
           name="firstName"
           value={form.firstName}
@@ -305,7 +257,7 @@ const SignupForm = () => {
         {errors.firstName && <span style={{ color: 'red' }}>{renderError(errors.firstName)}</span>}
       </Field>
 
-      <Field label={t.lastName}>
+  <Field label={t('lastName')}>
         <input
           name="lastName"
           value={form.lastName}
@@ -317,7 +269,7 @@ const SignupForm = () => {
         {errors.lastName && <span style={{ color: 'red' }}>{renderError(errors.lastName)}</span>}
       </Field>
 
-      <Field label={t.email}>
+  <Field label={t('email')}>
         <input
           name="email"
           type="email"
@@ -330,7 +282,7 @@ const SignupForm = () => {
         {errors.email && <span style={{ color: 'red' }}>{renderError(errors.email)}</span>}
       </Field>
 
-      <Field label={t.phone}>
+  <Field label={t('phone')}>
         <input
           name="phone"
           type="tel"
@@ -344,7 +296,7 @@ const SignupForm = () => {
         {errors.phone && <span style={{ color: 'red' }}>{renderError(errors.phone)}</span>}
       </Field>
 
-      <Field label={t.dob}>
+  <Field label={t('dob')}>
         <input
           name="dob"
           type="date"
@@ -353,12 +305,13 @@ const SignupForm = () => {
           onBlur={handleBlur}
           required
           aria-invalid={!!errors.dob}
+          min={minDobForPicker}
           max={maxDobForPicker} // ✅ must be born on/before this date (>=15 years old)
         />
         {errors.dob && <span style={{ color: 'red' }}>{renderError(errors.dob)}</span>}
       </Field>
 
-      <Field label={t.status}>
+  <Field label={t('status')}>
         <select
           name="status"
           value={form.status}
@@ -367,9 +320,9 @@ const SignupForm = () => {
           required
           aria-invalid={!!errors.status}
         >
-          <option value="">{t.selectStatus}</option>
-          <option value="active">{t.active}</option>
-          <option value="inactive">{t.inactive}</option>
+          <option value="">{t('selectStatus')}</option>
+          <option value="active">{t('active')}</option>
+          <option value="inactive">{t('inactive')}</option>
         </select>
         {errors.status && <span style={{ color: 'red' }}>{renderError(errors.status)}</span>}
       </Field>
@@ -379,18 +332,18 @@ const SignupForm = () => {
         disabled={submitting || !formIsValid}
         style={{ padding: '0.65rem 1rem', fontSize: '1rem', cursor: formIsValid && !submitting ? 'pointer' : 'not-allowed' }}
       >
-        {submitting ? t.submitting : t.signUp}
+  {submitting ? t('submitting') : t('signUp')}
       </button>
 
       {apiMessage && (
-        <div style={{ marginTop: '.5rem', color: apiMessage.startsWith(t.signupSuccess) ? 'green' : 'red' }}>
+        <div style={{ marginTop: '.5rem', color: apiMessage.startsWith(t('signupSuccess')) ? 'green' : 'red' }}>
           {apiMessage}
         </div>
       )}
 
       {debugInfo && (
         <pre style={{ background: '#f7f7f7', padding: '.5rem', fontSize: '.7rem', overflowX: 'auto' }}>
-          {t.debugLabel}: {JSON.stringify(debugInfo, null, 2)}
+          {t('debugLabel')}: {JSON.stringify(debugInfo, null, 2)}
         </pre>
       )}
     </form>
