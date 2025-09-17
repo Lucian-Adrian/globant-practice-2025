@@ -7,10 +7,10 @@ import * as React from 'react';
 import {
   Admin,
   Resource,
+  Show,
   List,
   Datagrid,
   FunctionField,
-  Show,
   SimpleShowLayout,
   Filter,
   TopToolbar,
@@ -30,13 +30,20 @@ import {
   BooleanInput,
   SelectInput,
   ReferenceInput,
+  ReferenceArrayInput,
+  SelectArrayInput,
   fetchUtils,
   required,
   useListContext,
   useNotify,
   useRefresh,
+  useRecordContext,
 } from 'react-admin';
-import { Card, CardContent, Box, Stack, Typography } from '@mui/material';
+import { Card, CardContent, Box, Stack, Typography, Drawer, IconButton, Menu, MenuItem, Checkbox, FormControlLabel, Switch as MuiSwitch, Tooltip, TextField as MuiTextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, InputLabel, FormControl, Chip, LinearProgress } from '@mui/material';
+import PreviewIcon from '@mui/icons-material/Preview';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import PaymentIcon from '@mui/icons-material/Payment';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -111,9 +118,10 @@ const translateMessage = _translateMessage;
 // --- end added ---
 
 const StudentListActions = () => {
-  const { filterValues, sort } = useListContext();
+  const { filterValues, sort, setFilters } = useListContext();
   const notify = useNotify();
   const refresh = useRefresh();
+  const [columnsAnchor, setColumnsAnchor] = React.useState(null);
 
   // consume language context
   const { locale, setLocale, t } = React.useContext(LanguageContext);
@@ -123,6 +131,13 @@ const StudentListActions = () => {
     const url = `${baseApi}/students/export/${qs ? `?${qs}` : ''}`;
     // Trigger file download in a new tab
     window.open(url, '_blank');
+  };
+
+  const [quick, setQuick] = React.useState(filterValues?.q || '');
+  const onQuickChange = (e) => {
+    const v = e.target.value;
+    setQuick(v);
+    setFilters({ ...(filterValues || {}), q: v }, null);
   };
 
   const fileInputRef = React.useRef(null);
@@ -154,7 +169,7 @@ const StudentListActions = () => {
 
   return (
     <TopToolbar>
-      <CreateButton label={t('actions.create')} />
+  <CreateButton label={t('actions.create')} />
       <Button label={t('actions.import_csv')} onClick={onImportClick} />
       <input
         type="file"
@@ -177,6 +192,12 @@ const StudentListActions = () => {
           <option value="ro">Română</option>
           <option value="ru">Русский</option>
         </select>
+        {/* Column chooser menu */}
+        <Tooltip title="Columns">
+          <IconButton onClick={(e) => setColumnsAnchor(e.currentTarget)} size="small" sx={{ ml: 1 }}>
+            <MoreVertIcon />
+          </IconButton>
+        </Tooltip>
       </div>
     </TopToolbar>
   );
@@ -187,6 +208,14 @@ const InstructorListActions = () => {
   const notify = useNotify();
   const refresh = useRefresh();
   const { locale, setLocale, t } = React.useContext(LanguageContext);
+
+  const [quick, setQuick] = React.useState('');
+  const onQuickChange = (e) => {
+    const v = e.target.value;
+    setQuick(v);
+    // Instructor list has its own filters; we can use the context's setFilters if needed
+    // but for now just keep local quick state so the input doesn't error.
+  };
 
   const onExport = () => {
     const qs = buildFilterSortQuery(filterValues, sort);
@@ -212,6 +241,384 @@ const InstructorListActions = () => {
       }
       const json = await resp.json();
       notify(`Imported ${json.created} instructors`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <TopToolbar>
+  <MuiTextField size="small" placeholder={t('actions.search')} value={quick} onChange={onQuickChange} style={{ marginRight: 12, width: 220 }} />
+      <CreateButton label={t('actions.create')} />
+      <Button label={t('actions.import_csv')} onClick={onImportClick} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept=".csv,text/csv"
+        style={{ display: 'none' }}
+      />
+      <Button label={t('actions.export_csv')} onClick={onExport} />
+
+      <div style={{ marginLeft: 12, display: 'inline-flex', alignItems: 'center' }}>
+        <label style={{ marginRight: 6, fontSize: 13 }}>{t('actions.language')}:</label>
+        <select
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+          style={{ padding: 6, borderRadius: 4 }}
+        >
+          <option value="en">English</option>
+          <option value="ro">Română</option>
+          <option value="ru">Русский</option>
+        </select>
+      </div>
+    </TopToolbar>
+  );
+};
+
+// Student filters (aside and top-level)
+const StudentFilter = (props) => {
+  const { t } = React.useContext(LanguageContext);
+  return (
+    <Filter {...props}>
+      <TextInput source="q" label={t('actions.search')} alwaysOn />
+      <ReferenceInput source="course_id" reference="courses" label={t('classes.fields.name')} perPage={50}>
+        <SelectInput optionText="name" />
+      </ReferenceInput>
+      <SelectInput source="language" choices={[{id:'ro',name:'RO'},{id:'en',name:'EN'},{id:'ru',name:'RU'}]} />
+      <DateInput source="enrollment_date_gte" label="Enrolled after" />
+      <DateInput source="enrollment_date_lte" label="Enrolled before" />
+      <ReferenceInput source="instructor_id" reference="instructors" label="Instructor" perPage={50}>
+        <SelectInput optionText={(r)=>`${r.first_name} ${r.last_name}`} />
+      </ReferenceInput>
+      <BooleanInput source="has_consent" label="Has consent" />
+    </Filter>
+  );
+};
+
+// Bulk actions for students
+const StudentBulkActionButtons = ({ selectedIds, onUnselectAll }) => {
+  const notify = useNotify();
+  const refresh = useRefresh();
+  if (!selectedIds || selectedIds.length === 0) return null;
+
+  const exportSelected = () => {
+    const qs = `ids=${selectedIds.join(',')}`;
+    window.open(`${baseApi}/students/export/?${qs}`, '_blank');
+  };
+
+  const changeStatus = async (status) => {
+    try {
+      await Promise.all(selectedIds.map(id => fetch(`${baseApi}/students/${id}/`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) } )));
+      notify('Status updated', { type: 'info' });
+      onUnselectAll();
+      refresh();
+    } catch (e) { notify('Failed', { type: 'error' }); }
+  };
+
+  return (
+    <React.Fragment>
+      <Button label="Export selected" onClick={exportSelected} />
+      <Button label="Set ACTIVE" onClick={() => changeStatus('ACTIVE')} />
+    </React.Fragment>
+  );
+};
+
+// Actions column per row
+const StudentActionsField = ({ record }) => {
+  if (!record) return null;
+  const openPreview = () => { window.open(`/#/students/${record.id}/show`, '_blank', 'noopener,noreferrer'); };
+  const schedule = () => window.dispatchEvent(new CustomEvent('open-schedule-lesson', { detail: record }));
+  const addPayment = () => window.dispatchEvent(new CustomEvent('open-add-payment', { detail: record }));
+  const changeStatus = () => window.dispatchEvent(new CustomEvent('open-change-status', { detail: record }));
+  return (
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Tooltip title="Preview"><IconButton size="small" onClick={openPreview}><PreviewIcon fontSize="small" /></IconButton></Tooltip>
+      <Tooltip title="Schedule lesson"><IconButton size="small" onClick={schedule}><ScheduleIcon fontSize="small" /></IconButton></Tooltip>
+      <Tooltip title="Add payment"><IconButton size="small" onClick={addPayment}><PaymentIcon fontSize="small" /></IconButton></Tooltip>
+      <MenuIconRow record={record} />
+    </Box>
+  );
+};
+
+const MenuIconRow = ({ record }) => {
+  const [anchor, setAnchor] = React.useState(null);
+  const open = Boolean(anchor);
+  const handleOpen = (e) => setAnchor(e.currentTarget);
+  const handleClose = () => setAnchor(null);
+  const handleChangeStatus = async (s) => { await fetch(`${baseApi}/students/${record.id}/`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: s }) }); handleClose(); window.location.reload(); };
+  return (
+    <div>
+      <IconButton size="small" onClick={handleOpen}><MoreVertIcon fontSize="small" /></IconButton>
+      <Menu anchorEl={anchor} open={open} onClose={handleClose}>
+        <MenuItem onClick={() => handleChangeStatus('ACTIVE')}>Set ACTIVE</MenuItem>
+        <MenuItem onClick={() => handleChangeStatus('INACTIVE')}>Set INACTIVE</MenuItem>
+      </Menu>
+    </div>
+  );
+};
+
+// Preview drawer listens to custom events
+const StudentPreviewDrawer = () => {
+  const [open, setOpen] = React.useState(false);
+  const [rec, setRec] = React.useState(null);
+  React.useEffect(() => {
+    const handler = (e) => { setRec(e.detail); setOpen(true); };
+    window.addEventListener('preview-student', handler);
+    return () => window.removeEventListener('preview-student', handler);
+  }, []);
+  return (
+    <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
+      <Box sx={{ width: 360, p: 2 }}>
+        {rec ? (
+          <div>
+            <Typography variant="h6">{rec.first_name} {rec.last_name}</Typography>
+            <Typography>{rec.email}</Typography>
+            <Typography>{rec.phone_number}</Typography>
+            <Box sx={{ mt: 2 }}>
+              <Button onClick={() => window.open(`/#/students/${rec.id}/show`)}>View full</Button>
+              <Button onClick={() => window.open(`/#/lessons/create?student_id=${rec.id}`)}>Schedule</Button>
+              <Button onClick={() => window.open(`/#/payments/create?student_id=${rec.id}`)}>Add payment</Button>
+            </Box>
+          </div>
+        ) : null}
+      </Box>
+    </Drawer>
+  );
+};
+
+// Schedule Lesson Dialog
+const ScheduleLessonDialog = () => {
+  const [open, setOpen] = React.useState(false);
+  const [student, setStudent] = React.useState(null);
+  const notify = useNotify();
+  const [form, setForm] = React.useState({ enrollment_id: null, lesson_type: 'PRACTICAL', instructor_id: null, vehicle_id: null, scheduled_time: '', duration_minutes: 50, notes: '' });
+
+  React.useEffect(() => {
+    const handler = (e) => { setStudent(e.detail); setOpen(true); setForm(f => ({ ...f, student_id: e.detail.id })); };
+    window.addEventListener('open-schedule-lesson', handler);
+    return () => window.removeEventListener('open-schedule-lesson', handler);
+  }, []);
+
+  const onSave = async () => {
+    try {
+      const resp = await fetch(`${baseApi}/lessons/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enrollment_id: form.enrollment_id, instructor_id: form.instructor_id, vehicle_id: form.vehicle_id, scheduled_time: form.scheduled_time, duration_minutes: form.duration_minutes, notes: form.notes }) });
+      if (!resp.ok) {
+        const j = await resp.json().catch(() => ({}));
+        notify(j.detail || 'Conflict or error scheduling', { type: 'warning' });
+      } else {
+        notify('Lesson scheduled', { type: 'info' });
+        setOpen(false);
+      }
+    } catch (e) { notify('Failed to schedule', { type: 'error' }); }
+  };
+
+  if (!student) return null;
+  return (
+    <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+      <DialogTitle>Schedule lesson for {student.first_name} {student.last_name}</DialogTitle>
+      <DialogContent>
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <InputLabel>Enrollment</InputLabel>
+          <Select value={form.enrollment_id} onChange={(e) => setForm({ ...form, enrollment_id: e.target.value })}>
+            {/* enrollment options require backend support */}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <InputLabel>Lesson type</InputLabel>
+          <Select value={form.lesson_type} onChange={(e) => setForm({ ...form, lesson_type: e.target.value })}>
+            <MenuItem value="THEORY">Theory</MenuItem>
+            <MenuItem value="PRACTICAL">Practical</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField as MuiTextField label="Date & time" type="datetime-local" value={form.scheduled_time} onChange={(e) => setForm({ ...form, scheduled_time: e.target.value })} fullWidth sx={{ mt: 1 }} />
+        <NumberInput source="duration_minutes" value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: parseInt(e.target.value || '50', 10) })} />
+        <TextField as MuiTextField label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} fullWidth multiline rows={3} sx={{ mt: 1 }} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancel</Button>
+        <Button onClick={onSave} variant="contained">Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Add Payment Dialog
+const AddPaymentDialog = () => {
+  const [open, setOpen] = React.useState(false);
+  const [student, setStudent] = React.useState(null);
+  const notify = useNotify();
+  const [form, setForm] = React.useState({ enrollment_id: null, amount: '', payment_method: 'CASH', description: '' });
+
+  React.useEffect(() => {
+    const handler = (e) => { setStudent(e.detail); setOpen(true); };
+    window.addEventListener('open-add-payment', handler);
+    return () => window.removeEventListener('open-add-payment', handler);
+  }, []);
+
+  const onSave = async () => {
+    try {
+      const resp = await fetch(`${baseApi}/payments/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enrollment_id: form.enrollment_id, amount: parseFloat(form.amount), payment_method: form.payment_method, description: form.description }) });
+      if (!resp.ok) { const j = await resp.json().catch(() => ({})); notify(j.detail || 'Error', { type: 'warning' }); }
+      else { notify('Payment recorded', { type: 'info' }); setOpen(false); }
+    } catch (e) { notify('Failed to record', { type: 'error' }); }
+  };
+
+  if (!student) return null;
+  return (
+    <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+      <DialogTitle>Add payment for {student.first_name} {student.last_name}</DialogTitle>
+      <DialogContent>
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <InputLabel>Enrollment</InputLabel>
+          <Select value={form.enrollment_id} onChange={(e) => setForm({ ...form, enrollment_id: e.target.value })}>
+            {/* options from backend */}
+          </Select>
+        </FormControl>
+        <MuiTextField label="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} fullWidth sx={{ mt: 1 }} />
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <InputLabel>Method</InputLabel>
+          <Select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
+            <MenuItem value="CASH">Cash</MenuItem>
+            <MenuItem value="CARD">Card</MenuItem>
+            <MenuItem value="TRANSFER">Transfer</MenuItem>
+          </Select>
+        </FormControl>
+        <MuiTextField label="Notes" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} fullWidth multiline rows={2} sx={{ mt: 1 }} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancel</Button>
+        <Button onClick={onSave} variant="contained">Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Small actions toolbar used on lists that only need Create + language selector
+const SmallListActions = () => {
+  const { t, locale, setLocale } = React.useContext(LanguageContext);
+  return (
+    <TopToolbar>
+      <CreateButton label={t('actions.create')} />
+      <div style={{ marginLeft: 12, display: 'inline-flex', alignItems: 'center' }}>
+        <label style={{ marginRight: 6, fontSize: 13 }}>{t('actions.language')}:</label>
+        <select
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+          style={{ padding: 6, borderRadius: 4 }}
+        >
+          <option value="en">English</option>
+          <option value="ro">Română</option>
+          <option value="ru">Русский</option>
+        </select>
+      </div>
+    </TopToolbar>
+  );
+};
+
+// Vehicle list actions: Create + Import/Export + language selector
+const VehicleListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const { locale, setLocale, t } = React.useContext(LanguageContext);
+
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    const url = `${baseApi}/vehicles/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/vehicles/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} vehicles`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <TopToolbar>
+      <CreateButton label={t('actions.create')} />
+      <Button label={t('actions.import_csv')} onClick={onImportClick} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept=".csv,text/csv"
+        style={{ display: 'none' }}
+      />
+      <Button label={t('actions.export_csv')} onClick={onExport} />
+
+      <div style={{ marginLeft: 12, display: 'inline-flex', alignItems: 'center' }}>
+        <label style={{ marginRight: 6, fontSize: 13 }}>{t('actions.language')}:</label>
+        <select
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+          style={{ padding: 6, borderRadius: 4 }}
+        >
+          <option value="en">English</option>
+          <option value="ro">Română</option>
+          <option value="ru">Русский</option>
+        </select>
+      </div>
+    </TopToolbar>
+  );
+};
+
+// Course (classes) list actions: Create + Import/Export + language selector
+const CourseListActions = () => {
+  const { filterValues, sort } = useListContext();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const { locale, setLocale, t } = React.useContext(LanguageContext);
+
+  const onExport = () => {
+    const qs = buildFilterSortQuery(filterValues, sort);
+    // backend exposes courses endpoint for classes
+    const url = `${baseApi}/courses/export/${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  };
+
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/courses/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} courses`, { type: 'info' });
       refresh();
     } catch (err) {
       notify(err.message || 'Import failed', { type: 'warning' });
@@ -315,9 +722,28 @@ const dataProvider = {
 };
 
 // Choices
-const VEHICLE_CATEGORIES = [
-  'AM','A1','A2','A','B1','B','C1','C','D1','D','BE','C1E','CE','D1E','DE',
-].map(v => ({ id: v, name: v }));
+const VEHICLE_CATEGORY_DESCRIPTIONS = {
+  AM: 'AM – moped (≤45 km/h; motor ≤50 cm³ sau ≤4 kW)',
+  A1: 'A1 – motociclete ≤125 cm³ și ≤11 kW; triciclu ≤15 kW',
+  A2: 'A2 – motociclete ≤35 kW (raport ≤0,2 kW/kg)',
+  A: 'A – motociclete (cu/fără ataș); triciclu >15 kW',
+  B1: 'B1 – cuadricicluri motorizate',
+  B: 'B – autoturism ≤3.500 kg și ≤8 locuri (fără șofer)',
+  BE: 'BE – ansamblu B + remorcă >750 kg (ansamblu >3.500 kg)',
+  C1: 'C1 – autovehicul 3.500–7.500 kg (≤8 locuri)',
+  C1E: 'C1E – C1 + remorcă >750 kg (ansamblu ≤12.000 kg)',
+  C: 'C – autovehicul >3.500 kg',
+  CE: 'CE – C + remorcă >750 kg',
+  D1: 'D1 – microbuz 9–16 locuri (≤8 m)',
+  D1E: 'D1E – D1 + remorcă >750 kg (ansamblu ≤12.000 kg)',
+  D: 'D – autovehicul pentru transport persoane >8 locuri',
+  DE: 'DE – D + remorcă >750 kg',
+  F: 'F – troleibuz (vehicul special)',
+  H: 'H – tractor pe roți și mașini/utilaje autopropulsate',
+  I: 'I – tramvai',
+};
+
+const VEHICLE_CATEGORIES = Object.keys(VEHICLE_CATEGORY_DESCRIPTIONS).map(k => ({ id: k, name: k }));
 
 const STUDENT_STATUS = [
   'ACTIVE','INACTIVE','GRADUATED',
@@ -365,16 +791,17 @@ const StudentList = (props) => {
   React.useEffect(() => setGridKey(k => k + 1), [locale]);
 
   return (
-    <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
+    <List {...props} aside={<StudentListAside />} filters={<StudentFilter />} actions={<StudentListActions />} bulkActionButtons={<StudentBulkActionButtons />}>
       <Datagrid key={gridKey} rowClick="edit" rowStyle={studentRowStyle}>
         <NumberField source="id" label={t('students.fields.id')} />
         <TextField source="first_name" label={t('students.fields.first_name')} />
         <TextField source="last_name" label={t('students.fields.last_name')} />
+        
         <EmailField source="email" label={t('students.fields.email')} />
         <TextField source="phone_number" label={t('students.fields.phone_number')} />
         <DateField source="date_of_birth" label={t('students.fields.date_of_birth')} />
         <DateField source="enrollment_date" label={t('students.fields.enrollment_date')} />
-        <FunctionField source="status" label={t('students.fields.status')} render={(record) => t(`filters.${(record?.status||'').toLowerCase()}`)} />
+  <FunctionField source="status" label={t('students.fields.status')} render={(record) => t(`filters.${(record?.status||'').toLowerCase()}`)} />
       </Datagrid>
     </List>
   );
@@ -389,6 +816,9 @@ const StudentEdit = (props) => (
       <TextInput source="email" validate={[required()]} />
       <TextInput source="phone_number" validate={[required()]} />
       <DateInput source="date_of_birth" validate={[required()]} />
+  <SelectInput source="course_type" label="Course type" choices={[{ id: 'THEORY', name: 'Theory' }, { id: 'PRACTICAL', name: 'Practical' }]} />
+  <SelectArrayInput source="course_categories" label="Categories" choices={VEHICLE_CATEGORIES} />
+  <SelectInput source="language" label="Language" choices={[{ id: 'ro', name: 'Română' }, { id: 'ru', name: 'Русский' }]} />
       <SelectInput source="status" choices={STUDENT_STATUS} />
     </SimpleForm>
   </Edit>
@@ -402,6 +832,9 @@ const StudentCreate = (props) => (
       <TextInput source="email" validate={[required()]} />
       <TextInput source="phone_number" validate={[required()]} />
       <DateInput source="date_of_birth" validate={[required()]} />
+  <SelectInput source="course_type" label="Course type" choices={[{ id: 'THEORY', name: 'Theory' }, { id: 'PRACTICAL', name: 'Practical' }]} />
+  <SelectArrayInput source="course_categories" label="Categories" choices={VEHICLE_CATEGORIES} />
+  <SelectInput source="language" label="Language" choices={[{ id: 'ro', name: 'Română' }, { id: 'ru', name: 'Русский' }]} />
       <SelectInput source="status" choices={STUDENT_STATUS} />
     </SimpleForm>
   </Create>
@@ -493,13 +926,189 @@ const InstructorShow = (props) => {
   );
 };
 
+// Student details block used inside the Show page and as a richer preview
+const StudentDetails = ({ record }) => {
+  const [nextLesson, setNextLesson] = React.useState(null);
+  const [lastPayment, setLastPayment] = React.useState(null);
+  const [lastContact, setLastContact] = React.useState(null);
+  const [balance, setBalance] = React.useState(null);
+  const notify = useNotify();
+
+  React.useEffect(() => {
+    if (!record || !record.id) return;
+    // fetch next lesson (best-effort)
+    (async () => {
+      try {
+        const { json } = await httpClient(`${baseApi}/lessons/?student_id=${record.id}&ordering=scheduled_time`);
+        const items = Array.isArray(json) ? json : json.results || [];
+        setNextLesson(items.length ? items[0] : null);
+      } catch (e) {
+        // ignore
+      }
+    })();
+
+    // fetch last payment
+    (async () => {
+      try {
+        const { json } = await httpClient(`${baseApi}/payments/?student_id=${record.id}&ordering=-payment_date`);
+        const items = Array.isArray(json) ? json : json.results || [];
+        setLastPayment(items.length ? items[0] : null);
+      } catch (e) {
+        // ignore
+      }
+    })();
+
+    // fetch last communication (best-effort)
+    (async () => {
+      try {
+        const { json } = await httpClient(`${baseApi}/communications/?student_id=${record.id}&ordering=-created_at`);
+        const items = Array.isArray(json) ? json : json.results || [];
+        setLastContact(items.length ? items[0] : null);
+      } catch (e) {
+        // ignore
+      }
+    })();
+
+    // try fetching balance endpoint, fallback to record.balance
+    (async () => {
+      try {
+        const { json } = await httpClient(`${baseApi}/students/${record.id}/balance/`);
+        setBalance(json.balance ?? json);
+      } catch (e) {
+        if (typeof record.balance === 'number') setBalance(record.balance);
+      }
+    })();
+  }, [record]);
+
+  const openSchedule = () => window.open(`/#/lessons/create?student_id=${record.id}`, '_blank');
+  const openPayment = () => window.open(`/#/payments/create?student_id=${record.id}`, '_blank');
+  const openProfile = () => window.open(`/#/students/${record.id}/edit`, '_blank');
+
+  const balanceBadge = () => {
+    if (balance === null || balance === undefined) return <Chip label="Balance: —" />;
+    const n = Number(balance);
+    if (Number.isNaN(n)) return <Chip label={`Balance: ${balance}`} />;
+    if (n > 0) return <Chip label={`Credit ${n}`} color="success" />;
+    if (n < 0) return <Chip label={`Debt ${Math.abs(n)}`} color="error" />;
+    return <Chip label={`Zero`} />;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Next lesson</Typography>
+          {nextLesson ? (
+            <div>
+              <Typography>{new Date(nextLesson.scheduled_time).toLocaleString()} • {nextLesson.instructor?.first_name || ''} {nextLesson.instructor?.last_name || ''} • {nextLesson.vehicle?.license_plate || ''}</Typography>
+              <Button size="small" onClick={() => window.open(`/#/lessons/${nextLesson.id}/edit`, '_blank')}>Reschedule</Button>
+            </div>
+          ) : (
+            <Typography>No upcoming lessons</Typography>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Last payment</Typography>
+          {lastPayment ? (
+            <div>
+              <Typography>{lastPayment.amount} — {new Date(lastPayment.payment_date).toLocaleDateString()} — {lastPayment.payment_method}</Typography>
+              <Box sx={{ mt: 1 }}>{balanceBadge()}</Box>
+            </div>
+          ) : (
+            <Typography>No payments yet</Typography>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Communications</Typography>
+          {lastContact ? (
+            <div>
+              <Typography>Last contact: {lastContact.method || '—'} {new Date(lastContact.created_at).toLocaleDateString()}</Typography>
+              <Box sx={{ mt: 1 }}>
+                <Button size="small" onClick={() => window.open(`/#/communications/create?student_id=${record.id}`, '_blank')}>Add note / Send message</Button>
+              </Box>
+            </div>
+          ) : (
+            <div>
+              <Typography>No recent contact</Typography>
+              <Box sx={{ mt: 1 }}>
+                <Button size="small" onClick={() => window.open(`/#/communications/create?student_id=${record.id}`, '_blank')}>Add note / Send message</Button>
+              </Box>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+            <div>
+              <Typography variant="h6">Consent</Typography>
+              <Typography>{record.consent ? `Granted at ${record.consent_timestamp || '—'}` : 'Not granted'}</Typography>
+            </div>
+            <div>
+              <Typography variant="h6">Flags</Typography>
+              <Stack direction="row" spacing={1}>
+                {!record.instructor_id && <Chip label="No instructor assigned" color="warning" />}
+                {balance !== null && Number(balance) < -1000 && <Chip label="Debt > 1000 MDL" color="error" />}
+                {record.exam_pending && <Chip label="Exam pending" />}
+              </Stack>
+            </div>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Progress</Typography>
+          <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption">Theory</Typography>
+              <LinearProgress variant="determinate" value={record.progress?.theory ?? 0} sx={{ height: 10, borderRadius: 2 }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption">Practical</Typography>
+              <LinearProgress variant="determinate" value={record.progress?.practical ?? 0} sx={{ height: 10, borderRadius: 2 }} />
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button variant="contained" onClick={openSchedule}>Schedule lesson</Button>
+        <Button variant="outlined" onClick={openPayment}>Add payment</Button>
+        <Button onClick={openProfile}>Open full profile</Button>
+      </Box>
+    </Box>
+  );
+};
+
+// Student show (details) page
+const StudentShow = (props) => (
+  <Show {...props}>
+    <SimpleShowLayout>
+      <NumberField source="id" />
+      <TextField source="first_name" />
+      <TextField source="last_name" />
+      <EmailField source="email" />
+      <TextField source="phone_number" />
+      <FunctionField label="Details" render={(record) => <StudentDetails record={record} />} />
+    </SimpleShowLayout>
+  </Show>
+);
+
 // Vehicles
 const VehicleList = (props) => {
   const { locale, t } = React.useContext(LanguageContext);
   const [gridKey, setGridKey] = React.useState(0);
   React.useEffect(() => setGridKey(k => k + 1), [locale]);
   return (
-    <List {...props}>
+    <List {...props} actions={<VehicleListActions />}>
       <Datagrid key={gridKey} rowClick="edit">
         <NumberField source="id" label={t('vehicles.fields.id')} />
         <TextField source="make" label={t('vehicles.fields.make')} />
@@ -545,7 +1154,7 @@ const CourseList = (props) => {
   const [gridKey, setGridKey] = React.useState(0);
   React.useEffect(() => setGridKey(k => k + 1), [locale]);
   return (
-    <List {...props}>
+    <List {...props} actions={<CourseListActions />}>
       <Datagrid key={gridKey} rowClick="edit">
         <NumberField source="id" label={t('classes.fields.id')} />
         <TextField source="name" label={t('classes.fields.name')} />
@@ -643,13 +1252,14 @@ export default function App() {
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>
-      <Admin key={locale} dataProvider={dataProvider}>
+  <Admin key={locale} dataProvider={dataProvider}>
         <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} options={{ label: t('menu.students') }} />
         <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} options={{ label: t('menu.instructors') }} />
         <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} options={{ label: t('menu.vehicles') }} />
         <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} options={{ label: t('menu.classes') }} />
         <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} options={{ label: t('menu.payments') }} />
       </Admin>
+  <StudentPreviewDrawer />
     </LanguageContext.Provider>
   );
 }

@@ -23,6 +23,10 @@ const translations = {
         phone_number: 'Phone number',
         date_of_birth: 'Date of birth',
         enrollment_date: 'Enrollment date',
+          course: 'Course',
+          language: 'Language',
+          progress: 'Progress (theory/practical)',
+          balance: 'Balance',
         status: 'Status',
       },
     },
@@ -102,6 +106,10 @@ const translations = {
         phone_number: 'Telefon',
         date_of_birth: 'Data nașterii',
         enrollment_date: 'Data înscrierii',
+          course: 'Curs',
+          language: 'Limbă',
+          progress: 'Progres (teorie/practică)',
+          balance: 'Sold',
         status: 'Status',
       },
     },
@@ -120,6 +128,27 @@ const translations = {
       filters: {
         status: 'Status',
         category: 'Categorie permis',
+      },
+    },
+    vehicles: {
+      fields: {
+        id: 'Id',
+        make: 'Marcă',
+        model: 'Model',
+        license_plate: 'Număr înmatriculare',
+        year: 'An',
+        category: 'Categorie',
+        is_available: 'Disponibil',
+      },
+    },
+    classes: {
+      fields: {
+        id: 'Id',
+        name: 'Nume',
+        category: 'Categorie',
+        description: 'Descriere',
+        price: 'Preț',
+        required_lessons: 'Lecții necesare',
       },
     },
     filters: {
@@ -160,6 +189,10 @@ const translations = {
         phone_number: 'Телефон',
         date_of_birth: 'Дата рождения',
         enrollment_date: 'Дата зачисления',
+          course: 'Курс',
+          language: 'Язык',
+          progress: 'Прогресс (теория/практика)',
+          balance: 'Баланс',
         status: 'Статус',
       },
     },
@@ -178,6 +211,27 @@ const translations = {
       filters: {
         status: 'Статус',
         category: 'Категория прав',
+      },
+    },
+    vehicles: {
+      fields: {
+        id: 'Id',
+        make: 'Марка',
+        model: 'Модель',
+        license_plate: 'Регистрационный номер',
+        year: 'Год',
+        category: 'Категория',
+        is_available: 'Доступен',
+      },
+    },
+    classes: {
+      fields: {
+        id: 'Id',
+        name: 'Название',
+        category: 'Категория',
+        description: 'Описание',
+        price: 'Цена',
+        required_lessons: 'Необходимые уроки',
       },
     },
     filters: {

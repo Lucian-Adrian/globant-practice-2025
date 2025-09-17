@@ -4,7 +4,7 @@ from django.utils.timezone import now
 from datetime import timedelta
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
 from .serializers import (
-    StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
+    StudentSerializer, StudentDetailSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
     EnrollmentSerializer, LessonSerializer, PaymentSerializer
 )
 
@@ -21,7 +21,10 @@ class FullCrudViewSet(mixins.ListModelMixin,
 
 class StudentViewSet(FullCrudViewSet):
     queryset = Student.objects.all().order_by('-enrollment_date')
-    serializer_class = StudentSerializer
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return StudentDetailSerializer
+        return StudentSerializer
 
 
 class InstructorViewSet(FullCrudViewSet):
