@@ -1,5 +1,26 @@
 from rest_framework import serializers
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from datetime import date
+from typing import Optional
+import re
+
+
+# Constants for age/date constraints
+MIN_STUDENT_AGE_YEARS = 15
+MAX_AGE_YEARS = 125
+
+# Instructors: keep a flag for future dates (not used yet; future dates are allowed for now)
+ALLOW_FUTURE_HIRE_DATE = False
+
+
+def years_ago(years: int, from_date: Optional[date] = None) -> date:
+    """Return a date representing (from_date - years). Handles leap years (Feb 29 -> Feb 28)."""
+    base = from_date or date.today()
+    try:
+        return base.replace(year=base.year - years)
+    except ValueError:
+        # Handle Feb 29 -> Feb 28
+        return base.replace(month=2, day=28, year=base.year - years)
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -7,11 +28,45 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name", "email", "phone_number", "date_of_birth", "enrollment_date", "status"]
 
+    def validate_phone_number(self, value: str) -> str:
+        v = (value or '').strip()
+        if not re.match(r"^\+373\d+$", v):
+            raise serializers.ValidationError("Phone number must start with +373 and contain only digits.")
+        return v
+
+    def validate_date_of_birth(self, value: date) -> date:
+        if not value:
+            return value
+        today = date.today()
+        lower_bound = years_ago(MAX_AGE_YEARS, today)  # not older than 125 years
+        upper_bound = years_ago(MIN_STUDENT_AGE_YEARS, today)  # at least 15 years old
+        if value < lower_bound:
+            raise serializers.ValidationError("Date of birth cannot be more than 125 years ago.")
+        if value > upper_bound:
+            raise serializers.ValidationError("Must be at least 15 years old.")
+        return value
+
 
 class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructor
         fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories", "status"]
+
+    def validate_phone_number(self, value: str) -> str:
+        v = (value or '').strip()
+        if not re.match(r"^\+373\d+$", v):
+            raise serializers.ValidationError("Phone number must start with +373 and contain only digits.")
+        return v
+
+    def validate_hire_date(self, value: date) -> date:
+        if not value:
+            return value
+        today = date.today()
+        oldest_allowed = years_ago(MAX_AGE_YEARS, today)
+        # Future dates are allowed for now (do not restrict > today)
+        if value < oldest_allowed:
+            raise serializers.ValidationError("Hire date cannot be more than 125 years ago.")
+        return value
 
 
 class VehicleSerializer(serializers.ModelSerializer):
