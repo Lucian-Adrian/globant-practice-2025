@@ -1,4 +1,6 @@
 import StudentListAside from './students/StudentListAside';
+import ImportButton from './components/ImportButton';
+import ResourceEmptyState from './components/ResourceEmptyState';
 
 import * as React from 'react';
 import {
@@ -172,93 +174,20 @@ const buildFilterSortQuery = (filterValues, sort) => {
 
 const StudentListActions = () => {
   const { filterValues, sort } = useListContext();
-  const notify = useNotify();
-  const refresh = useRefresh();
-
   const onExport = () => {
     const qs = buildFilterSortQuery(filterValues, sort);
     const url = `${baseApi}/students/export/${qs ? `?${qs}` : ''}`;
-    // Trigger file download in a new tab
     window.open(url, '_blank');
   };
-
-  const fileInputRef = React.useRef(null);
-  const onImportClick = () => fileInputRef.current?.click();
-  const onFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      const resp = await fetch(`${baseApi}/students/import/`, {
-        method: 'POST',
-        body: form,
-      });
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.detail || 'Import failed');
-      }
-      const json = await resp.json();
-      notify(`Imported ${json.created} students`, { type: 'info' });
-      refresh();
-    } catch (err) {
-      notify(err.message || 'Import failed', { type: 'warning' });
-    } finally {
-      // Reset input so the same file can be selected again
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
   return (
     <TopToolbar>
-  <CreateButton />
-      <Button label="Import CSV" onClick={onImportClick} />
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={onFileChange}
-        accept=".csv,text/csv"
-        style={{ display: 'none' }}
-      />
+      <CreateButton />
+      <ImportButton endpoint="students" />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
-const ImportActions = ({ endpoint, label = 'Import CSV' }) => {
-  const fileInputRef = React.useRef(null);
-  const notify = useNotify();
-  const refresh = useRefresh();
-  const onImportClick = () => fileInputRef.current?.click();
-  const onFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      const resp = await fetch(`${baseApi}/${endpoint}/import/`, {
-        method: 'POST',
-        body: form,
-      });
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.detail || 'Import failed');
-      }
-      const json = await resp.json();
-      notify(`Imported ${json.created} ${endpoint}`, { type: 'info' });
-      refresh();
-    } catch (err) {
-      notify(err.message || 'Import failed', { type: 'warning' });
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-  return (
-    <>
-      <Button label={label} onClick={onImportClick} />
-      <input type="file" ref={fileInputRef} onChange={onFileChange} accept=".csv,text/csv" style={{ display: 'none' }} />
-    </>
-  );
-};
+// ImportActions removed in favor of shared <ImportButton /> component.
 
 
 
@@ -367,9 +296,13 @@ const studentRowStyle = (record, index) => {
 
 // Students
 const StudentList = (props) => (
-  
-  <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
-  
+  <List
+    {...props}
+    aside={<StudentListAside />}
+    filters={[]}
+    actions={<StudentListActions />}
+    empty={<ResourceEmptyState endpoint="students" message="No students yet. Create one or import a batch." />}
+  >
     <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
       <NumberField source="id" />
       <TextField source="first_name" />
@@ -435,14 +368,18 @@ const InstructorListActions = () => {
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportActions endpoint="instructors" />
+      <ImportButton endpoint="instructors" />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
 
 const InstructorList = (props) => (
-  <List {...props} actions={<InstructorListActions />}>
+  <List
+    {...props}
+    actions={<InstructorListActions />}
+    empty={<ResourceEmptyState endpoint="instructors" message="No instructors yet. Create one or import a batch." />}
+  >
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="first_name" />
@@ -504,14 +441,18 @@ const VehicleListActions = () => {
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportActions endpoint="vehicles" />
+      <ImportButton endpoint="vehicles" />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
 
 const VehicleList = (props) => (
-  <List {...props} actions={<VehicleListActions />}>
+  <List
+    {...props}
+    actions={<VehicleListActions />}
+    empty={<ResourceEmptyState endpoint="vehicles" message="No vehicles yet. Create one or import a batch." />}
+  >
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="make" />
