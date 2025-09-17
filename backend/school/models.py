@@ -38,7 +38,7 @@ class Instructor(models.Model):
     hire_date = models.DateField()
     license_categories = models.CharField(max_length=100)
     STATUS_CHOICES = [
-        ('ACTIVE', 'Activ'), ('INACTIVE', 'Inactiv'), ('GRADUATED', 'Absolvit'),
+        ('ACTIVE', 'Activ'), ('INACTIVE', 'Inactiv'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
 
