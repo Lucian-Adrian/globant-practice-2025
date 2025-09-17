@@ -1,4 +1,10 @@
 import StudentListAside from './students/StudentListAside';
+import { VEHICLE_CATEGORIES as FALLBACK_VEHICLE, STUDENT_STATUS as FALLBACK_STUDENT, PAYMENT_METHODS as FALLBACK_PAYMENT } from './enums';
+import { fetchEnums, mapToChoices } from './enumsClient';
+import NameInput from './components/NameInput';
+import PhoneInput from './components/PhoneInput';
+import LicensePlateInput from './components/LicensePlateInput';
+// phone utils can be used later for composite inputs
 
 import * as React from 'react';
 import {
@@ -28,6 +34,7 @@ import {
   useListContext,
   useNotify,
   useRefresh,
+  ReferenceField,
 } from 'react-admin';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
@@ -152,6 +159,40 @@ const StudentListActions = () => {
 };
 
 
+// Convert backend structured error shape -> RA field error mapping.
+// Backend shape: { errors: { field: [msgs] }, message: "summary", error_code: "..." }
+const extractFieldErrors = (body) => {
+  if (!body) return {};
+  if (!body.errors || typeof body.errors !== 'object') return body;
+  const map = {};
+  for (const [field, messages] of Object.entries(body.errors)) {
+    if (Array.isArray(messages) && messages.length) {
+      map[field] = messages[0];
+    }
+  }
+  return map;
+};
+
+// Client-side validators
+const validateDOB = (value) => {
+  if (!value) return 'Date of birth is required';
+  const date = new Date(value + 'T00:00:00');
+  const today = new Date();
+  if (date > today) return 'Date of birth cannot be in the future';
+  const age = today.getFullYear() - date.getFullYear() - ((today.getMonth() < date.getMonth()) || (today.getMonth() === date.getMonth() && today.getDate() < date.getDate()) ? 1 : 0);
+  if (age < 15) return 'Must be at least 15 years old';
+};
+
+const validateEmail = (value) => {
+  if (!value) return 'Email is required';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) return 'Enter a valid email address';
+};
+
+const validatePhoneClient = (value) => {
+  if (!value) return 'Phone number is required';
+  if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number format';
+};
+
 const dataProvider = {
   getList: async (resource, params) => {
     const resName = mapResource(resource);
@@ -181,26 +222,44 @@ const dataProvider = {
   update: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-    const { json } = await httpClient(url, {
-      method: 'PUT',
-      body: JSON.stringify(params.data),
-    });
-    return { data: json };
+    const resp = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    let body = {};
+    try { body = await resp.json(); } catch (_) {}
+    if (!resp.ok) {
+      const fieldErrors = extractFieldErrors(body);
+      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
+      const error = new Error(baseMessage);
+      error.status = resp.status; // eslint-disable-line
+      error.body = fieldErrors; // eslint-disable-line
+      error.backend = body; // optional extra debug
+      throw error;
+    }
+    return { data: body };
   },
   updateMany: async (resource, params) => {
-    const results = await Promise.all(
-      params.ids.map((id) => dataProvider.update(resource, { id, data: params.data }).then((r) => r.data.id))
-    );
+    const results = [];
+    for (const id of params.ids) {
+      const r = await dataProvider.update(resource, { id, data: params.data });
+      results.push(r.data.id);
+    }
     return { data: results };
   },
   create: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}`;
-    const { json } = await httpClient(url, {
-      method: 'POST',
-      body: JSON.stringify(params.data),
-    });
-    return { data: json };
+    const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    let body = {};
+    try { body = await resp.json(); } catch (_) {}
+    if (!resp.ok) {
+      const fieldErrors = extractFieldErrors(body);
+      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
+      const error = new Error(baseMessage);
+      error.status = resp.status; // eslint-disable-line
+      error.body = fieldErrors; // eslint-disable-line
+      error.backend = body; // eslint-disable-line
+      throw error;
+    }
+    return { data: body };
   },
   delete: async (resource, params) => {
     const resName = mapResource(resource);
@@ -217,27 +276,26 @@ const dataProvider = {
 };
 
 export default function App() {
+  const [enums, setEnums] = React.useState(null);
+  React.useEffect(() => { fetchEnums().then(setEnums); }, []);
+  const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
+  const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
+  const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
+  const paymentChoices = enums ? mapToChoices(enums.payment_method) : FALLBACK_PAYMENT;
   return (
     <Admin dataProvider={dataProvider}>
-      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
+      <Resource name="students" list={StudentList(studentChoices)} edit={StudentEdit(studentChoices)} create={StudentCreate(studentChoices)} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
-      <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
-      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} />
-      <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
+      <Resource name="vehicles" list={VehicleList} edit={VehicleEdit(vehicleChoices)} create={VehicleCreate(vehicleChoices)} />
+  <Resource name="classes" list={CourseList} edit={CourseEdit(vehicleChoices, courseTypeChoices)} create={CourseCreate(vehicleChoices, courseTypeChoices)} />
+  <Resource name="payments" list={PaymentList} edit={PaymentEdit(paymentChoices)} create={PaymentCreate(paymentChoices)} />
+  <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
+  <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
     </Admin>
   );
 }
 
-// Choices
-const VEHICLE_CATEGORIES = [
-  'AM','A1','A2','A','B1','B','C1','C','D1','D','BE','C1E','CE','D1E','DE',
-].map(v => ({ id: v, name: v }));
-
-const STUDENT_STATUS = [
-  'ACTIVE','INACTIVE','GRADUATED',
-].map(v => ({ id: v, name: v }));
-
-const PAYMENT_METHODS = ['CASH','CARD','TRANSFER'].map(v => ({ id: v, name: v }));
+// Dynamic choices wiring via higher-order components.
 
 // Stiluri de culoare pentru fiecare status de student
 const studentRowStyle = (record, index) => {
@@ -256,10 +314,8 @@ const studentRowStyle = (record, index) => {
 
 
 // Students
-const StudentList = (props) => (
-  
+const StudentList = (studentChoices) => (props) => (
   <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
-  
     <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
       <NumberField source="id" />
       <TextField source="first_name" />
@@ -268,34 +324,34 @@ const StudentList = (props) => (
       <TextField source="phone_number" />
       <DateField source="date_of_birth" />
       <DateField source="enrollment_date" />
-      <TextField source="status" />
+  <TextField source="status" />
     </Datagrid>
   </List>
 );
 
 
-const StudentEdit = (props) => (
-  <Edit {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+const StudentEdit = (studentChoices) => (props) => (
+  <Edit {...props} mutationMode="pessimistic" redirect="list">
+    <SimpleForm redirect="list">
+  <NameInput source="first_name" validate={[v => (!v ? 'First name is required' : undefined)]} />
+  <NameInput source="last_name" validate={[v => (!v ? 'Last name is required' : undefined)]} />
+  <TextInput source="email" validate={[validateEmail]} />
+  <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
+  <DateInput source="date_of_birth" validate={[validateDOB]} />
+  <SelectInput source="status" choices={studentChoices.filter(c => c.id !== 'PENDING')} emptyText="PENDING (auto)" />
     </SimpleForm>
   </Edit>
 );
 
-const StudentCreate = (props) => (
-  <Create {...props}>
-    <SimpleForm>
-      <TextInput source="first_name" validate={[required()]} />
-      <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
-      <DateInput source="date_of_birth" validate={[required()]} />
-      <SelectInput source="status" choices={STUDENT_STATUS} />
+const StudentCreate = (studentChoices) => (props) => (
+  <Create {...props} redirect="list">
+    <SimpleForm redirect="list">
+  <NameInput source="first_name" validate={[v => (!v ? 'First name is required' : undefined)]} />
+  <NameInput source="last_name" validate={[v => (!v ? 'Last name is required' : undefined)]} />
+  <TextInput source="email" validate={[validateEmail]} />
+  <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
+  <DateInput source="date_of_birth" validate={[validateDOB]} />
+  {/* New students auto set to PENDING – hide field on create */}
     </SimpleForm>
   </Create>
 );
@@ -310,7 +366,7 @@ const InstructorList = (props) => (
       <EmailField source="email" />
       <TextField source="phone_number" />
       <DateField source="hire_date" />
-      <TextField source="license_categories" />
+  <TextField source="license_categories" />
     </Datagrid>
   </List>
 );
@@ -320,10 +376,10 @@ const InstructorEdit = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
+  <TextInput source="email" validate={[validateEmail]} />
+  <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
       <DateInput source="hire_date" validate={[required()]} />
-      <TextInput source="license_categories" />
+  <TextInput source="license_categories" helperText="Comma separated e.g. B,BE,C" />
     </SimpleForm>
   </Edit>
 );
@@ -333,10 +389,10 @@ const InstructorCreate = (props) => (
     <SimpleForm>
       <TextInput source="first_name" validate={[required()]} />
       <TextInput source="last_name" validate={[required()]} />
-      <TextInput source="email" validate={[required()]} />
-      <TextInput source="phone_number" validate={[required()]} />
+  <TextInput source="email" validate={[validateEmail]} />
+  <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
       <DateInput source="hire_date" validate={[required()]} />
-      <TextInput source="license_categories" />
+  <TextInput source="license_categories" helperText="Comma separated e.g. B,BE,C" />
     </SimpleForm>
   </Create>
 );
@@ -349,34 +405,35 @@ const VehicleList = (props) => (
       <TextField source="make" />
       <TextField source="model" />
       <TextField source="license_plate" />
-      <NumberField source="year" />
+  {/* Custom render to avoid locale thousands separator for year */}
+  <TextField source="year" />
       <TextField source="category" />
       <BooleanField source="is_available" />
     </Datagrid>
   </List>
 );
 
-const VehicleEdit = (props) => (
+const VehicleEdit = (vehicleChoices) => (props) => (
   <Edit {...props}>
     <SimpleForm>
       <TextInput source="make" validate={[required()]} />
       <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
+  <LicensePlateInput source="license_plate" validate={[required(), (v) => (!/^[A-Z0-9]+$/.test(v || '') ? 'Only letters & digits' : undefined)]} />
       <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+      <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
   </Edit>
 );
 
-const VehicleCreate = (props) => (
+const VehicleCreate = (vehicleChoices) => (props) => (
   <Create {...props}>
     <SimpleForm>
       <TextInput source="make" validate={[required()]} />
       <TextInput source="model" validate={[required()]} />
-      <TextInput source="license_plate" validate={[required()]} />
+  <LicensePlateInput source="license_plate" validate={[required(), (v) => (!/^[A-Z0-9]+$/.test(v || '') ? 'Only letters & digits' : undefined)]} />
       <NumberInput source="year" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+      <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
   </Create>
@@ -389,6 +446,7 @@ const CourseList = (props) => (
       <NumberField source="id" />
       <TextField source="name" />
       <TextField source="category" />
+  <TextField source="type" />
       <TextField source="description" />
       <NumberField source="price" />
       <NumberField source="required_lessons" />
@@ -396,11 +454,12 @@ const CourseList = (props) => (
   </List>
 );
 
-const CourseEdit = (props) => (
+const CourseEdit = (vehicleChoices, courseTypeChoices) => (props) => (
   <Edit {...props}>
     <SimpleForm>
       <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+      <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
+  <SelectInput source="type" choices={courseTypeChoices} validate={[required()]} />
       <TextInput source="description" multiline rows={3} />
       <NumberInput source="price" validate={[required()]} />
       <NumberInput source="required_lessons" validate={[required()]} />
@@ -408,11 +467,12 @@ const CourseEdit = (props) => (
   </Edit>
 );
 
-const CourseCreate = (props) => (
+const CourseCreate = (vehicleChoices, courseTypeChoices) => (props) => (
   <Create {...props}>
     <SimpleForm>
       <TextInput source="name" validate={[required()]} />
-      <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[required()]} />
+      <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
+  <SelectInput source="type" choices={courseTypeChoices} validate={[required()]} />
       <TextInput source="description" multiline rows={3} />
       <NumberInput source="price" validate={[required()]} />
       <NumberInput source="required_lessons" validate={[required()]} />
@@ -425,7 +485,7 @@ const PaymentList = (props) => (
   <List {...props}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
-      <TextField source="enrollment.id" label="Enrollment" />
+  <TextField source="enrollment.label" label="Enrollment" />
       <NumberField source="amount" />
       <DateField source="payment_date" />
       <TextField source="payment_method" />
@@ -434,28 +494,142 @@ const PaymentList = (props) => (
   </List>
 );
 
-const PaymentEdit = (props) => (
+const PaymentEdit = (paymentChoices) => (props) => (
   <Edit {...props}>
     <SimpleForm>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => r.label || `#${r.id}`} />
       </ReferenceInput>
       <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <SelectInput source="payment_method" choices={paymentChoices} validate={[required()]} />
       <TextInput source="description" />
     </SimpleForm>
   </Edit>
 );
 
-const PaymentCreate = (props) => (
+const PaymentCreate = (paymentChoices) => (props) => (
   <Create {...props}>
     <SimpleForm>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-        <SelectInput optionText={(r) => `#${r.id}`} />
+        <SelectInput optionText={(r) => r.label || `#${r.id}`} />
       </ReferenceInput>
       <NumberInput source="amount" validate={[required()]} />
-      <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[required()]} />
+      <SelectInput source="payment_method" choices={paymentChoices} validate={[required()]} />
       <TextInput source="description" />
     </SimpleForm>
   </Create>
 );
+
+// Enrollments
+const EnrollmentList = (props) => (
+  <List {...props}>
+    <Datagrid rowClick="edit">
+      <NumberField source="id" />
+  <TextField source="label" label="Enrollment" />
+      <DateField source="enrollment_date" />
+      <TextField source="status" />
+    </Datagrid>
+  </List>
+);
+
+const EnrollmentEdit = (props) => (
+  <Edit {...props}>
+    <SimpleForm>
+      <ReferenceInput label="Student" source="student_id" reference="students" perPage={50}>
+        <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Course" source="course_id" reference="classes" perPage={50}>
+        <SelectInput optionText={(r) => r.name} />
+      </ReferenceInput>
+      <SelectInput source="status" choices={[
+        { id: 'IN_PROGRESS', name: 'IN_PROGRESS' },
+        { id: 'COMPLETED', name: 'COMPLETED' },
+        { id: 'CANCELED', name: 'CANCELED' },
+      ]} />
+    </SimpleForm>
+  </Edit>
+);
+
+const EnrollmentCreate = (props) => (
+  <Create {...props}>
+    <SimpleForm>
+      <ReferenceInput label="Student" source="student_id" reference="students" perPage={50}>
+        <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Course" source="course_id" reference="classes" perPage={50}>
+        <SelectInput optionText={(r) => r.name} />
+      </ReferenceInput>
+      <SelectInput source="status" choices={[
+        { id: 'IN_PROGRESS', name: 'IN_PROGRESS' },
+        { id: 'COMPLETED', name: 'COMPLETED' },
+        { id: 'CANCELED', name: 'CANCELED' },
+      ]} />
+    </SimpleForm>
+  </Create>
+);
+
+// Lessons
+const LessonList = (props) => (
+  <List {...props}>
+    <Datagrid rowClick="edit">
+      <NumberField source="id" />
+      <ReferenceField source="enrollment.id" reference="enrollments" label="Enrollment">
+        <TextField source="label" />
+      </ReferenceField>
+      <ReferenceField source="instructor.id" reference="instructors" label="Instructor" />
+      <TextField source="vehicle" label="Vehicle" />
+      <DateField source="scheduled_time" />
+      <NumberField source="duration_minutes" />
+      <TextField source="status" />
+    </Datagrid>
+  </List>
+);
+
+const LessonEdit = (props) => (
+  <Edit {...props}>
+    <SimpleForm>
+      <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
+        <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Instructor" source="instructor_id" reference="instructors" perPage={50}>
+        <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Vehicle" source="vehicle" reference="vehicles" perPage={50}>
+        <SelectInput optionText={(r) => `${r.license_plate}` } />
+      </ReferenceInput>
+      <DateInput source="scheduled_time" />
+      <NumberInput source="duration_minutes" />
+      <SelectInput source="status" choices={[
+        { id: 'SCHEDULED', name: 'SCHEDULED' },
+        { id: 'COMPLETED', name: 'COMPLETED' },
+        { id: 'CANCELED', name: 'CANCELED' },
+      ]} />
+      <TextInput source="notes" multiline rows={2} />
+    </SimpleForm>
+  </Edit>
+);
+
+const LessonCreate = (props) => (
+  <Create {...props}>
+    <SimpleForm>
+      <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
+        <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Instructor" source="instructor_id" reference="instructors" perPage={50}>
+        <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
+      </ReferenceInput>
+      <ReferenceInput label="Vehicle" source="vehicle" reference="vehicles" perPage={50}>
+        <SelectInput optionText={(r) => `${r.license_plate}` } />
+      </ReferenceInput>
+      <DateInput source="scheduled_time" />
+      <NumberInput source="duration_minutes" defaultValue={50} />
+      <SelectInput source="status" choices={[
+        { id: 'SCHEDULED', name: 'SCHEDULED' },
+        { id: 'COMPLETED', name: 'COMPLETED' },
+        { id: 'CANCELED', name: 'CANCELED' },
+      ]} />
+      <TextInput source="notes" multiline rows={2} />
+    </SimpleForm>
+  </Create>
+);
+

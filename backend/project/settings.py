@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'django_filters',
     'corsheaders',
     'school',
@@ -160,6 +161,45 @@ REST_FRAMEWORK = {
     ],
     # Remove authentication classes so CSRF/session isn't enforced for unsafe methods.
     'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'EXCEPTION_HANDLER': 'school.exceptions.exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# Structured logging (console) for clearer debugging during development.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s"
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "school": {  # our app
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "django.request": {  # request errors
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
+# drf-spectacular OpenAPI schema settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Driving School API',
+    'DESCRIPTION': 'API schema for the Driving School backend (enums, students, enrollments, etc.).',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 # Extra permissive CORS / CSRF dev settings to prevent forbidden errors while iterating

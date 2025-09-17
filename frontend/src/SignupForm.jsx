@@ -33,12 +33,33 @@ const yyyyMmDdLocal = (d) => {
 
 const MIN_AGE_YEARS = 15;
 
+const COUNTRY_CODES = [
+  { code: '+373', label: 'MD +373' },
+  { code: '+40', label: 'RO +40' },
+  { code: '+49', label: 'DE +49' },
+  { code: '+33', label: 'FR +33' },
+  { code: '+39', label: 'IT +39' },
+  { code: '+41', label: 'CH +41' },
+  { code: '+44', label: 'UK +44' },
+  { code: '+34', label: 'ES +34' },
+  { code: '+351', label: 'PT +351' },
+  { code: '+1', label: 'US +1' },
+  { code: '+7', label: 'RU +7' },
+  { code: '+380', label: 'UA +380' },
+  { code: '+48', label: 'PL +48' },
+  { code: '+386', label: 'SI +386' },
+  { code: '+372', label: 'EE +372' },
+];
+
+const NAME_ALLOWED = /^[A-Za-zÀ-ÖØ-öø-ÿ\- ]*$/;
+
 const SignupForm = () => {
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '+373', // default prefix
+    countryCode: '+373',
+    localPhone: '',
     dob: '',
     status: ''
   });
@@ -48,7 +69,8 @@ const SignupForm = () => {
     firstName: null,
     lastName: null,
     email: null,
-    phone: null,
+  countryCode: null,
+  localPhone: null,
     dob: null,
     status: null
   });
@@ -70,8 +92,8 @@ const SignupForm = () => {
 
   // Disable submit early if obviously incomplete/invalid
   const formIsComplete = useMemo(() => {
-    const { firstName, lastName, email, phone, dob, status } = form;
-    const phoneLooksFilled = phone && phone !== '+' && phone !== '+373';
+  const { firstName, lastName, email, localPhone, dob, status } = form;
+  const phoneLooksFilled = localPhone.trim().length > 3; // minimal digits
     return Boolean(
       firstName.trim() &&
       lastName.trim() &&
@@ -85,7 +107,8 @@ const SignupForm = () => {
   const formIsValid = useMemo(() => {
     if (!formIsComplete) return false;
     if (!isEmail(form.email)) return false;
-    if (!isValidPhoneNumber(form.phone)) return false;
+  const fullPhone = form.countryCode + form.localPhone.replace(/^0+/, '');
+  if (!isValidPhoneNumber(fullPhone)) return false;
     // Age validation (client-side quick check)
     if (!form.dob) return false;
     const dobDate = startOfDay(new Date(form.dob));
@@ -117,16 +140,31 @@ const SignupForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'phone') {
-      const v = sanitizePhone(value);
-      setForm((p) => ({ ...p, phone: v }));
+    if (name === 'firstName' || name === 'lastName') {
+      if (!NAME_ALLOWED.test(value)) return; // block disallowed char
+      setForm(p => ({ ...p, [name]: value }));
+      if (!value.trim()) setFieldError(name, 'required'); else setFieldError(name, null);
+      return;
+    }
 
-      if (!v.trim() || v === '+' || v === '+373') {
-        setFieldError('phone', 'required');
-      } else if (!isValidPhoneNumber(v)) {
-        setFieldError('phone', 'invalidPhone');
-      } else {
-        setFieldError('phone', null);
+    if (name === 'countryCode') {
+      setForm(p => ({ ...p, countryCode: value }));
+      // revalidate phone combined
+      const full = value + form.localPhone.replace(/^0+/, '');
+      if (!form.localPhone.trim()) setFieldError('localPhone', 'required');
+      else if (!isValidPhoneNumber(full)) setFieldError('localPhone', 'invalidPhone');
+      else setFieldError('localPhone', null);
+      return;
+    }
+
+    if (name === 'localPhone') {
+      const digits = value.replace(/[^0-9]/g, '');
+      setForm(p => ({ ...p, localPhone: digits }));
+      if (!digits) setFieldError('localPhone', 'required');
+      else {
+        const full = form.countryCode + digits.replace(/^0+/, '');
+        if (!isValidPhoneNumber(full)) setFieldError('localPhone', 'invalidPhone');
+        else setFieldError('localPhone', null);
       }
       return;
     }
@@ -139,7 +177,7 @@ const SignupForm = () => {
       else setFieldError('email', null);
     }
 
-    if (['firstName', 'lastName', 'dob', 'status'].includes(name)) {
+  if (['dob', 'status'].includes(name)) {
       if (!value) setFieldError(name, 'required');
       else setFieldError(name, null);
     }
@@ -148,17 +186,7 @@ const SignupForm = () => {
   const handleBlur = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'phone') {
-      setForm((p) => {
-        if (!p.phone || p.phone === '+') return { ...p, phone: '+373' };
-        return p;
-      });
-      const v = value || '+373';
-      if (!v || v === '+' || v === '+373') setFieldError('phone', 'required');
-      else if (!isValidPhoneNumber(v)) setFieldError('phone', 'invalidPhone');
-      else setFieldError('phone', null);
-      return;
-    }
+  if (name === 'localPhone' || name === 'countryCode') return; // handled in change
 
     if (name === 'dob') {
       if (!value) {
@@ -182,16 +210,17 @@ const SignupForm = () => {
   const validateAll = () => {
     const dobDate = form.dob ? startOfDay(new Date(form.dob)) : null;
 
+    const fullPhone = form.countryCode + form.localPhone.replace(/^0+/, '');
     const newErrors = {
       firstName: form.firstName.trim() ? null : { key: 'required' },
       lastName: form.lastName.trim() ? null : { key: 'required' },
       email: !form.email.trim()
         ? { key: 'required' }
         : isEmail(form.email) ? null : { key: 'invalidEmail' },
-      phone:
-        (!form.phone || form.phone === '+' || form.phone === '+373')
-          ? { key: 'required' }
-          : isValidPhoneNumber(form.phone) ? null : { key: 'invalidPhone' },
+      localPhone: !form.localPhone.trim()
+        ? { key: 'required' }
+        : isValidPhoneNumber(fullPhone) ? null : { key: 'invalidPhone' },
+      countryCode: null, // always selected
       dob:
         !form.dob
           ? { key: 'required' }
@@ -216,8 +245,9 @@ const SignupForm = () => {
     if (!allGood) return;
 
     // Normalize to E.164
-    let normalizedPhone = form.phone;
-    const phoneObj = parsePhoneNumberFromString(form.phone);
+  const fullPhone = form.countryCode + form.localPhone.replace(/^0+/, '');
+  let normalizedPhone = fullPhone;
+  const phoneObj = parsePhoneNumberFromString(fullPhone);
     if (phoneObj?.isValid()) normalizedPhone = phoneObj.number;
 
     try {
@@ -245,7 +275,8 @@ const SignupForm = () => {
           firstName: '',
           lastName: '',
           email: '',
-          phone: '+373',
+            countryCode: '+373',
+            localPhone: '',
           dob: '',
           status: ''
         });
@@ -253,12 +284,30 @@ const SignupForm = () => {
           firstName: null,
           lastName: null,
           email: null,
-          phone: null,
+          countryCode: null,
+          localPhone: null,
           dob: null,
           status: null
         });
       } else {
-        const backendError = data.error || data.detail || JSON.stringify(data);
+        // Map structured errors if present
+        if (data.errors) {
+          const fieldErrors = { ...errors };
+          // Reset first so cleared fields don't remain marked
+          Object.keys(fieldErrors).forEach(k => fieldErrors[k] = null);
+          Object.entries(data.errors).forEach(([k, v]) => {
+            if (!Array.isArray(v) || !v.length) return;
+            const first = String(v[0]).toLowerCase();
+            if (k === 'first_name') fieldErrors.firstName = { key: 'required' };
+            if (k === 'last_name') fieldErrors.lastName = { key: 'required' };
+            if (k === 'email') fieldErrors.email = first.includes('invalid') ? { key: 'invalidEmail' } : { key: 'invalidEmail' };
+            if (k === 'phone_number') fieldErrors.localPhone = { key: 'invalidPhone' };
+            if (k === 'date_of_birth') fieldErrors.dob = first.includes('future') ? { key: 'invalidDob' } : first.includes('least') ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } } : { key: 'invalidDob' };
+            if (k === 'status') fieldErrors.status = { key: 'required' };
+          });
+          setErrors(fieldErrors);
+        }
+        const backendError = data.message || data.detail || data.error;
         setApiMessage((t.signupFailed || 'Sign up failed') + (backendError ? `: ${backendError}` : ''));
         setDebugInfo({ status: response.status, body: data });
       }
@@ -331,17 +380,29 @@ const SignupForm = () => {
       </Field>
 
       <Field label={t.phone}>
-        <input
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          value={form.phone}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          required
-          aria-invalid={!!errors.phone}
-        />
-        {errors.phone && <span style={{ color: 'red' }}>{renderError(errors.phone)}</span>}
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <select
+            name="countryCode"
+            value={form.countryCode}
+            onChange={handleChange}
+            style={{ width: '35%' }}
+            aria-invalid={!!errors.countryCode}
+          >
+            {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+          </select>
+          <input
+            name="localPhone"
+            type="tel"
+            inputMode="tel"
+            value={form.localPhone}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            required
+            aria-invalid={!!errors.localPhone}
+            placeholder="60123456"
+          />
+        </div>
+        {errors.localPhone && <span style={{ color: 'red' }}>{renderError(errors.localPhone)}</span>}
       </Field>
 
       <Field label={t.dob}>

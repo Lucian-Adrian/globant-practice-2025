@@ -2,15 +2,18 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:13-alpine
+    # Django 5 requires PostgreSQL >=14. Use 15 for wider availability.
+    image: postgres:15-alpine
     env_file:
       - .env
     environment:
       POSTGRES_USER: drivingschool
       POSTGRES_PASSWORD: drivingschoolpwd
       POSTGRES_DB: drivingschool
+    # Use a new volume name so we don't attempt to start a PG15 server on an old
+    # PG13 data directory (which would error out requiring pg_upgrade).
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres15_data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
     healthcheck:
@@ -55,4 +58,4 @@ services:
     command: ["npm", "start"]
 
 volumes:
-  postgres_data:
+  postgres15_data:
