@@ -20,8 +20,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           }
         />
         <Route path="/test-jwt" element={<TestJWT />} />
-        {/* Let React-Admin handle all other routes, including /login */}
-        <Route path="/*" element={<App />} />
+        {/* Admin mounted under /admin - RA handles /admin/login etc. */}
+        <Route path="/admin/*" element={<App />} />
+        {/* Student portal at root */}
+        <Route
+          path="/"
+          element={
+            <LanguageProvider>
+              <SignupForm />
+            </LanguageProvider>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

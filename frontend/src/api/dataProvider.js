@@ -1,0 +1,133 @@
+// Extracted dataProvider from App.jsx (working logic only)
+import { fetchUtils } from 'react-admin';
+import { withAuthHeaders } from '../authProvider';
+
+const baseApi = '/api';
+
+const mapResource = (resource) => {
+  const mapping = { classes: 'courses' };
+  const name = mapping[resource] || resource;
+  return `${name}/`;
+};
+
+const httpClient = withAuthHeaders(fetchUtils.fetchJson);
+const fetchAuthed = withAuthHeaders(window.fetch.bind(window));
+
+const buildQuery = (params) => {
+  const { page, perPage } = params.pagination || { page: 1, perPage: 25 };
+  const query = new URLSearchParams();
+
+  query.set('page', String(page));
+  query.set('page_size', String(perPage));
+
+  if (params.filter) {
+    Object.entries(params.filter).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === '') return;
+      const m = k.match(/^(.*)_(gte|lte|gt|lt)$/);
+      const key = m ? `${m[1]}__${m[2]}` : k;
+      query.set(key, String(v));
+    });
+  }
+
+  if (params.sort && params.sort.field) {
+    const { field, order } = params.sort;
+    const ordering = order === 'DESC' ? `-${field}` : field;
+    query.set('ordering', ordering);
+  }
+
+  return query.toString();
+};
+
+const extractFieldErrors = (body) => {
+  if (!body) return {};
+  if (!body.errors || typeof body.errors !== 'object') return body;
+  const map = {};
+  for (const [field, messages] of Object.entries(body)) {
+    if (Array.isArray(messages) && messages.length) map[field] = messages[0];
+  }
+  return map;
+};
+
+const dataProvider = {
+  getList: async (resource, params) => {
+    const resName = mapResource(resource);
+    const qs = buildQuery(params);
+    const url = `${baseApi}/${resName}?${qs}`;
+    const { json } = await httpClient(url);
+    const data = Array.isArray(json) ? json : json.results || [];
+    const total = Array.isArray(json) ? json.length : json.count ?? data.length;
+    return { data, total };
+  },
+  getOne: async (resource, params) => {
+    const resName = mapResource(resource);
+    const url = `${baseApi}/${resName}${params.id}/`;
+    const { json } = await httpClient(url);
+    return { data: json };
+  },
+  getMany: async (resource, params) => {
+    const items = await Promise.all(
+      params.ids.map((id) => dataProvider.getOne(resource, { id }).then((r) => r.data))
+    );
+    return { data: items };
+  },
+  getManyReference: async (resource, params) => {
+    const filter = { ...(params.filter || {}), [params.target]: params.id };
+    return dataProvider.getList(resource, { ...params, filter });
+  },
+  update: async (resource, params) => {
+    const resName = mapResource(resource);
+    const url = `${baseApi}/${resName}${params.id}/`;
+    const resp = await fetchAuthed(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    let body = {};
+    try { body = await resp.json(); } catch (_) {}
+    if (!resp.ok) {
+      const fieldErrors = extractFieldErrors(body);
+      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
+      const error = new Error(baseMessage);
+      error.status = resp.status;
+      error.body = fieldErrors;
+      error.backend = body;
+      throw error;
+    }
+    return { data: body };
+  },
+  updateMany: async (resource, params) => {
+    const results = [];
+    for (const id of params.ids) {
+      const r = await dataProvider.update(resource, { id, data: params.data });
+      results.push(r.data.id);
+    }
+    return { data: results };
+  },
+  create: async (resource, params) => {
+    const resName = mapResource(resource);
+    const url = `${baseApi}/${resName}`;
+    const resp = await fetchAuthed(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    let body = {};
+    try { body = await resp.json(); } catch (_) {}
+    if (!resp.ok) {
+      const fieldErrors = extractFieldErrors(body);
+      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
+      const error = new Error(baseMessage);
+      error.status = resp.status;
+      error.body = fieldErrors;
+      error.backend = body;
+      throw error;
+    }
+    return { data: body };
+  },
+  delete: async (resource, params) => {
+    const resName = mapResource(resource);
+    const url = `${baseApi}/${resName}${params.id}/`;
+    await httpClient(url, { method: 'DELETE' });
+    return { data: { id: params.id } };
+  },
+  deleteMany: async (resource, params) => {
+    const results = await Promise.all(
+      params.ids.map((id) => dataProvider.delete(resource, { id }).then((r) => r.data.id))
+    );
+    return { data: results };
+  },
+};
+
+export default dataProvider;
