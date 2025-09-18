@@ -159,8 +159,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
     ],
-    # Remove authentication classes so CSRF/session isn't enforced for unsafe methods.
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    # Enable JWT auth for clients that send Authorization: Bearer <token>.
+    # Endpoints remain accessible due to AllowAny permissions by default;
+    # we can tighten per-view later by setting IsAuthenticated.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     'EXCEPTION_HANDLER': 'school.exceptions.exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
@@ -218,3 +222,14 @@ DISABLE_CSRF = os.getenv('DISABLE_CSRF', '1') == '1'
 if DISABLE_CSRF:
     # Remove CsrfViewMiddleware dynamically so unsafe methods don't raise 403
     MIDDLEWARE = [m for m in MIDDLEWARE if m != 'django.middleware.csrf.CsrfViewMiddleware']
+
+# SimpleJWT settings (sane dev defaults; override via env in production)
+from datetime import timedelta  # noqa: E402
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_MINUTES', '30'))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_DAYS', '7'))),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'SIGNING_KEY': os.getenv('JWT_SIGNING_KEY', SECRET_KEY),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

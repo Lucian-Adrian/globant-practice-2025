@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     # Django 5 requires PostgreSQL >=14. Use 15 for wider availability.

@@ -5,6 +5,7 @@ import NameInput from './components/NameInput';
 import PhoneInput from './components/PhoneInput';
 import LicensePlateInput from './components/LicensePlateInput';
 // phone utils can be used later for composite inputs
+import { withAuthHeaders, authProvider } from './authProvider';
 
 import * as React from 'react';
 import {
@@ -47,11 +48,10 @@ const mapResource = (resource) => {
   return `${name}/`;
 };
 
-const httpClient = (url, options = {}) => {
-  const opts = { ...options };
-  opts.headers = new Headers(opts.headers || { 'Content-Type': 'application/json' });
-  return fetchUtils.fetchJson(url, opts);
-};
+// JSON client that automatically adds Authorization header if a token exists
+const httpClient = withAuthHeaders(fetchUtils.fetchJson);
+// Raw fetch wrapper (for non-JSON requests like FormData) with Authorization header
+const fetchAuthed = withAuthHeaders(window.fetch.bind(window));
 
 const buildQuery = (params) => {
   const { page, perPage } = params.pagination || { page: 1, perPage: 25 };
@@ -222,7 +222,7 @@ const dataProvider = {
   update: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-    const resp = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    const resp = await fetchAuthed(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
     let body = {};
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
@@ -247,7 +247,7 @@ const dataProvider = {
   create: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}`;
-    const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    const resp = await fetchAuthed(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
     let body = {};
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
@@ -283,7 +283,8 @@ export default function App() {
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
   const paymentChoices = enums ? mapToChoices(enums.payment_method) : FALLBACK_PAYMENT;
   return (
-    <Admin dataProvider={dataProvider}>
+    <>
+      <Admin dataProvider={dataProvider} authProvider={authProvider}>
       <Resource name="students" list={StudentList(studentChoices)} edit={StudentEdit(studentChoices)} create={StudentCreate(studentChoices)} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit(vehicleChoices)} create={VehicleCreate(vehicleChoices)} />
@@ -291,7 +292,8 @@ export default function App() {
   <Resource name="payments" list={PaymentList} edit={PaymentEdit(paymentChoices)} create={PaymentCreate(paymentChoices)} />
   <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
   <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-    </Admin>
+  </Admin>
+    </>
   );
 }
 

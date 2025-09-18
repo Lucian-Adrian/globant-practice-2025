@@ -1,11 +1,13 @@
 from rest_framework import viewsets, mixins, decorators, response, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.http import HttpResponse
 import csv
 from io import StringIO, TextIOWrapper
 from django.db import models
 from django.utils.timezone import now
 from datetime import timedelta
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
@@ -183,3 +185,54 @@ def enums_meta(request):
     resp["ETag"] = etag
     resp["Cache-Control"] = "max-age=60"  # short client cache
     return resp
+
+
+@decorators.api_view(["GET"])  # type: ignore[misc]
+@decorators.permission_classes([IsAuthenticated])
+def me(request):
+    """Return basic info about the authenticated user (JWT-protected)."""
+    user = request.user
+    data = {
+        "id": getattr(user, "id", None),
+        "username": getattr(user, "username", "anonymous"),
+        "is_staff": getattr(user, "is_staff", False),
+        "is_superuser": getattr(user, "is_superuser", False),
+    }
+    return response.Response(data)
+
+
+@decorators.api_view(["GET"])  # type: ignore[misc]
+@decorators.permission_classes([AllowAny])
+def check_username(request):
+    """DEBUG-only: check if a username already exists."""
+    if not settings.DEBUG:
+        return response.Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+    username = (request.GET.get('username') or '').strip()
+    if not username:
+        return response.Response({"detail": "username required"}, status=status.HTTP_400_BAD_REQUEST)
+    User = get_user_model()
+    exists = User.objects.filter(username=username).exists()
+    return response.Response({"username": username, "exists": exists})
+
+
+@decorators.api_view(["POST"])  # type: ignore[misc]
+@decorators.permission_classes([AllowAny])
+def signup(request):
+    """DEBUG-only: create a new user with username/password/email.
+
+    Body: { username, password, email }
+    Returns 201 on create, 409 if exists.
+    """
+    if not settings.DEBUG:
+        return response.Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+    data = request.data or {}
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+    email = (data.get('email') or '').strip()
+    if not username or not password:
+        return response.Response({"detail": "username and password required"}, status=status.HTTP_400_BAD_REQUEST)
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return response.Response({"detail": "User already exists"}, status=status.HTTP_409_CONFLICT)
+    user = User.objects.create_user(username=username, password=password, email=email or None)
+    return response.Response({"id": user.id, "username": user.username, "email": user.email}, status=status.HTTP_201_CREATED)
