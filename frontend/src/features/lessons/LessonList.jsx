@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { List, Datagrid, NumberField, TextField, DateField, ReferenceField } from 'react-admin';
+import LessonListAside from './LessonListAside.jsx';
 
 export default function LessonList(props) {
   return (
-    <List {...props}>
+    <List {...props} aside={<LessonListAside />}> 
       <Datagrid rowClick="edit">
         <NumberField source="id" />
         <ReferenceField source="enrollment.id" reference="enrollments" label="Enrollment">

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { List, Datagrid, NumberField, TextField, DateField } from 'react-admin';
+import EnrollmentListAside from './EnrollmentListAside.jsx';
 
 export default function EnrollmentList(props) {
   return (
-    <List {...props}>
+    <List {...props} aside={<EnrollmentListAside />}> 
       <Datagrid rowClick="edit">
         <NumberField source="id" />
         <TextField source="label" label="Enrollment" />
