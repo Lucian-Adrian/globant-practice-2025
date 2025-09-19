@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { TopToolbar, Button, CreateButton, useListContext, useNotify, useRefresh } from 'react-admin';
-import { withAuthHeaders } from '../../authProvider';
+// Prefer centralized http client for token injection
+import { rawFetch, API_PREFIX } from '../../api/httpClient';
 import ImportButton from '../../shared/components/ImportButton';
 
 // Use relative base URL for endpoints
-const baseApi = '/api';
+const baseApi = API_PREFIX;
 
 // Build only filter + sort query (no pagination)
 const buildFilterSortQuery = (filterValues, sort) => {
@@ -30,7 +31,7 @@ export default function StudentListActions() {
   const notify = useNotify();
   const refresh = useRefresh();
 
-  const fetchAuthed = React.useMemo(() => withAuthHeaders(window.fetch.bind(window)), []);
+  const fetchAuthed = rawFetch; // already injects Authorization header
 
   const onExport = async () => {
     try {

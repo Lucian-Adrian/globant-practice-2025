@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useInput } from 'react-admin';
-import { validatePhone, toE164 } from '../../phoneUtils';
+import { validatePhone, toE164 } from '../utils/phone';
 
 const COUNTRY_CODES = [
   '+373','+40','+49','+33','+39','+41','+44','+34','+351','+1','+7','+380','+48','+386','+372'

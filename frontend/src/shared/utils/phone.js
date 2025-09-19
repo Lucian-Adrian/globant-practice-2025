@@ -1,0 +1,14 @@
+// Moved from src/phoneUtils.js
+export function toE164(countryCode, localDigits) {
+  const cc = (countryCode || '').replace(/[^+0-9]/g, '');
+  const local = (localDigits || '').replace(/[^0-9]/g, '');
+  if (!cc.startsWith('+')) return `+${cc}${local}`;
+  return `${cc}${local}`;
+}
+export function validatePhone(countryCode, localDigits) {
+  const local = (localDigits || '').replace(/[^0-9]/g, '');
+  if (local.length < 6 || local.length > 12) return false;
+  const combined = `${countryCode || ''}${local}`.replace(/[^0-9]/g, '');
+  if (combined.length < 8 || combined.length > 16) return false;
+  return true;
+}

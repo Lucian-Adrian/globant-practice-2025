@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { List, Datagrid, NumberField, TextField } from 'react-admin';
+import CourseListAside from './CourseListAside.jsx';
 
 export default function CourseList(props) {
   return (
-    <List {...props}>
+    <List {...props} aside={<CourseListAside />}> 
       <Datagrid rowClick="edit">
         <NumberField source="id" />
         <TextField source="name" />

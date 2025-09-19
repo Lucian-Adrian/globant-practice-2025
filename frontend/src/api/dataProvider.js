@@ -1,8 +1,7 @@
 // Extracted dataProvider from App.jsx (working logic only)
-import { fetchUtils } from 'react-admin';
-import { withAuthHeaders } from '../authProvider';
+import { httpJson, rawFetch, API_PREFIX } from './httpClient';
 
-const baseApi = '/api';
+const baseApi = API_PREFIX; // consistent single source
 
 const mapResource = (resource) => {
   const mapping = { classes: 'courses' };
@@ -10,8 +9,7 @@ const mapResource = (resource) => {
   return `${name}/`;
 };
 
-const httpClient = withAuthHeaders(fetchUtils.fetchJson);
-const fetchAuthed = withAuthHeaders(window.fetch.bind(window));
+// httpJson adds auth header automatically; rawFetch for manual handling
 
 const buildQuery = (params) => {
   const { page, perPage } = params.pagination || { page: 1, perPage: 25 };
@@ -53,7 +51,7 @@ const dataProvider = {
     const resName = mapResource(resource);
     const qs = buildQuery(params);
     const url = `${baseApi}/${resName}?${qs}`;
-    const { json } = await httpClient(url);
+  const { json } = await httpJson(url);
     const data = Array.isArray(json) ? json : json.results || [];
     const total = Array.isArray(json) ? json.length : json.count ?? data.length;
     return { data, total };
@@ -61,7 +59,7 @@ const dataProvider = {
   getOne: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-    const { json } = await httpClient(url);
+  const { json } = await httpJson(url);
     return { data: json };
   },
   getMany: async (resource, params) => {
@@ -77,7 +75,7 @@ const dataProvider = {
   update: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-    const resp = await fetchAuthed(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+  const resp = await rawFetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
     let body = {};
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
@@ -102,7 +100,7 @@ const dataProvider = {
   create: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}`;
-    const resp = await fetchAuthed(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+  const resp = await rawFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
     let body = {};
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
@@ -119,7 +117,7 @@ const dataProvider = {
   delete: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-    await httpClient(url, { method: 'DELETE' });
+  await httpJson(url, { method: 'DELETE' });
     return { data: { id: params.id } };
   },
   deleteMany: async (resource, params) => {

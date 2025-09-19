@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useLanguage } from './LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 
 //  Keep Field outside to avoid remount
@@ -60,8 +60,7 @@ const SignupForm = () => {
     email: '',
     countryCode: '+373',
     localPhone: '',
-    dob: '',
-    status: ''
+    dob: ''
   });
 
   // Store error KEYS (and optional params), not final strings → re-translate on language switch
@@ -69,16 +68,15 @@ const SignupForm = () => {
     firstName: null,
     lastName: null,
     email: null,
-  countryCode: null,
-  localPhone: null,
-    dob: null,
-    status: null
+    countryCode: null,
+    localPhone: null,
+    dob: null
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [apiMessage, setApiMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const { t, lang, toggleLanguage } = useLanguage();
+  const { t, i18n } = useTranslation(['common','validation']);
 
   const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
 
@@ -92,15 +90,14 @@ const SignupForm = () => {
 
   // Disable submit early if obviously incomplete/invalid
   const formIsComplete = useMemo(() => {
-  const { firstName, lastName, email, localPhone, dob, status } = form;
+  const { firstName, lastName, email, localPhone, dob } = form;
   const phoneLooksFilled = localPhone.trim().length > 3; // minimal digits
     return Boolean(
       firstName.trim() &&
       lastName.trim() &&
       email.trim() &&
       phoneLooksFilled &&
-      dob &&
-      status
+      dob
     );
   }, [form]);
 
@@ -177,7 +174,7 @@ const SignupForm = () => {
       else setFieldError('email', null);
     }
 
-  if (['dob', 'status'].includes(name)) {
+  if (name === 'dob') {
       if (!value) setFieldError(name, 'required');
       else setFieldError(name, null);
     }
@@ -229,7 +226,7 @@ const SignupForm = () => {
             : dobDate > cutoff
               ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } }
               : null,
-      status: form.status ? null : { key: 'required' },
+      // status removed from public signup
     };
 
     setErrors(newErrors);
@@ -278,7 +275,7 @@ const SignupForm = () => {
             countryCode: '+373',
             localPhone: '',
           dob: '',
-          status: ''
+          
         });
         setErrors({
           firstName: null,
@@ -286,8 +283,7 @@ const SignupForm = () => {
           email: null,
           countryCode: null,
           localPhone: null,
-          dob: null,
-          status: null
+          dob: null
         });
       } else {
         // Map structured errors if present
@@ -303,7 +299,7 @@ const SignupForm = () => {
             if (k === 'email') fieldErrors.email = first.includes('invalid') ? { key: 'invalidEmail' } : { key: 'invalidEmail' };
             if (k === 'phone_number') fieldErrors.localPhone = { key: 'invalidPhone' };
             if (k === 'date_of_birth') fieldErrors.dob = first.includes('future') ? { key: 'invalidDob' } : first.includes('least') ? { key: 'tooYoung', params: { years: MIN_AGE_YEARS } } : { key: 'invalidDob' };
-            if (k === 'status') fieldErrors.status = { key: 'required' };
+            // ignore status errors; signup no longer sends it
           });
           setErrors(fieldErrors);
         }
@@ -333,7 +329,7 @@ const SignupForm = () => {
       }}
     >
       <div style={{ position: 'absolute', top: 20, right: 20 }}>
-        <select value={lang} onChange={e => toggleLanguage(e.target.value)}>
+        <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
           <option value="en">English</option>
           <option value="ro">Română</option>
           <option value="ru">Русский</option>
@@ -419,21 +415,7 @@ const SignupForm = () => {
         {errors.dob && <span style={{ color: 'red' }}>{renderError(errors.dob)}</span>}
       </Field>
 
-      <Field label={t.status}>
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          required
-          aria-invalid={!!errors.status}
-        >
-          <option value="">{t.selectStatus}</option>
-          <option value="active">{t.active}</option>
-          <option value="inactive">{t.inactive}</option>
-        </select>
-        {errors.status && <span style={{ color: 'red' }}>{renderError(errors.status)}</span>}
-      </Field>
+      {/* Status removed from public signup; backend defaults to PENDING */}
 
       <button
         type="submit"

@@ -27,7 +27,7 @@ services:
     environment:
       # Keep only app-specific overrides here; database creds come from .env
       DJANGO_SETTINGS_MODULE: project.settings
-      DJANGO_COLLECTSTATIC: "1"
+      DISABLE_COLLECTSTATIC: "1"
       # FRONTEND_ORIGIN provided in .env; fallback handled in settings.py
     volumes:
       - ./backend:/app
@@ -47,8 +47,8 @@ services:
       - "3000:3000"
     environment:
       - CHOKIDAR_USEPOLLING=true
-      # Optionally pass API base URL to browser build; use relative /api otherwise
-      - VITE_API_BASE_URL=http://localhost:8000
+      # Proxy target must be reachable FROM the frontend container; use service name not localhost
+      - VITE_API_BASE_URL=http://backend:8000
     stdin_open: true
     tty: true
     depends_on:

@@ -17,7 +17,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "email": {"error_messages": {"required": "Email is required", "blank": "Email is required", "invalid": "Invalid email format"}},
             "phone_number": {"error_messages": {"required": "Phone number is required", "blank": "Phone number is required"}},
             "date_of_birth": {"error_messages": {"required": "Date of birth is required", "invalid": "Invalid date format"}},
-            "status": {"error_messages": {"required": "Status is required", "blank": "Status is required"}},
+            # Status defaults to PENDING for new signups; not required on public portal.
+            "status": {"required": False},
         }
 
     def validate_first_name(self, value: str) -> str:  # noqa: D401

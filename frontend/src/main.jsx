@@ -1,36 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
+import App from './app/App.jsx';
 import TestJWT from './TestJWT.jsx';
-import SignupForm from './SignupForm.jsx';
-import { LanguageProvider } from './LanguageContext.jsx';
+import SignupForm from './features/portal/SignupForm.jsx';
+import { initI18n } from './i18n/index.js';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+initI18n();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Public signup form (localized) */}
-        <Route
-          path="/signup"
-          element={
-            <LanguageProvider>
-              <SignupForm />
-            </LanguageProvider>
-          }
-        />
+        <Route path="/signup" element={<SignupForm />} />
         <Route path="/test-jwt" element={<TestJWT />} />
-        {/* Admin mounted under /admin - RA handles /admin/login etc. */}
         <Route path="/admin/*" element={<App />} />
-        {/* Student portal at root */}
-        <Route
-          path="/"
-          element={
-            <LanguageProvider>
-              <SignupForm />
-            </LanguageProvider>
-          }
-        />
+        <Route path="/" element={<SignupForm />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
