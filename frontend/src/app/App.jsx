@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Admin, Resource } from 'react-admin';
+import { Admin, Resource, CustomRoutes } from 'react-admin';
 import { raI18nProvider } from '../i18n/index.js';
 import Layout from './Layout.jsx';
 import dataProvider from '../api/dataProvider';
@@ -13,6 +13,9 @@ import { PaymentList, makePaymentEdit, makePaymentCreate } from '../features/pay
 import { EnrollmentList, EnrollmentEdit, EnrollmentCreate } from '../features/enrollments';
 import { LessonList, LessonEdit, LessonCreate } from '../features/lessons';
 import { VEHICLE_CATEGORIES as FALLBACK_VEHICLE, STUDENT_STATUS as FALLBACK_STUDENT, PAYMENT_METHODS as FALLBACK_PAYMENT } from '../shared/constants/drivingSchool';
+import { Route } from 'react-router-dom';
+import StudentsKanban from '../features/students/kanban/StudentsKanban.jsx';
+import Dashboard from './Dashboard.jsx';
 
 export default function App() {
   const [enums, setEnums] = React.useState(null);
@@ -22,7 +25,10 @@ export default function App() {
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
   const paymentChoices = enums ? mapToChoices(enums.payment_method) : FALLBACK_PAYMENT;
   return (
-  <Admin basename="/admin" dataProvider={dataProvider} authProvider={authProvider} i18nProvider={raI18nProvider} layout={Layout}>
+  <Admin basename="/admin" dataProvider={dataProvider} authProvider={authProvider} i18nProvider={raI18nProvider} layout={Layout} dashboard={Dashboard}>
+      <CustomRoutes>
+        <Route path="students/board" element={<StudentsKanban />} />
+      </CustomRoutes>
       <Resource name="students" list={makeStudentList()} edit={makeStudentEdit(studentChoices)} create={makeStudentCreate()} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={makeVehicleEdit(vehicleChoices)} create={makeVehicleCreate(vehicleChoices)} />
