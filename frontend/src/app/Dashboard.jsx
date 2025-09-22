@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
-import { useDataProvider } from 'react-admin';
 
 export default function Dashboard() {
-  const dataProvider = useDataProvider();
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
@@ -11,10 +9,6 @@ export default function Dashboard() {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
-      try {
-        const res = await dataProvider.getList('utils', { pagination: { page: 1, perPage: 1 } });
-        // getList on 'utils' doesn't make sense; call custom endpoint via http
-      } catch (_) {}
       try {
         const resp = await fetch('/api/utils/summary/');
         if (!resp.ok) throw new Error('Failed to load');
@@ -27,7 +21,7 @@ export default function Dashboard() {
       }
     })();
     return () => { mounted = false; };
-  }, [dataProvider]);
+  }, []);
 
   return (
     <Card>

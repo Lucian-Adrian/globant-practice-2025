@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useDataProvider, useNotify, useUpdate } from 'react-admin';
+import { useDataProvider, useNotify } from 'react-admin';
 import { DndContext, MouseSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
@@ -20,7 +20,7 @@ export default function StudentsKanban() {
     useSensor(TouchSensor),
     useSensor(KeyboardSensor)
   );
-  const [update] = useUpdate();
+  // no need for useUpdate; we use dataProvider.update directly
 
   const [search, setSearch] = React.useState('');
   const [columns, setColumns] = React.useState(() => ({
@@ -31,24 +31,22 @@ export default function StudentsKanban() {
   }));
   const [activeCard, setActiveCard] = React.useState(null); // for overlay preview
 
-  const fetchColumn = React.useCallback(async (statusId, perPageOverride) => {
+  const fetchColumn = React.useCallback(async (statusId, perPageArg = INITIAL_PER_PAGE) => {
     setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], loading: true } }));
     try {
-      const perPage = perPageOverride ?? columns[statusId].perPage;
       const { data, total } = await dataProvider.getList('students', {
-        pagination: { page: 1, perPage },
+        pagination: { page: 1, perPage: perPageArg },
         sort: { field: 'id', order: 'ASC' },
         filter: { status: statusId },
       });
-      setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], items: data, loading: false, total, perPage } }));
+      setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], items: data, loading: false, total, perPage: perPageArg } }));
     } catch (e) {
       setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], loading: false } }));
       notify(e?.message || 'Failed to load students', { type: 'warning' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataProvider, notify]);
 
-  React.useEffect(() => { STATUSES.forEach((s) => { fetchColumn(s); }); }, [fetchColumn]);
+  React.useEffect(() => { STATUSES.forEach((s) => { fetchColumn(s, INITIAL_PER_PAGE); }); }, [fetchColumn]);
 
   const onLoadMore = (statusId) => {
     const next = (columns[statusId]?.perPage || INITIAL_PER_PAGE) + LOAD_MORE_STEP;
@@ -97,7 +95,7 @@ export default function StudentsKanban() {
   };
 
   const onDragStart = (event) => {
-    const id = event.active?.id;
+  const id = event.active?.id;
     if (!id) return;
     const rec = getRecord(id);
     setActiveCard(rec || null);
@@ -112,12 +110,13 @@ export default function StudentsKanban() {
     const to = over;
     if (!from || !to || from === to) return;
 
-    const record = getRecord(id);
-    moveLocal(id, from, to); // optimistic
+  const record = getRecord(id);
+  moveLocal(id, from, to); // optimistic
 
     try {
-      const nextStatus = String(to).toUpperCase();
-      await dataProvider.update('students', { id, data: { status: nextStatus }, previousData: record });
+  const nextStatus = String(to).toUpperCase();
+  const realId = Number(record?.id ?? id);
+  await dataProvider.update('students', { id: realId, data: { status: nextStatus }, previousData: record });
       // Light refresh of the two impacted columns to ensure server state is reflected
       fetchColumn(from);
       fetchColumn(nextStatus);
