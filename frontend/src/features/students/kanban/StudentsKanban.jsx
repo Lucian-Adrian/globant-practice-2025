@@ -114,8 +114,8 @@ export default function StudentsKanban() {
     moveLocal(id, from, to); // optimistic
 
     try {
-  const nextStatus = String(to).toUpperCase();
-  const realId = Number(record?.id ?? id);
+      const nextStatus = String(to).toUpperCase();
+      const realId = Number(record?.id ?? id);
   await dataProvider.update('students', { id: realId, data: { status: nextStatus }, previousData: record });
       // Light refresh of the two impacted columns to ensure server state is reflected
       fetchColumn(from);
