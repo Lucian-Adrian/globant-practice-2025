@@ -75,7 +75,7 @@ const dataProvider = {
   update: async (resource, params) => {
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
-  const resp = await rawFetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
+    const resp = await rawFetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
     let body = {};
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {

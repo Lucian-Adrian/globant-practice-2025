@@ -78,6 +78,16 @@ const languageData = {
       languages: { en: 'English', ro: 'Romanian', ru: 'Russian' },
   filters: { last_activity:'Last activity', today:'Today', this_week:'This week', last_week:'Last week', this_month:'This month', last_month:'Last month', earlier:'Earlier', status:'Status', active:'Active', inactive:'Inactive', graduated:'Graduated', pending:'Pending', in_progress:'In progress', completed:'Completed', canceled:'Canceled', scheduled:'Scheduled', payment_method:'Payment method', cash:'Cash', card:'Card', transfer:'Transfer', type:'Type', theory:'Theory', practice:'Practice', availability:'Availability', available:'Available', unavailable:'Unavailable', category:'Category' },
       vehicles: { filters: { ok:'OK', due:'Due', overdue:'Overdue' } },
+      students: {
+        board: {
+          title: 'Students Board',
+          search: { placeholder: 'Search by name or email…' },
+          column: { pending: 'Pending', active: 'Active', graduated: 'Graduated', inactive: 'Inactive' },
+          actions: { load_more: 'Load more' },
+          empty: 'No items',
+          loading: 'Loading…'
+        }
+      }
     },
     validation: {
       required: 'This field is required',
@@ -122,6 +132,16 @@ const languageData = {
       languages: { en: 'Engleză', ro: 'Română', ru: 'Rusă' },
   filters: { last_activity:'Ultima activitate', today:'Astăzi', this_week:'Săptămâna aceasta', last_week:'Săptămâna trecută', this_month:'Luna aceasta', last_month:'Luna trecută', earlier:'Anterior', status:'Statut', active:'Activ', inactive:'Inactiv', graduated:'Absolvit', pending:'În așteptare', in_progress:'În derulare', completed:'Finalizat', canceled:'Anulat', scheduled:'Programat', payment_method:'Metodă plată', cash:'Numerar', card:'Card', transfer:'Transfer', type:'Tip', theory:'Teorie', practice:'Practică', availability:'Disponibilitate', available:'Disponibil', unavailable:'Indisponibil', category:'Categorie' },
       vehicles: { filters: { ok:'OK', due:'Scadent', overdue:'Depășit' } },
+      students: {
+        board: {
+          title: 'Tablă Studenți',
+          search: { placeholder: 'Căutați după nume sau email…' },
+          column: { pending: 'În așteptare', active: 'Activ', graduated: 'Absolvit', inactive: 'Inactiv' },
+          actions: { load_more: 'Încarcă mai mult' },
+          empty: 'Fără elemente',
+          loading: 'Se încarcă…'
+        }
+      }
     },
     validation: {
       required: 'Acest câmp este obligatoriu',
@@ -166,6 +186,16 @@ const languageData = {
       languages: { en: 'Английский', ro: 'Румынский', ru: 'Русский' },
   filters: { last_activity:'Последняя активность', today:'Сегодня', this_week:'Эта неделя', last_week:'Прошлая неделя', this_month:'Этот месяц', last_month:'Прошлый месяц', earlier:'Ранее', status:'Статус', active:'Активный', inactive:'Неактивный', graduated:'Выпустился', pending:'В ожидании', in_progress:'В процессе', completed:'Завершено', canceled:'Отменено', scheduled:'Запланировано', payment_method:'Метод оплаты', cash:'Наличные', card:'Карта', transfer:'Перевод', type:'Тип', theory:'Теория', practice:'Практика', availability:'Доступность', available:'Доступен', unavailable:'Недоступен', category:'Категория' },
       vehicles: { filters: { ok:'OK', due:'Скоро сервис', overdue:'Просрочено' } },
+      students: {
+        board: {
+          title: 'Доска студентов',
+          search: { placeholder: 'Поиск по имени или email…' },
+          column: { pending: 'В ожидании', active: 'Активный', graduated: 'Выпустился', inactive: 'Неактивный' },
+          actions: { load_more: 'Загрузить еще' },
+          empty: 'Пусто',
+          loading: 'Загрузка…'
+        }
+      }
     },
     validation: {
       required: 'Это обязательное поле',
