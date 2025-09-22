@@ -110,8 +110,8 @@ export default function StudentsKanban() {
     const to = over;
     if (!from || !to || from === to) return;
 
-  const record = getRecord(id);
-  moveLocal(id, from, to); // optimistic
+    const record = getRecord(id);
+    moveLocal(id, from, to); // optimistic
 
     try {
   const nextStatus = String(to).toUpperCase();
