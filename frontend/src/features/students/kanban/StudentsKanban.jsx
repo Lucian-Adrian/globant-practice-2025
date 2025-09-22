@@ -95,7 +95,7 @@ export default function StudentsKanban() {
   };
 
   const onDragStart = (event) => {
-  const id = event.active?.id;
+    const id = event.active?.id;
     if (!id) return;
     const rec = getRecord(id);
     setActiveCard(rec || null);
