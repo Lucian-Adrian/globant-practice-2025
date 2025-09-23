@@ -1,6 +1,7 @@
 // Moved from src/SignupForm.jsx unchanged for now except updated relative imports.
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 
 const Field = ({ label, children }) => (
@@ -155,6 +156,9 @@ const SignupForm = () => {
   <button type="submit" disabled={submitting || !formIsValid} style={{ padding:'0.65rem 1rem', fontSize:'1rem', cursor: formIsValid && !submitting ? 'pointer':'not-allowed' }}>{submitting ? t('common:submitting') : t('common:signUp')}</button>
   {apiMessage && (<div style={{ marginTop:'.5rem', color: apiMessage.startsWith(t('common:signupSuccess')) ? 'green':'red' }}>{apiMessage}</div>)}
   {debugInfo && (<pre style={{ background:'#f7f7f7', padding:'.5rem', fontSize:'.7rem', overflowX:'auto' }}>{t('common:debugLabel')}: {JSON.stringify(debugInfo, null, 2)}</pre>)}
+  <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+    {t('common:haveAccount')} <Link to="/login">{t('common:login')}</Link>
+  </div>
     </form>
   );
 };

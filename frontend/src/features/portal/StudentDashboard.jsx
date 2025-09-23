@@ -127,8 +127,46 @@ const StudentDashboard = () => {
                   <div key={course.id} style={{ border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem' }}>
                     <p><strong>{course.name}</strong></p>
                     <p>{t('common:category', 'Category')}: {course.category}</p>
-                    <p>{t('common:type', 'Type')}: {course.course_type}</p>
+                    <p>{t('common:type', 'Type')}: {course.type}</p>
                     <p>{t('common:price', 'Price')}: ${course.price}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lessons */}
+          {data.lessons && data.lessons.length > 0 && (
+            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+              <h2>{t('common:yourLessons', 'Your Lessons')}</h2>
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {data.lessons.map(lesson => (
+                  <div key={lesson.id} style={{ border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem' }}>
+                    <p><strong>{lesson.enrollment.course.name}</strong></p>
+                    <p>{t('common:date', 'Date')}: {new Date(lesson.scheduled_time).toLocaleDateString()}</p>
+                    <p>{t('common:time', 'Time')}: {new Date(lesson.scheduled_time).toLocaleTimeString()}</p>
+                    <p>{t('common:duration', 'Duration')}: {lesson.duration_minutes} minutes</p>
+                    <p>{t('common:instructor', 'Instructor')}: {lesson.instructor.first_name} {lesson.instructor.last_name}</p>
+                    <p>{t('common:vehicle', 'Vehicle')}: {lesson.vehicle.license_plate}</p>
+                    <p>{t('common:status', 'Status')}: {lesson.status}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Payments */}
+          {data.payments && data.payments.length > 0 && (
+            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+              <h2>{t('common:yourPayments', 'Your Payments')}</h2>
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {data.payments.map(payment => (
+                  <div key={payment.id} style={{ border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem' }}>
+                    <p><strong>{payment.enrollment.course.name}</strong></p>
+                    <p>{t('common:amount', 'Amount')}: ${payment.amount}</p>
+                    <p>{t('common:date', 'Date')}: {new Date(payment.payment_date).toLocaleDateString()}</p>
+                    <p>{t('common:method', 'Method')}: {payment.payment_method}</p>
+                    <p>{t('common:description', 'Description')}: {payment.description}</p>
                   </div>
                 ))}
               </div>
@@ -137,9 +175,11 @@ const StudentDashboard = () => {
 
           {/* No data message */}
           {(!data.instructors || data.instructors.length === 0) &&
-           (!data.courses || data.courses.length === 0) && (
+           (!data.courses || data.courses.length === 0) &&
+           (!data.lessons || data.lessons.length === 0) &&
+           (!data.payments || data.payments.length === 0) && (
             <div style={{ textAlign: 'center', padding: '2rem', border: '1px solid #ccc', borderRadius: '8px' }}>
-              <p>{t('common:noDataYet', 'No courses or instructors assigned yet. Please check back later.')}</p>
+              <p>{t('common:noDataYet', 'No courses, instructors, lessons, or payments assigned yet. Please check back later.')}</p>
             </div>
           )}
         </div>

@@ -372,6 +372,15 @@ def student_dashboard(request):
     courses = Course.objects.all()
     course_data = CourseSerializer(courses, many=True).data
     
+    # Get student's enrollments and lessons
+    enrollments = Enrollment.objects.filter(student=student)
+    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'vehicle').order_by('scheduled_time')
+    lesson_data = LessonSerializer(lessons, many=True).data
+    
+    # Get payments for the student's enrollments
+    payments = Payment.objects.filter(enrollment__in=enrollments).select_related('enrollment__course').order_by('-payment_date')
+    payment_data = PaymentSerializer(payments, many=True).data
+    
     # Check if read-only (graduated)
     read_only = student.status == StudentStatus.GRADUATED.value
     
@@ -387,4 +396,6 @@ def student_dashboard(request):
         },
         "instructors": instructor_data,
         "courses": course_data,
+        "lessons": lesson_data,
+        "payments": payment_data,
     })
