@@ -1,5 +1,5 @@
 from rest_framework import viewsets, mixins, decorators, response, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from django.http import HttpResponse
 import csv
 from io import StringIO, TextIOWrapper
@@ -8,12 +8,54 @@ from django.utils.timezone import now
 from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
     EnrollmentSerializer, LessonSerializer, PaymentSerializer
 )
-from .enums import all_enums_for_meta
+from .enums import all_enums_for_meta, StudentStatus
+import hashlib, json
+from .validators import normalize_phone
+
+
+class IsAuthenticatedStudent(BasePermission):
+    def has_permission(self, request, view):
+        # Check if token has student_id
+        if hasattr(request, 'auth') and request.auth:
+            return 'student_id' in request.auth
+        return False
+
+
+class StudentJWTAuthentication(JWTAuthentication):
+    def get_user(self, validated_token):
+        student_id = validated_token.get('student_id')
+        if not student_id:
+            raise InvalidToken('Token contained no recognizable user identification')
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            raise InvalidToken('Student not found')
+        return student
+
+
+class StudentJWTAuthentication(JWTAuthentication):
+    def get_user(self, validated_token):
+        student_id = validated_token.get('student_id')
+        if not student_id:
+            raise InvalidToken('Token contained no recognizable user identification')
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            raise InvalidToken('Student not found')
+        return student
+from .serializers import (
+    StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer
+)
+from .enums import all_enums_for_meta, StudentStatus
 import hashlib, json
 from .validators import normalize_phone
 
@@ -217,22 +259,143 @@ def check_username(request):
 
 @decorators.api_view(["POST"])  # type: ignore[misc]
 @decorators.permission_classes([AllowAny])
-def signup(request):
-    """DEBUG-only: create a new user with username/password/email.
-
-    Body: { username, password, email }
-    Returns 201 on create, 409 if exists.
-    """
-    if not settings.DEBUG:
-        return response.Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+def student_login(request):
+    """Student login endpoint. Authenticates student and returns JWT tokens if status allows."""
     data = request.data or {}
-    username = (data.get('username') or '').strip()
+    email = (data.get('email') or '').strip().lower()
     password = (data.get('password') or '').strip()
-    email = (data.get('email') or '').strip()
-    if not username or not password:
-        return response.Response({"detail": "username and password required"}, status=status.HTTP_400_BAD_REQUEST)
-    User = get_user_model()
-    if User.objects.filter(username=username).exists():
-        return response.Response({"detail": "User already exists"}, status=status.HTTP_409_CONFLICT)
-    user = User.objects.create_user(username=username, password=password, email=email or None)
-    return response.Response({"id": user.id, "username": user.username, "email": user.email}, status=status.HTTP_201_CREATED)
+    
+    if not email or not password:
+        return response.Response({"detail": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        student = Student.objects.get(email=email)
+    except Student.DoesNotExist:
+        return response.Response({"detail": "This account has not been found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if not student.check_password(password):
+        return response.Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    if student.status == StudentStatus.PENDING.value:
+        return response.Response({"detail": "Your account is pending approval. Please wait to be approved."}, status=status.HTTP_403_FORBIDDEN)
+    elif student.status == StudentStatus.INACTIVE.value:
+        return response.Response({"detail": "This account has been deactivated"}, status=status.HTTP_403_FORBIDDEN)
+    elif student.status == StudentStatus.GRADUATED.value:
+        # Allow login but mark as read-only
+        pass
+    elif student.status == StudentStatus.ACTIVE.value:
+        pass
+    else:
+        return response.Response({"detail": "Invalid account status"}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Generate JWT tokens
+    refresh = RefreshToken()
+    refresh['student_id'] = student.id
+    refresh['status'] = student.status
+    access = refresh.access_token
+    access['student_id'] = student.id
+    access['status'] = student.status
+    
+    return response.Response({
+        "access": str(access),
+        "refresh": str(refresh),
+        "student": {
+            "id": student.id,
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "email": student.email,
+            "status": student.status,
+        }
+    })
+
+
+@decorators.api_view(["GET"])  # type: ignore[misc]
+@decorators.authentication_classes([])  # No authentication
+@decorators.permission_classes([AllowAny])
+def student_me(request):
+    """Return info about the authenticated student."""
+    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+    if not auth_header.startswith('Bearer '):
+        return response.Response({"detail": "Authorization header missing or invalid"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    token = auth_header.split(' ')[1]
+    try:
+        access_token = AccessToken(token)
+        student_id = access_token.get('student_id')
+        if not student_id:
+            return response.Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception:
+        return response.Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    return response.Response({
+        "id": student.id,
+        "first_name": student.first_name,
+        "last_name": student.last_name,
+        "email": student.email,
+        "status": student.status,
+    })
+
+
+@decorators.api_view(["GET"])  # type: ignore[misc]
+@decorators.authentication_classes([])  # No authentication
+@decorators.permission_classes([AllowAny])
+def student_dashboard(request):
+    """Student dashboard: view instructors and courses."""
+    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+    if not auth_header.startswith('Bearer '):
+        return response.Response({"detail": "Authorization header missing or invalid"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    token = auth_header.split(' ')[1]
+    try:
+        access_token = AccessToken(token)
+        student_id = access_token.get('student_id')
+        if not student_id:
+            return response.Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception:
+        return response.Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Get all instructors
+    instructors = Instructor.objects.all()
+    instructor_data = InstructorSerializer(instructors, many=True).data
+    
+    # Get all courses
+    courses = Course.objects.all()
+    course_data = CourseSerializer(courses, many=True).data
+    
+    # Get student's enrollments and lessons
+    enrollments = Enrollment.objects.filter(student=student)
+    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'vehicle').order_by('scheduled_time')
+    lesson_data = LessonSerializer(lessons, many=True).data
+    
+    # Get payments for the student's enrollments
+    payments = Payment.objects.filter(enrollment__in=enrollments).select_related('enrollment__course').order_by('-payment_date')
+    payment_data = PaymentSerializer(payments, many=True).data
+    
+    # Check if read-only (graduated)
+    read_only = student.status == StudentStatus.GRADUATED.value
+    
+    return response.Response({
+        "student": {
+            "id": student.id,
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "email": student.email,
+            "phone_number": student.phone_number,
+            "status": student.status,
+            "read_only": read_only,
+        },
+        "instructors": instructor_data,
+        "courses": course_data,
+        "lessons": lesson_data,
+        "payments": payment_data,
+    })

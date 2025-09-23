@@ -5,11 +5,13 @@ from .validators import validate_name, normalize_phone
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, min_length=6)
+    
     class Meta:
         model = Student
         fields = [
             "id", "first_name", "last_name", "email", "phone_number",
-            "date_of_birth", "enrollment_date", "status"
+            "date_of_birth", "enrollment_date", "status", "password"
         ]
         extra_kwargs = {
             "first_name": {"error_messages": {"required": "First name is required", "blank": "First name is required"}},
@@ -17,6 +19,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "email": {"error_messages": {"required": "Email is required", "blank": "Email is required", "invalid": "Invalid email format"}},
             "phone_number": {"error_messages": {"required": "Phone number is required", "blank": "Phone number is required"}},
             "date_of_birth": {"error_messages": {"required": "Date of birth is required", "invalid": "Invalid date format"}},
+            "password": {"error_messages": {"required": "Password is required", "blank": "Password is required", "min_length": "Password must be at least 6 characters"}},
             # Status defaults to PENDING for new signups; not required on public portal.
             "status": {"required": False},
         }
@@ -74,9 +77,14 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):  # noqa: D401
         from django.db import IntegrityError, transaction
+        # Hash the password before creating
+        password = validated_data.pop('password')
         try:
             with transaction.atomic():
-                return super().create(validated_data)
+                student = super().create(validated_data)
+                student.set_password(password)
+                student.save()
+                return student
         except IntegrityError as e:  # race condition uniqueness fallback
             msg = str(e).lower()
             errors: dict[str, list[str]] = {}

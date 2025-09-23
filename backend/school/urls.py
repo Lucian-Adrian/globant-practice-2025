@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import (
     StudentViewSet, InstructorViewSet, VehicleViewSet, CourseViewSet,
     EnrollmentViewSet, LessonViewSet, PaymentViewSet, UtilityViewSet,
-    enums_meta, me, check_username, signup,
+    enums_meta, me, check_username, student_login, student_me, student_dashboard,
 )
 
 router = routers.DefaultRouter()
@@ -21,5 +21,7 @@ urlpatterns = [
     path('meta/enums/', enums_meta, name='meta-enums'),
     path('auth/me/', me, name='auth-me'),
     path('auth/test/check-username/', check_username, name='auth-check-username'),
-    path('auth/test/signup/', signup, name='auth-signup'),
+    path('auth/student/login/', student_login, name='student-login'),
+    path('auth/student/me/', student_me, name='student-me'),
+    path('student/dashboard/', student_dashboard, name='student-dashboard'),
 ]
