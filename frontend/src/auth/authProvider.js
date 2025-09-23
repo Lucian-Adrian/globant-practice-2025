@@ -34,7 +34,33 @@ export const authProvider = {
     console.info('Auth success in', Date.now() - start, 'ms');
   },
   logout: async () => { clearTokens(); },
-  checkAuth: () => getAccessToken() ? Promise.resolve() : Promise.reject(),
+  checkAuth: () => {
+    const token = getAccessToken();
+    if (!token) return Promise.reject();
+    
+    // Check if there's a student token, which should not access admin
+    const studentToken = localStorage.getItem('student_access_token');
+    if (studentToken) {
+      clearTokens();
+      return Promise.reject();
+    }
+    
+    // Decode token to check if it's an admin token (not a student token)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.student_id) {
+        // This is a student token, reject for admin routes
+        clearTokens();
+        return Promise.reject();
+      }
+    } catch (e) {
+      // Invalid token format
+      clearTokens();
+      return Promise.reject();
+    }
+    
+    return Promise.resolve();
+  },
   checkError: (error) => {
     if (error?.status === 401 || error?.status === 403) {
       clearTokens();

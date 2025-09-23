@@ -380,6 +380,8 @@ def student_dashboard(request):
             "id": student.id,
             "first_name": student.first_name,
             "last_name": student.last_name,
+            "email": student.email,
+            "phone_number": student.phone_number,
             "status": student.status,
             "read_only": read_only,
         },
