@@ -267,7 +267,7 @@ import { i18nProvider } from './i18n.js';
 
 export default function App() {
   return (
-    <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider}>
+    <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
       <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />

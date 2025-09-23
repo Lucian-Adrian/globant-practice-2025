@@ -31,6 +31,8 @@ export const authProvider = {
     }
     setAccessToken(data.access);
     if (data.refresh) setRefreshToken(data.refresh);
+    // Clear student token when logging in as admin
+    localStorage.removeItem('student_access_token');
     console.info('Auth success in', Date.now() - start, 'ms');
   },
   logout: async () => { clearTokens(); },
