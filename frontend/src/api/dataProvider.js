@@ -37,11 +37,14 @@ const buildQuery = (params) => {
 };
 
 const extractFieldErrors = (body) => {
-  if (!body) return {};
-  if (!body.errors || typeof body.errors !== 'object') return body;
+  if (!body || typeof body !== 'object') return {};
+  const source = body.errors && typeof body.errors === 'object' ? body.errors : body;
   const map = {};
-  for (const [field, messages] of Object.entries(body)) {
-    if (Array.isArray(messages) && messages.length) map[field] = messages[0];
+  for (const [field, messages] of Object.entries(source)) {
+    if (messages == null) continue;
+    if (Array.isArray(messages) && messages.length) map[field] = String(messages[0]);
+    else if (typeof messages === 'string') map[field] = messages;
+    else if (typeof messages === 'object' && messages.message) map[field] = String(messages.message);
   }
   return map;
 };
