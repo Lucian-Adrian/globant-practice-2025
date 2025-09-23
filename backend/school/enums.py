@@ -9,7 +9,8 @@ structure ``[(value, human_label), ...]``.
 """
 
 from __future__ import annotations
-
+from dataclasses import dataclass
+from typing import List, Tuple
 from enum import Enum
 
 try:  # Python 3.11+
@@ -96,4 +97,86 @@ def all_enums_for_meta() -> dict[str, list[str]]:
         "payment_method": values(PaymentMethod),
         "vehicle_category": values(VehicleCategory),
     "course_type": values(CourseType),
+    }
+
+
+@dataclass(frozen=True)
+class StudentStatus:
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    GRADUATED = "GRADUATED"
+
+    @classmethod
+    def choices(cls) -> List[Tuple[str, str]]:
+        return [(cls.PENDING, cls.PENDING), (cls.ACTIVE, cls.ACTIVE),
+                (cls.INACTIVE, cls.INACTIVE), (cls.GRADUATED, cls.GRADUATED)]
+
+
+@dataclass(frozen=True)
+class EnrollmentStatus:
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+    @classmethod
+    def choices(cls):
+        return [(cls.IN_PROGRESS, cls.IN_PROGRESS), (cls.COMPLETED, cls.COMPLETED),
+                (cls.CANCELLED, cls.CANCELLED)]
+
+
+@dataclass(frozen=True)
+class LessonStatus:
+    SCHEDULED = "SCHEDULED"
+    CONFIRMED = "CONFIRMED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+    @classmethod
+    def choices(cls):
+        return [(cls.SCHEDULED, cls.SCHEDULED), (cls.CONFIRMED, cls.CONFIRMED),
+                (cls.COMPLETED, cls.COMPLETED), (cls.CANCELLED, cls.CANCELLED)]
+
+
+@dataclass(frozen=True)
+class PaymentMethod:
+    CASH = "CASH"
+    TRANSFER = "TRANSFER"
+    CARD = "CARD"
+
+    @classmethod
+    def choices(cls):
+        return [(cls.CASH, cls.CASH), (cls.TRANSFER, cls.TRANSFER), (cls.CARD, cls.CARD)]
+
+
+@dataclass(frozen=True)
+class VehicleCategory:
+    A = "A"
+    B = "B"
+    BE = "BE"
+    C = "C"
+
+    @classmethod
+    def choices(cls):
+        return [(cls.A, cls.A), (cls.B, cls.B), (cls.BE, cls.BE), (cls.C, cls.C)]
+
+
+@dataclass(frozen=True)
+class CourseType:
+    THEORY = "THEORY"
+    PRACTICAL = "PRACTICAL"
+
+    @classmethod
+    def choices(cls):
+        return [(cls.THEORY, cls.THEORY), (cls.PRACTICAL, cls.PRACTICAL)]
+
+
+def all_enums_for_meta():
+    return {
+        "student_status": [c[0] for c in StudentStatus.choices()],
+        "enrollment_status": [c[0] for c in EnrollmentStatus.choices()],
+        "lesson_status": [c[0] for c in LessonStatus.choices()],
+        "payment_method": [c[0] for c in PaymentMethod.choices()],
+        "vehicle_categories": [c[0] for c in VehicleCategory.choices()],
+        "course_type": [c[0] for c in CourseType.choices()],
     }

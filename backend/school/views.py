@@ -11,14 +11,16 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer , LessonCreateSerializer
 )
-from .enums import all_enums_for_meta, StudentStatus
+from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
 from .validators import normalize_phone
+from django.db.models import Q
+
 
 
 class IsAuthenticatedStudent(BasePermission):
@@ -399,3 +401,80 @@ def student_dashboard(request):
         "lessons": lesson_data,
         "payments": payment_data,
     })
+
+class LessonViewSet(FullCrudViewSet):
+    queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
+    serializer_class = LessonSerializer
+
+    @decorators.action(detail=False, methods=["post"], url_path="schedule")
+    def schedule_lesson(self, request):
+        """Schedule a new lesson with conflict checks (instructor + vehicle)."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        enrollment = serializer.validated_data['enrollment']
+        instructor = serializer.validated_data['instructor']
+        vehicle = serializer.validated_data.get('vehicle')
+        scheduled_time = serializer.validated_data['scheduled_time']
+        duration = serializer.validated_data.get('duration_minutes', 50)
+
+        end_time = scheduled_time + timedelta(minutes=duration)
+
+        # Check instructor conflict
+        instructor_conflict = Lesson.objects.filter(
+            instructor=instructor,
+            scheduled_time__lt=end_time,
+            scheduled_time__gte=scheduled_time
+        ).exists()
+        if instructor_conflict:
+            return response.Response(
+                {"detail": "Instructor already has a lesson during this time."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check vehicle conflict (if provided)
+        if vehicle:
+            vehicle_conflict = Lesson.objects.filter(
+                vehicle=vehicle,
+                scheduled_time__lt=end_time,
+                scheduled_time__gte=scheduled_time
+            ).exists()
+            if vehicle_conflict:
+                return response.Response(
+                    {"detail": "Vehicle is already booked during this time."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        lesson = serializer.save()
+        return response.Response(self.get_serializer(lesson).data, status=status.HTTP_201_CREATED)
+
+
+class UtilityViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @decorators.action(detail=False, methods=["get"], url_path="schedule")
+    def schedule(self, request):
+        """Get lessons between ?start=YYYY-MM-DD and ?end=YYYY-MM-DD (default: next 7 days)."""
+        start_param = request.query_params.get("start")
+        end_param = request.query_params.get("end")
+
+        start = now()
+        end = start + timedelta(days=7)
+
+        if start_param:
+            try:
+                start = models.DateTimeField().to_python(start_param) or start
+            except Exception:
+                pass
+        if end_param:
+            try:
+                end = models.DateTimeField().to_python(end_param) or end
+            except Exception:
+                pass
+
+        lessons = Lesson.objects.select_related('instructor', 'enrollment__student', 'vehicle') \
+            .filter(scheduled_time__gte=start, scheduled_time__lte=end) \
+            .order_by('scheduled_time')
+
+        serializer = LessonSerializer(lessons, many=True)
+        return response.Response(serializer.data)

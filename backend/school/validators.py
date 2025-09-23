@@ -52,3 +52,16 @@ def normalize_phone(raw: str) -> str:
     if len(digits) < 8:  # very lenient; can tighten later
         raise ValueError("Phone number appears too short")
     return base
+
+def normalize_phone(phone: str) -> str:
+    if not phone:
+        raise ValueError("Empty phone")
+    cleaned = re.sub(r"[^\d+]", "", phone)
+    if cleaned.startswith("00"):
+        cleaned = "+" + cleaned[2:]
+    if cleaned.startswith("0") and not cleaned.startswith("+"):
+        
+        cleaned = "+373" + cleaned.lstrip("0")
+    if not re.match(r"^\+?\d{7,15}$", cleaned):
+        raise ValueError("Invalid phone format")
+    return cleaned

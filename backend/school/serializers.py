@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .enums import CourseType
 from .validators import validate_name, normalize_phone
 
@@ -112,6 +112,12 @@ class StudentSerializer(serializers.ModelSerializer):
                 errors["non_field_errors"] = ["Unexpected integrity error"]
             raise serializers.ValidationError(errors)
 
+class InstructorAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstructorAvailability
+        fields = '__all__'
+        read_only_fields = ('id',)
+
 
 class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -159,6 +165,28 @@ class LessonSerializer(serializers.ModelSerializer):
             "duration_minutes", "status", "notes"
         ]
 
+class LessonCreateSerializer(serializers.ModelSerializer):
+    """Used by schedule endpoint: accepts PKs and validates business rules."""
+    enrollment = serializers.PrimaryKeyRelatedField(queryset=Enrollment.objects.all())
+    instructor = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all())
+    vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = Lesson
+        fields = ('id', 'enrollment', 'instructor', 'vehicle', 'scheduled_time', 'duration_minutes', 'status', 'notes')
+
+    def validate(self, data):
+        enrollment = data['enrollment']
+        instructor = data['instructor']
+        course_cat = enrollment.course.category
+        # Check instructor license category
+        allowed_cats = [c.strip() for c in (instructor.license_categories or "").split(',') if c.strip()]
+        if course_cat not in allowed_cats:
+            raise serializers.ValidationError({"instructor": "Instructor not licensed for this course category."})
+        # Enrollment should be active
+        if enrollment.status == 'COMPLETED':
+            raise serializers.ValidationError({"enrollment": "Enrollment already completed."})
+        return data
 
 class PaymentSerializer(serializers.ModelSerializer):
     enrollment = EnrollmentSerializer(read_only=True)
@@ -167,3 +195,4 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ["id", "enrollment", "enrollment_id", "amount", "payment_date", "payment_method", "description"]
+

@@ -9,6 +9,7 @@ from .views import (
 router = routers.DefaultRouter()
 router.register(r'students', StudentViewSet)
 router.register(r'instructors', InstructorViewSet)
+router.register(r'instructor-availabilities', views.InstructorAvailabilityViewSet)
 router.register(r'vehicles', VehicleViewSet)
 router.register(r'courses', CourseViewSet)
 router.register(r'enrollments', EnrollmentViewSet)

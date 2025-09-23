@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from django.utils.timezone import now
 from .enums import (
     StudentStatus, EnrollmentStatus, LessonStatus,
     PaymentMethod, VehicleCategory, CourseType,
@@ -53,6 +54,19 @@ class Instructor(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+class InstructorAvailability(models.Model):
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='availabilities')
+    #0=Monday .. 6=Sunday
+    weekday = models.IntegerField(choices=[(i, i) for i in range(7)])
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    class Meta:
+        unique_together = ('instructor', 'weekday', 'start_time', 'end_time')
+
+    def __str__(self):
+        return f"{self.instructor} available {self.weekday} {self.start_time}-{self.end_time}"
 
 
 class Vehicle(models.Model):
