@@ -145,17 +145,26 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     def get_label(self, obj):  # Name - Type - Category
         return f"{obj.student.first_name} {obj.student.last_name} - {obj.type or obj.course.type} - {obj.course.category}"
 
+    def create(self, validated_data):
+        # If type not provided, copy from course
+        if 'type' not in validated_data:
+            course = validated_data['course']
+            validated_data['type'] = course.type
+        return super().create(validated_data)
+
 
 class LessonSerializer(serializers.ModelSerializer):
     instructor = InstructorSerializer(read_only=True)
     enrollment = EnrollmentSerializer(read_only=True)
+    vehicle = VehicleSerializer(read_only=True)
     instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
     enrollment_id = serializers.PrimaryKeyRelatedField(queryset=Enrollment.objects.all(), source="enrollment", write_only=True)
+    vehicle_id = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all(), source="vehicle", write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Lesson
         fields = [
-            "id", "enrollment", "instructor", "enrollment_id", "instructor_id", "vehicle", "scheduled_time",
+            "id", "enrollment", "instructor", "vehicle", "enrollment_id", "instructor_id", "vehicle_id", "scheduled_time",
             "duration_minutes", "status", "notes"
         ]
 

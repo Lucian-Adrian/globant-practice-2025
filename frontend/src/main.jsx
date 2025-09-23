@@ -45,8 +45,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/TestJWT" element={<TestJWT />} />
         <Route path="/landing" element={<LandingStudent />} />
         <Route path="/dashboard" element={<DashboardStudent />} />
-        <Route path="/" element={<Navigate to="/admin" replace />} />        
-        {/* <Route path="/dashboard" element={<StudentDashboard />} /> */}
+        <Route path="/" element={<LandingPublic />} />        
+        <Route path="/dash" element={<StudentDashboard />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

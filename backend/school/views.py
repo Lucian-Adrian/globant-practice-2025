@@ -16,7 +16,7 @@ from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
     EnrollmentSerializer, LessonSerializer, PaymentSerializer
 )
-from .enums import all_enums_for_meta, StudentStatus
+from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
 from .validators import normalize_phone
 
@@ -381,6 +381,30 @@ def student_dashboard(request):
     payments = Payment.objects.filter(enrollment__in=enrollments).select_related('enrollment__course').order_by('-payment_date')
     payment_data = PaymentSerializer(payments, many=True).data
     
+    # Calculate lesson summaries
+    lesson_summary = {
+        "remaining": {"theory": {}, "practice": {}},
+        "completed": {"theory": {}, "practice": {}}
+    }
+    
+    # Get all lessons with course info
+    all_lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course')
+    
+    for lesson in all_lessons:
+        course_type = lesson.enrollment.course.type.lower()  # theory or practice
+        course_category = lesson.enrollment.course.category
+        
+        if lesson.status == LessonStatus.SCHEDULED.value:
+            target = lesson_summary["remaining"][course_type]
+        elif lesson.status == LessonStatus.COMPLETED.value:
+            target = lesson_summary["completed"][course_type]
+        else:
+            continue
+            
+        if course_category not in target:
+            target[course_category] = 0
+        target[course_category] += 1
+    
     # Check if read-only (graduated)
     read_only = student.status == StudentStatus.GRADUATED.value
     
@@ -398,4 +422,5 @@ def student_dashboard(request):
         "courses": course_data,
         "lessons": lesson_data,
         "payments": payment_data,
+        "lesson_summary": lesson_summary,
     })

@@ -11,7 +11,7 @@ export default function LessonList(props) {
           <TextField source="label" />
         </ReferenceField>
         <ReferenceField source="instructor.id" reference="instructors" label="Instructor" />
-        <TextField source="vehicle" label="Vehicle" />
+        <TextField source="vehicle.license_plate" label="Vehicle" />
         <DateField source="scheduled_time" />
         <NumberField source="duration_minutes" />
         <TextField source="status" />

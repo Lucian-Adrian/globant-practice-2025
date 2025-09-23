@@ -11,7 +11,7 @@ export default function LessonCreate(props) {
         <ReferenceInput label="Instructor" source="instructor_id" reference="instructors" perPage={50}>
           <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
         </ReferenceInput>
-        <ReferenceInput label="Vehicle" source="vehicle" reference="vehicles" perPage={50}>
+        <ReferenceInput label="Vehicle" source="vehicle_id" reference="vehicles" perPage={50}>
           <SelectInput optionText={(r) => `${r.license_plate}`} />
         </ReferenceInput>
         <DateInput source="scheduled_time" />

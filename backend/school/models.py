@@ -92,7 +92,7 @@ class Enrollment(models.Model):
     )
 
     class Meta:
-        unique_together = ('student', 'course')
+        unique_together = ()
 
     def __str__(self):
         return f"{self.student} înscris la {self.course}"

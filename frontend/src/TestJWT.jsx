@@ -15,7 +15,7 @@ const api = {
   refresh: async () => { const refresh = getRefreshToken(); const r = await fetch('/api/auth/token/refresh/', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ refresh }) }); const j = await r.json().catch(()=>({})); return { ok:r.ok, status:r.status, body:j }; },
 };
 export default function TestJWT() {
-  const [username, setUsername] = useState('testuser');
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('Test123!');
   const [email, setEmail] = useState('test@example.com');
   const [studentEmail, setStudentEmail] = useState('john@example.com');
