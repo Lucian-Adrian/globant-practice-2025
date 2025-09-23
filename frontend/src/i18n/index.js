@@ -6,7 +6,7 @@ import { initReactI18next } from 'react-i18next';
 // (english base kept minimal; extend as needed.)
 const englishMessages = {
   ra: {
-    action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter' },
+  action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER' },
   navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page %{offsetBegin}-%{offsetEnd} of %{total}', page_rows_per_page: 'Rows per page:' },
   auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out' },
   page: { login: 'Login', list: 'List', dashboard: 'Dashboard' },
@@ -16,7 +16,7 @@ const englishMessages = {
 };
 const romanianMessages = {
   ra: {
-    action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul' },
+  action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU' },
   navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina %{offsetBegin}-%{offsetEnd} din %{total}', page_rows_per_page: 'Rânduri pe pagină:' },
   auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare' },
   page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord' },
@@ -26,7 +26,7 @@ const romanianMessages = {
 };
 const russianMessages = {
   ra: {
-    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр' },
+  action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР' },
   navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница %{offsetBegin}-%{offsetEnd} из %{total}', page_rows_per_page: 'Строк на странице:' },
   auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти' },
   page: { login: 'Вход', list: 'Список', dashboard: 'Панель' },

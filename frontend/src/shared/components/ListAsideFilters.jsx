@@ -51,7 +51,7 @@ export default function ListAsideFilters({
   );
 
   return (
-    <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 16em', mr:2, mt:6, alignSelf:'flex-start' }}>
+    <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 22em', maxWidth:'22em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
         {!hideDate && dateField && (
           <FilterList label={t(dateLabelKey, dateLabelKey)} icon={dateIcon}>
@@ -71,6 +71,20 @@ export default function ListAsideFilters({
           </FilterList>
         )}
         {children}
+        {/* CALENDAR SECTION for instructors */}
+        <Box sx={{ mt: 4, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+            <AccessTimeIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
+            <Typography variant="subtitle1" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>CALENDAR</Typography>
+          </Stack>
+          <iframe
+            title="Calendar lecții practice"
+            src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Europe%2FBucharest"
+            style={{ border: 0, width: '100%', height: 320, minHeight: 320, minWidth: '100%', zoom: 0.85, background: 'transparent' }}
+            frameBorder="0"
+            scrolling="no"
+          />
+        </Box>
       </CardContent>
     </Card>
   );
