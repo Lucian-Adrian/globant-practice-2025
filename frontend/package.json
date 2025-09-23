@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@dnd-kit/core": "^6.1.0",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.15.15",
     "date-fns": "^4.1.0",
