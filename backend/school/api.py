@@ -230,8 +230,9 @@ class UtilityViewSet(viewsets.ViewSet):
 
         # Lessons created (registered) today
         today_scheduled = Lesson.objects.filter(
-            created_at__gte=today_start,
-            created_at__lt=today_end,
+            scheduled_time__gte=today_start,
+            scheduled_time__lt=today_end,
+            status='SCHEDULED',
         ).count()
 
         # This week completed and canceled
