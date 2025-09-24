@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { Edit, SimpleForm, TextInput, NumberInput, SelectInput, required } from 'react-admin';
+import { Edit, SimpleForm, TextInput, NumberInput, SelectInput, required, useTranslate } from 'react-admin';
 
 export default function makeCourseEdit(vehicleChoices, courseTypeChoices) {
   return function CourseEdit(props) {
+    const translate = useTranslate();
     return (
-      <Edit {...props}>
+      <Edit {...props} title={translate('ra.page.edit', { defaultValue: 'Edit' })}>
         <SimpleForm>
           <TextInput source="name" validate={[required()]} />
           <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />

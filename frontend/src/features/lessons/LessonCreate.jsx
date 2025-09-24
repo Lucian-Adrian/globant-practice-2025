@@ -1,17 +1,18 @@
 import * as React from 'react';
-import { Create, SimpleForm, ReferenceInput, SelectInput, DateTimeInput, NumberInput, TextInput } from 'react-admin';
+import { Create, SimpleForm, ReferenceInput, SelectInput, DateTimeInput, NumberInput, TextInput, useTranslate } from 'react-admin';
 
 export default function LessonCreate(props) {
+  const translate = useTranslate();
   return (
-    <Create {...props}>
+    <Create {...props} title={translate('ra.page.create', { defaultValue: 'Create' })}>
       <SimpleForm>
-        <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
+        <ReferenceInput label={translate('resources.lessons.fields.enrollment', { defaultValue: 'Enrollment' })} source="enrollment_id" reference="enrollments" perPage={50}>
           <SelectInput optionText={(r) => r.label || `#${r.id}`} />
         </ReferenceInput>
-        <ReferenceInput label="Instructor" source="instructor_id" reference="instructors" perPage={50}>
+        <ReferenceInput label={translate('resources.lessons.fields.instructor', { defaultValue: 'Instructor' })} source="instructor_id" reference="instructors" perPage={50}>
           <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
         </ReferenceInput>
-        <ReferenceInput label="Vehicle" source="vehicle_id" reference="vehicles" perPage={50}>
+        <ReferenceInput label={translate('resources.lessons.fields.vehicle', { defaultValue: 'Vehicle' })} source="vehicle_id" reference="vehicles" perPage={50}>
           <SelectInput optionText={(r) => `${r.license_plate}`} />
         </ReferenceInput>
         <DateTimeInput source="scheduled_time" />
@@ -19,9 +20,9 @@ export default function LessonCreate(props) {
         <SelectInput
           source="status"
           choices={[
-            { id: 'SCHEDULED', name: 'SCHEDULED' },
-            { id: 'COMPLETED', name: 'COMPLETED' },
-            { id: 'CANCELED', name: 'CANCELED' },
+            { id: 'SCHEDULED', name: translate('filters.scheduled', { defaultValue: 'SCHEDULED' }) },
+            { id: 'COMPLETED', name: translate('filters.completed', { defaultValue: 'COMPLETED' }) },
+            { id: 'CANCELED', name: translate('filters.canceled', { defaultValue: 'CANCELED' }) },
           ]}
         />
         <TextInput source="notes" multiline rows={2} />

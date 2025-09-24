@@ -3,6 +3,7 @@ import ImportButton from './components/ImportButton';
 import ResourceEmptyState from './components/ResourceEmptyState';
 import InstructorDetails from './instructors/InstructorDetails';
 import InstructorCalendar from './instructors/InstructorCalendar';
+import { InstructorAvailabilityList, InstructorAvailabilityEdit } from './features/instructoravailabilities';
 
 import * as React from 'react';
 import {
@@ -272,7 +273,8 @@ export default function App() {
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
       <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} />
-      <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
+  <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
+  <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} />
     </Admin>
   );
 }

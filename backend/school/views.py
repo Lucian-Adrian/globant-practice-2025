@@ -11,10 +11,10 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer
 )
 from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
@@ -161,6 +161,11 @@ class StudentViewSet(FullCrudViewSet):
 class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
+
+
+class InstructorAvailabilityViewSet(FullCrudViewSet):
+    queryset = InstructorAvailability.objects.select_related('instructor').all()
+    serializer_class = InstructorAvailabilitySerializer
 
 
 class VehicleViewSet(FullCrudViewSet):

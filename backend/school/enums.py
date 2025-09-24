@@ -80,6 +80,16 @@ class VehicleCategory(_ChoiceStrEnum):
     DE = "DE"
 
 
+class DayOfWeek(_ChoiceStrEnum):
+    MONDAY = "MONDAY"
+    TUESDAY = "TUESDAY"
+    WEDNESDAY = "WEDNESDAY"
+    THURSDAY = "THURSDAY"
+    FRIDAY = "FRIDAY"
+    SATURDAY = "SATURDAY"
+    SUNDAY = "SUNDAY"
+
+
 def all_enums_for_meta() -> dict[str, list[str]]:
     """Return a JSON-serialisable mapping of enum names to value lists.
 
@@ -96,4 +106,5 @@ def all_enums_for_meta() -> dict[str, list[str]]:
         "payment_method": values(PaymentMethod),
         "vehicle_category": values(VehicleCategory),
     "course_type": values(CourseType),
+        "day_of_week": values(DayOfWeek),
     }
