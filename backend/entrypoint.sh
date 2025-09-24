@@ -29,10 +29,20 @@ PY
 echo "[entrypoint] Running migrations..."
 python manage.py migrate --noinput
 
-if [ "$DJANGO_COLLECTSTATIC" = "1" ]; then
+echo "[entrypoint] Env flags: DISABLE_COLLECTSTATIC='${DISABLE_COLLECTSTATIC}' DJANGO_COLLECTSTATIC='${DJANGO_COLLECTSTATIC}'"
+
+# Collectstatic policy:
+# 1. If DISABLE_COLLECTSTATIC=1 -> always skip.
+# 2. Else if DJANGO_COLLECTSTATIC=1 -> run collectstatic.
+# 3. Else skip (default for dev to save memory/time).
+if [ "${DISABLE_COLLECTSTATIC}" = "1" ]; then
+  echo "[entrypoint] Skipping collectstatic (DISABLE_COLLECTSTATIC=1)."
+elif [ "${DJANGO_COLLECTSTATIC}" = "1" ]; then
   echo "[entrypoint] Collecting static files..."
-  python manage.py collectstatic --noinput
+  python manage.py collectstatic --noinput || { echo "[entrypoint] collectstatic failed"; exit 1; }
   echo "[entrypoint] Static collection complete."
+else
+  echo "[entrypoint] Skipping collectstatic (default). Set DJANGO_COLLECTSTATIC=1 to enable."
 fi
 
 if [ "$DJANGO_SUPERUSER_USERNAME" ] && [ "$DJANGO_SUPERUSER_PASSWORD" ]; then
