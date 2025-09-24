@@ -103,7 +103,7 @@ class Lesson(models.Model):
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='lessons')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name='lessons')
     scheduled_time = models.DateTimeField()
-    duration_minutes = models.IntegerField(default=50)
+    duration_minutes = models.IntegerField(default=60)
     status = models.CharField(
         max_length=20,
         choices=LessonStatus.choices(),
