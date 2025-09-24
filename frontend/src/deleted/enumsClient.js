@@ -1,0 +1,4 @@
+// Moved from src/enumsClient.js (unused duplicate). Canonical client: src/api/enumsClient.js
+let cachedEnums = null; let cachedEtag = null; let lastFetchTs = 0; const ENDPOINT = '/api/meta/enums/'; const MAX_AGE_MS = 60000;
+export async function fetchEnums(force=false){ const now = Date.now(); if(!force && cachedEnums && (now-lastFetchTs)<MAX_AGE_MS) return cachedEnums; try { const headers={}; if(cachedEtag) headers['If-None-Match']=cachedEtag; const resp = await fetch(ENDPOINT,{headers}); if(resp.status===304){ lastFetchTs=now; return cachedEnums; } if(!resp.ok){ return null; } const json = await resp.json(); cachedEnums=json; cachedEtag=resp.headers.get('ETag'); lastFetchTs=now; return cachedEnums; } catch { return null; } }
+export function mapToChoices(list){ if(!Array.isArray(list)) return []; return list.map(v=>({id:v,name:v})); }
