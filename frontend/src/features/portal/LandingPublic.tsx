@@ -62,7 +62,7 @@ const NavBar: React.FC = () => {
 
           {/* Right actions */}
           <div className="tw-flex tw-items-center tw-gap-2">
-            <Button variant="secondary">Log in</Button>
+            <Button variant="secondary" onClick={() => navigate('/login')}>Log in</Button>
             <Button variant="primary" onClick={() => navigate('/signup')}>Get started</Button>
           </div>
         </div>

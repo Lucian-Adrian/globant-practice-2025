@@ -380,6 +380,9 @@ def student_dashboard(request):
     # Get payments for the student's enrollments
     payments = Payment.objects.filter(enrollment__in=enrollments).select_related('enrollment__course').order_by('-payment_date')
     payment_data = PaymentSerializer(payments, many=True).data
+    # Serialize enrollments for frontend aggregation
+    from .serializers import EnrollmentSerializer
+    enrollment_data = EnrollmentSerializer(enrollments.select_related('course', 'student'), many=True).data
     
     # Calculate lesson summaries
     lesson_summary = {
@@ -422,5 +425,6 @@ def student_dashboard(request):
         "courses": course_data,
         "lessons": lesson_data,
         "payments": payment_data,
+        "enrollments": enrollment_data,
         "lesson_summary": lesson_summary,
     })

@@ -1,22 +1,25 @@
 import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
+import { studentRawFetch } from "../../api/httpClient";
+import { iconXs, iconSm, iconMd } from "../../shared/constants/iconSizes";
 
-// Minimal inline icons to avoid external deps
-const iconProps = "tw-w-5 tw-h-5";
+// Minimal inline icons to avoid external deps (sizes applied at call sites)
 const TrendingUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
     <polyline points="17 6 23 6 23 12" />
   </svg>
 );
 const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <path d="M2 4h7a4 4 0 0 1 4 4v12a4 4 0 0 0-4-4H2z" />
     <path d="M22 4h-7a4 4 0 0 0-4 4v12a4 4 0 0 1 4-4h7z" />
   </svg>
 );
 const CarIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5" />
     <path d="M5 16h14" />
     <circle cx="7" cy="16" r="2" />
@@ -24,20 +27,20 @@ const CarIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 const AwardIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <circle cx="12" cy="8" r="7" />
     <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
   </svg>
 );
 const TargetIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <circle cx="12" cy="12" r="10" />
     <circle cx="12" cy="12" r="6" />
     <circle cx="12" cy="12" r="2" />
   </svg>
 );
 const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconProps} {...props}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <circle cx="12" cy="12" r="10" />
     <path d="M9 12l2 2 4-4" />
   </svg>
@@ -75,13 +78,79 @@ const ProgressBar: React.FC<{ value: number; className?: string }> = ({ value, c
 );
 
 const Progress: React.FC = () => {
-  const overallProgress = 68;
-  const theoryProgress = 85;
-  const practicalProgress = 52;
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
 
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      try {
+        const resp = await studentRawFetch('/api/student/dashboard/', { headers: { 'Content-Type': 'application/json' } });
+        if (resp.status === 401) { window.location.href = '/login'; return; }
+        const body = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(body?.detail || body?.message || 'Failed to load progress');
+        if (mounted) setData(body);
+      } catch (e:any) {
+        if (mounted) setError(e?.message || 'Network error');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    run();
+    return () => { mounted = false; };
+  }, []);
+
+  const lessons = useMemo(() => (data?.lessons ?? []), [data]);
+  const courses = useMemo(() => (data?.courses ?? []), [data]);
+  const enrollments = useMemo(() => (data?.enrollments ?? []), [data]);
+  const payments = useMemo(() => (data?.payments ?? []), [data]);
+
+  // Build a map of unique courses tied to the student (from enrollments, lessons, payments)
+  const studentCourseMap = useMemo(() => {
+    const map = new Map<number, any>();
+    enrollments.forEach((e:any) => { const c = e?.course; if (c?.id != null) map.set(c.id, c); });
+    lessons.forEach((l:any) => { const c = l?.enrollment?.course; if (c?.id != null && !map.has(c.id)) map.set(c.id, c); });
+    payments.forEach((p:any) => { const c = p?.enrollment?.course; if (c?.id != null && !map.has(c.id)) map.set(c.id, c); });
+    // Fallback to any courses list if empty
+    if (map.size === 0) {
+      (courses || []).forEach((c:any) => { if (c?.id != null && !map.has(c.id)) map.set(c.id, c); });
+    }
+    return map;
+  }, [enrollments, lessons, payments, courses]);
+
+  // Overall totals
+  const { requiredAll, completedAll, percentAll } = useMemo(() => {
+    const courseList = Array.from(studentCourseMap.values());
+    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
+    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED').length;
+    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
+    return { requiredAll: required, completedAll: completed, percentAll: pct };
+  }, [studentCourseMap, lessons]);
+
+  // Theory
+  const { requiredTheory, completedTheory, percentTheory } = useMemo(() => {
+    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'THEORY');
+    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
+    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'THEORY').length;
+    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
+    return { requiredTheory: required, completedTheory: completed, percentTheory: pct };
+  }, [studentCourseMap, lessons]);
+
+  // Practice
+  const { requiredPractice, completedPractice, percentPractice } = useMemo(() => {
+    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'PRACTICE');
+    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
+    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'PRACTICE').length;
+    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
+    return { requiredPractice: required, completedPractice: completed, percentPractice: pct };
+  }, [studentCourseMap, lessons]);
+
+  // Build milestones using real data for theory/practice lessons
   const milestones = [
-    { id: 1, title: "Theory Classes", description: "Complete all theory lessons", progress: 17, total: 20, completed: true, icon: BookOpenIcon, color: "success" },
-    { id: 2, title: "Driving Hours", description: "Complete required driving practice", progress: 24, total: 40, completed: false, icon: CarIcon, color: "primary" },
+    { id: 1, title: "Theory Classes", description: "Complete all theory lessons", progress: completedTheory, total: requiredTheory || 0, completed: (requiredTheory || 0) > 0 && completedTheory >= (requiredTheory || 0), icon: BookOpenIcon, color: "success" },
+    { id: 2, title: "Driving Hours", description: "Complete required driving practice", progress: completedPractice, total: requiredPractice || 0, completed: (requiredPractice || 0) > 0 && completedPractice >= (requiredPractice || 0), icon: CarIcon, color: "primary" },
     { id: 3, title: "Theory Exam", description: "Pass the theoretical examination", progress: 0, total: 1, completed: false, icon: AwardIcon, color: "warning" },
     { id: 4, title: "Practical Exam", description: "Pass the practical driving test", progress: 0, total: 1, completed: false, icon: TargetIcon, color: "warning" },
   ];
@@ -115,6 +184,19 @@ const Progress: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>Loading…</span></div>;
+  }
+  if (error) {
+    return (
+      <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center">
+        <div className="tw-text-center">
+          <p className="tw-text-red-600 tw-font-medium">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
       <PortalNavBar />
@@ -130,18 +212,18 @@ const Progress: React.FC = () => {
         </div>
 
         {/* Overall Progress */}
-        <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow tw-animate-fade-in-up">
+  <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow tw-animate-fade-in-up">
           <CardContent className="tw-p-8 tw-text-center">
             <div className="tw-space-y-4">
               <div className="tw-w-24 tw-h-24 tw-mx-auto tw-bg-white/20 tw-rounded-full tw-flex tw-items-center tw-justify-center">
-                <span className="tw-text-3xl tw-font-bold">{overallProgress}%</span>
+                <span className="tw-text-3xl tw-font-bold">{percentAll}%</span>
               </div>
               <div>
                 <h2 className="tw-text-2xl tw-font-bold tw-mb-2">Course Completion</h2>
                 <p className="tw-opacity-90">You're doing great! Keep up the excellent work.</p>
               </div>
-              <ProgressBar value={overallProgress} className="tw-h-3" />
-              <p className="tw-text-sm tw-opacity-75">{Math.round((40 * overallProgress) / 100)} of 40 total lessons completed</p>
+              <ProgressBar value={percentAll} className="tw-h-3" />
+              <p className="tw-text-sm tw-opacity-75">{completedAll} of {requiredAll || 0} total lessons completed</p>
             </div>
           </CardContent>
         </Card>
@@ -151,24 +233,20 @@ const Progress: React.FC = () => {
           <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card hover:tw-scale-105 tw-transition-transform">
             <CardHeader>
               <CardTitle className="tw-flex tw-items-center tw-gap-2">
-                <BookOpenIcon className="tw-text-primary" />
+                <BookOpenIcon className={`${iconSm} tw-text-primary`} />
                 Theory Progress
               </CardTitle>
             </CardHeader>
             <CardContent className="tw-space-y-4">
               <div className="tw-text-center">
-                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(theoryProgress)}`}>{theoryProgress}%</div>
+                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentTheory)}`}>{percentTheory}%</div>
                 <p className="tw-text-sm tw-text-muted-foreground">Theory knowledge</p>
               </div>
-              <ProgressBar value={theoryProgress} className="tw-h-2" />
-              <div className="tw-grid tw-grid-cols-2 tw-gap-4 tw-text-sm">
+              <ProgressBar value={percentTheory} className="tw-h-2" />
+              <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
                 <div>
                   <p className="tw-text-muted-foreground">Lessons</p>
-                  <p className="tw-font-semibold">17/20</p>
-                </div>
-                <div>
-                  <p className="tw-text-muted-foreground">Tests Passed</p>
-                  <p className="tw-font-semibold">15/17</p>
+                  <p className="tw-font-semibold">{completedTheory}/{requiredTheory || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -177,24 +255,20 @@ const Progress: React.FC = () => {
           <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card hover:tw-scale-105 tw-transition-transform">
             <CardHeader>
               <CardTitle className="tw-flex tw-items-center tw-gap-2">
-                <CarIcon className="tw-text-primary" />
+                <CarIcon className={`${iconSm} tw-text-primary`} />
                 Practical Progress
               </CardTitle>
             </CardHeader>
             <CardContent className="tw-space-y-4">
               <div className="tw-text-center">
-                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(practicalProgress)}`}>{practicalProgress}%</div>
+                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentPractice)}`}>{percentPractice}%</div>
                 <p className="tw-text-sm tw-text-muted-foreground">Driving skills</p>
               </div>
-              <ProgressBar value={practicalProgress} className="tw-h-2" />
-              <div className="tw-grid tw-grid-cols-2 tw-gap-4 tw-text-sm">
+              <ProgressBar value={percentPractice} className="tw-h-2" />
+              <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
                 <div>
-                  <p className="tw-text-muted-foreground">Hours</p>
-                  <p className="tw-font-semibold">24/40</p>
-                </div>
-                <div>
-                  <p className="tw-text-muted-foreground">Routes</p>
-                  <p className="tw-font-semibold">8/12</p>
+                  <p className="tw-text-muted-foreground">Lessons</p>
+                  <p className="tw-font-semibold">{completedPractice}/{requiredPractice || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -202,10 +276,10 @@ const Progress: React.FC = () => {
         </div>
 
         {/* Milestones */}
-        <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
+  <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
           <CardHeader>
-            <CardTitle className="tw-flex tw-items-center tw-gap-2">
-              <TargetIcon className="tw-text-primary" />
+              <CardTitle className="tw-flex tw-items-center tw-gap-2">
+              <TargetIcon className={`${iconSm} tw-text-primary`} />
               Course Milestones
             </CardTitle>
           </CardHeader>
@@ -217,13 +291,13 @@ const Progress: React.FC = () => {
                 return (
                   <div key={m.id} className="tw-flex tw-items-center tw-gap-4 tw-p-4 tw-bg-secondary/30 tw-rounded-lg tw-border tw-border-border/20 hover:tw-bg-secondary/50 tw-transition-colors">
                     <div className={`tw-w-12 tw-h-12 tw-rounded-lg tw-flex tw-items-center tw-justify-center ${getMilestoneColor(m.color)}`}>
-                      <Icon className="tw-w-6 tw-h-6" />
+                      <Icon className={iconMd} />
                     </div>
                     <div className="tw-flex-1 tw-space-y-2">
                       <div className="tw-flex tw-items-center tw-justify-between">
                         <h3 className="tw-font-semibold tw-text-foreground">{m.title}</h3>
                         <div className="tw-flex tw-items-center tw-gap-2">
-                          {m.completed && <CheckCircleIcon className="tw-w-4 tw-h-4 tw-text-success" />}
+                          {m.completed && <CheckCircleIcon className={`${iconXs} tw-text-success`} />}
                           <Badge variant={m.completed ? "default" : "secondary"}>{m.progress}/{m.total}</Badge>
                         </div>
                       </div>
@@ -237,34 +311,13 @@ const Progress: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Skills Progress */}
-        <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
-          <CardHeader>
-            <CardTitle className="tw-flex tw-items-center tw-gap-2">
-              <TrendingUpIcon className="tw-text-primary" />
-              Skills Development
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="tw-grid tw-gap-4">
-              {skillsProgress.map((s, idx) => (
-                <div key={idx} className="tw-space-y-2">
-                  <div className="tw-flex tw-justify-between tw-items-center">
-                    <span className="tw-font-medium tw-text-foreground">{s.skill}</span>
-                    <span className={`tw-font-semibold ${getProgressTone(s.progress)}`}>{s.progress}%</span>
-                  </div>
-                  <ProgressBar value={s.progress} className="tw-h-2" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Skills Development section removed as requested */}
 
         {/* Recent Achievements */}
-        <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
+  <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
           <CardHeader>
             <CardTitle className="tw-flex tw-items-center tw-gap-2">
-              <AwardIcon className="tw-text-primary" />
+              <AwardIcon className={`${iconSm} tw-text-primary`} />
               Recent Achievements
             </CardTitle>
           </CardHeader>
@@ -285,15 +338,15 @@ const Progress: React.FC = () => {
         </Card>
 
         {/* Motivational */}
-        <Card className="tw-bg-success tw-text-success-foreground tw-shadow-glow">
+        <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow">
           <CardContent className="tw-p-8 tw-text-center">
             <div className="tw-space-y-4">
               <div className="tw-text-4xl">🎯</div>
               <h3 className="tw-text-2xl tw-font-bold">You're Almost There!</h3>
               <p className="tw-opacity-90 tw-max-w-md tw-mx-auto">
-                With {100 - overallProgress}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!
+                With {Math.max(0, 100 - (percentAll || 0))}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!
               </p>
-              <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 tw-animate-bounce-gentle">
+              <button onClick={() => navigate('/book-lesson')} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 tw-animate-bounce-gentle">
                 Book Next Lesson
               </button>
             </div>
