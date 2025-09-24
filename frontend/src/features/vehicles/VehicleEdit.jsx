@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { Edit, SimpleForm, TextInput, NumberInput, SelectInput, BooleanInput, required } from 'react-admin';
+import { Edit, SimpleForm, TextInput, NumberInput, SelectInput, BooleanInput, required, useTranslate } from 'react-admin';
 import LicensePlateInput from './LicensePlateInput';
 
 export default function makeVehicleEdit(vehicleChoices) {
   return function VehicleEdit(props) {
+    const translate = useTranslate();
     return (
-      <Edit {...props}>
+      <Edit {...props} title={translate('ra.page.edit', { defaultValue: 'Edit' })}>
         <SimpleForm>
           <TextInput source="make" validate={[required()]} />
           <TextInput source="model" validate={[required()]} />

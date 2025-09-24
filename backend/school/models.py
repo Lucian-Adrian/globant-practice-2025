@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from .enums import (
     StudentStatus, EnrollmentStatus, LessonStatus,
-    PaymentMethod, VehicleCategory, CourseType,
+    PaymentMethod, VehicleCategory, CourseType, DayOfWeek,
 )
 
 
@@ -53,6 +53,18 @@ class Instructor(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class InstructorAvailability(models.Model):
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='availabilities')
+    day = models.CharField(max_length=10, choices=DayOfWeek.choices())
+    hours = models.JSONField(default=list, help_text="List of available start times in HH:MM format, e.g. ['08:00', '09:30']")
+
+    class Meta:
+        unique_together = ('instructor', 'day')
+
+    def __str__(self):
+        return f"{self.instructor} - {self.day}: {self.hours}"
 
 
 class Vehicle(models.Model):

@@ -15,8 +15,9 @@ export default function Menu() {
       <RaMenu.ResourceItem name="payments" />
       <RaMenu.ResourceItem name="enrollments" />
       <RaMenu.ResourceItem name="lessons" />
+  <RaMenu.ResourceItem name="instructor-availabilities" />
 
-      <RaMenu.Item to="/admin/students/board" primaryText={translate('common.students.board.title', { defaultValue: 'Students Board' })} component={Link} />
+  <RaMenu.Item to="/admin/students/board" primaryText={translate('common.students.board.title', { defaultValue: 'Students Board' })} component={Link} />
     </RaMenu>
   );
 }

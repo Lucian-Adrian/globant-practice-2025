@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .enums import CourseType
 from .validators import validate_name, normalize_phone
 
@@ -117,6 +117,15 @@ class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructor
         fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories"]
+
+
+class InstructorAvailabilitySerializer(serializers.ModelSerializer):
+    instructor = InstructorSerializer(read_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
+
+    class Meta:
+        model = InstructorAvailability
+        fields = ["id", "instructor", "instructor_id", "day", "hours"]
 
 
 class VehicleSerializer(serializers.ModelSerializer):
