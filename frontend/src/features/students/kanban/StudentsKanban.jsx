@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { useDataProvider, useNotify } from 'react-admin';
+import { useDataProvider, useNotify, useTranslate } from 'react-admin';
 import { DndContext, MouseSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
-import { useTranslation } from 'react-i18next';
 
 const STATUSES = ['PENDING', 'ACTIVE', 'GRADUATED', 'INACTIVE'];
 const INITIAL_PER_PAGE = 100;
@@ -12,7 +11,7 @@ const LOAD_MORE_STEP = 50;
 const makeEmptyColumn = () => ({ items: [], page: 1, perPage: INITIAL_PER_PAGE, loading: false, total: 0 });
 
 export default function StudentsKanban() {
-  const { t } = useTranslation();
+  const t = useTranslate();
   const dataProvider = useDataProvider();
   const notify = useNotify();
   const sensors = useSensors(
@@ -42,7 +41,7 @@ export default function StudentsKanban() {
       setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], items: data, loading: false, total, perPage: perPageArg } }));
     } catch (e) {
       setColumns((prev) => ({ ...prev, [statusId]: { ...prev[statusId], loading: false } }));
-      notify(e?.message || 'Failed to load students', { type: 'warning' });
+  notify(e?.message || t('common.students.board.messages.load_failed', 'Failed to load students'), { type: 'warning' });
     }
   }, [dataProvider, notify]);
 
@@ -123,20 +122,20 @@ export default function StudentsKanban() {
     } catch (e) {
       // revert on error
       moveLocal(id, to, from);
-      notify(e?.message || 'Update failed', { type: 'warning' });
+  notify(e?.message || t('common.students.board.messages.update_failed', 'Update failed'), { type: 'warning' });
     }
   };
 
   const titles = {
-    PENDING: t('common.students.board.column.pending', 'Pending'),
-    ACTIVE: t('common.students.board.column.active', 'Active'),
-    GRADUATED: t('common.students.board.column.graduated', 'Graduated'),
-    INACTIVE: t('common.students.board.column.inactive', 'Inactive'),
+  PENDING: t('common.students.board.column.pending', 'Pending'),
+  ACTIVE: t('common.students.board.column.active', 'Active'),
+  GRADUATED: t('common.students.board.column.graduated', 'Graduated'),
+  INACTIVE: t('common.students.board.column.inactive', 'Inactive'),
   };
 
   return (
     <div style={{ padding: 16 }}>
-      <h2 style={{ marginTop: 0 }}>{t('common.students.board.title', 'Students Board')}</h2>
+  <h2 style={{ marginTop: 0 }}>{t('common.students.board.title', 'Students Board')}</h2>
       <div style={{ margin: '8px 0 16px' }}>
         <input
           type="search"

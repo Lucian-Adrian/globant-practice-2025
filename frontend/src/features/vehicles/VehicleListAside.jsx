@@ -9,7 +9,7 @@ export default function VehicleListAside() {
     <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 16em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
         <ListAsideFilters
-          hideDate
+          dateField="last_maintenance"
           statusLabelKey="filters.availability"
           statusItems={[
             { value: { is_available: true }, labelKey: 'filters.available', color: '#10b981' },

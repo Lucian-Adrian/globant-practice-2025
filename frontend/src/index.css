@@ -2,6 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Animations */
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slide-in {
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.tw-animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.tw-animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.tw-animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.tw-animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+.tw-animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Status transition animations */
+.status-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Card hover animations */
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.tw-animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

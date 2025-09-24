@@ -1,31 +1,72 @@
 import * as React from 'react';
-import { Create, SimpleForm, ReferenceInput, SelectInput, DateTimeInput, NumberInput, TextInput, useTranslate } from 'react-admin';
+import { 
+    Create, 
+    SimpleForm, 
+    ReferenceInput, 
+    SelectInput, 
+    DateTimeInput, 
+    NumberInput, 
+    TextInput, 
+    useTranslate, 
+    required 
+} from 'react-admin';
 
 export default function LessonCreate(props) {
-  const translate = useTranslate();
+  const t = useTranslate();
+
   return (
-    <Create {...props} title={translate('ra.page.create', { defaultValue: 'Create' })}>
+    
+    <Create {...props}>
       <SimpleForm>
-        <ReferenceInput label={translate('resources.lessons.fields.enrollment', { defaultValue: 'Enrollment' })} source="enrollment_id" reference="enrollments" perPage={50}>
-          <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+        <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
+          <SelectInput 
+            label={t('resources.lessons.fields.enrollment', 'Enrollment')} 
+            optionText={(r) => r.label || `#${r.id}`} 
+            validate={[required()]} 
+          />
         </ReferenceInput>
-        <ReferenceInput label={translate('resources.lessons.fields.instructor', { defaultValue: 'Instructor' })} source="instructor_id" reference="instructors" perPage={50}>
-          <SelectInput optionText={(r) => `${r.first_name} ${r.last_name}`} />
+        <ReferenceInput source="instructor_id" reference="instructors" perPage={50}>
+          <SelectInput 
+            label={t('resources.lessons.fields.instructor', 'Instructor')} 
+            optionText={(r) => `${r.first_name} ${r.last_name}`} 
+            validate={[required()]} 
+          />
         </ReferenceInput>
-        <ReferenceInput label={translate('resources.lessons.fields.vehicle', { defaultValue: 'Vehicle' })} source="vehicle_id" reference="vehicles" perPage={50}>
-          <SelectInput optionText={(r) => `${r.license_plate}`} />
+
+        <ReferenceInput source="vehicle_id" reference="vehicles" perPage={50}>
+          <SelectInput 
+            label={t('resources.lessons.fields.vehicle', 'Vehicle')} 
+            optionText={(r) => `${r.license_plate}`} 
+          />
         </ReferenceInput>
-        <DateTimeInput source="scheduled_time" />
-        <NumberInput source="duration_minutes" defaultValue={60} />
+
+        <DateTimeInput 
+          source="scheduled_time" 
+          label={t('resources.lessons.fields.scheduled_time', 'Scheduled time')} 
+          validate={[required()]} 
+        />
+        
+        <NumberInput 
+          source="duration_minutes" 
+          label={t('resources.lessons.fields.duration_minutes', 'Duration (min)')} 
+          defaultValue={50} 
+        />
+        
         <SelectInput
           source="status"
+          label={t('filters.status', 'Status')}
           choices={[
-            { id: 'SCHEDULED', name: translate('filters.scheduled', { defaultValue: 'SCHEDULED' }) },
-            { id: 'COMPLETED', name: translate('filters.completed', { defaultValue: 'COMPLETED' }) },
-            { id: 'CANCELED', name: translate('filters.canceled', { defaultValue: 'CANCELED' }) },
+            { id: 'SCHEDULED', name: t('filters.scheduled', 'Scheduled') },
+            { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
+            { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
           ]}
         />
-        <TextInput source="notes" multiline rows={2} />
+        <TextInput 
+          source="notes" 
+          label={t('resources.lessons.fields.notes', 'Notes')} 
+          multiline 
+          rows={2} 
+        />
       </SimpleForm>
     </Create>
   );
