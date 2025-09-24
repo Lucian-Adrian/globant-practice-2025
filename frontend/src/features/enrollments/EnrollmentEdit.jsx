@@ -7,7 +7,7 @@ export default function EnrollmentEdit(props) {
   const translate = useTranslate();
 */}
   return (
-    <Edit {...props} title={translate('ra.page.edit', { defaultValue: 'Edit' })}>
+  <Edit {...props} title={t('ra.page.edit', { defaultValue: 'Edit' })}>
       <SimpleForm>
         <ReferenceInput source="student_id" reference="students" perPage={50}>
           <SelectInput 

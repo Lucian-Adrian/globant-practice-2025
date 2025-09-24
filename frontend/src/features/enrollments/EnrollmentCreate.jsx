@@ -8,7 +8,7 @@ export default function EnrollmentCreate(props) {
 */}  
 
   return (
-    <Create {...props} title={translate('ra.page.create', { defaultValue: 'Create' })}>
+  <Create {...props} title={t('ra.page.create', { defaultValue: 'Create' })}>
       <SimpleForm>
         <ReferenceInput source="student_id" reference="students" perPage={50}>
           <SelectInput 
