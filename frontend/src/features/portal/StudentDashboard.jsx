@@ -73,7 +73,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', minHeight: '100vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1>{t('common:studentDashboard', 'Student Dashboard')}</h1>
         <div style={{ position: 'absolute', top: 20, right: 20 }}>
@@ -185,9 +185,9 @@ const StudentDashboard = () => {
           )}
 
           {/* Lessons */}
-          {data.lessons && data.lessons.length > 0 && (
-            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
-              <h2>{t('common:yourLessons', 'Your Lessons')}</h2>
+          <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+            <h2>{t('common:yourLessons', 'Your Lessons')}</h2>
+            {data.lessons && data.lessons.length > 0 ? (
               <div style={{ display: 'grid', gap: '1rem' }}>
                 {data.lessons.map(lesson => (
                   <div key={lesson.id} style={{ border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem' }}>
@@ -201,13 +201,15 @@ const StudentDashboard = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p>{t('common:noLessonsYet', 'No lessons scheduled yet.')}</p>
+            )}
+          </div>
 
           {/* Payments */}
-          {data.payments && data.payments.length > 0 && (
-            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
-              <h2>{t('common:yourPayments', 'Your Payments')}</h2>
+          <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+            <h2>{t('common:yourPayments', 'Your Payments')}</h2>
+            {data.payments && data.payments.length > 0 ? (
               <div style={{ display: 'grid', gap: '1rem' }}>
                 {data.payments.map(payment => (
                   <div key={payment.id} style={{ border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem' }}>
@@ -219,8 +221,10 @@ const StudentDashboard = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p>{t('common:noPaymentsYet', 'No payments recorded yet.')}</p>
+            )}
+          </div>
 
           {/* No data message */}
           {(!data.instructors || data.instructors.length === 0) &&

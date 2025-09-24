@@ -12,7 +12,7 @@ export default function LessonList(props) {
         </ReferenceField>
         <ReferenceField source="instructor.id" reference="instructors" label="Instructor" />
         <TextField source="vehicle.license_plate" label="Vehicle" />
-        <DateField source="scheduled_time" />
+        <DateField source="scheduled_time" showTime />
         <NumberField source="duration_minutes" />
         <TextField source="status" />
       </Datagrid>

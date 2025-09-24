@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Edit, SimpleForm, ReferenceInput, SelectInput, DateInput, NumberInput, TextInput } from 'react-admin';
+import { Edit, SimpleForm, ReferenceInput, SelectInput, DateTimeInput, NumberInput, TextInput } from 'react-admin';
 
 export default function LessonEdit(props) {
   return (
@@ -14,7 +14,7 @@ export default function LessonEdit(props) {
         <ReferenceInput label="Vehicle" source="vehicle_id" reference="vehicles" perPage={50}>
           <SelectInput optionText={(r) => `${r.license_plate}`} />
         </ReferenceInput>
-        <DateInput source="scheduled_time" />
+        <DateTimeInput source="scheduled_time" />
         <NumberInput source="duration_minutes" />
         <SelectInput
           source="status"
