@@ -1,8 +1,10 @@
-import StudentListAside from './students/StudentListAside';
+import StudentListAside from './features/students/StudentListAside';
+import { makeStudentList } from './features/students';
 import ImportButton from './components/ImportButton';
 import ResourceEmptyState from './components/ResourceEmptyState';
 import InstructorDetails from './instructors/InstructorDetails';
 import InstructorCalendar from './instructors/InstructorCalendar';
+import { ClassDetails, CourseList as CourseListComponent } from './features/courses';
 
 import * as React from 'react';
 import {
@@ -261,6 +263,7 @@ const dataProvider = {
 const customRoutes = [
   <Route key="instructor-details" path="/instructors/:id/details" element={<InstructorDetails />} />,
   <Route key="instructor-calendar" path="/instructors/:id/calendar" element={<InstructorCalendar />} />,
+  <Route key="class-details" path="/classes/:id/details" element={<ClassDetails />} />,
 ];
 
 import { i18nProvider } from './i18n.js';
@@ -268,10 +271,10 @@ import { i18nProvider } from './i18n.js';
 export default function App() {
   return (
     <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider}>
-      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
+      <Resource name="students" list={makeStudentList()} edit={StudentEdit} create={StudentCreate} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
-      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} />
+      <Resource name="classes" list={CourseListComponent} edit={CourseEdit} create={CourseCreate} />
       <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
     </Admin>
   );
@@ -283,50 +286,12 @@ const VEHICLE_CATEGORIES = [
 ].map(v => ({ id: v, name: v }));
 
 const STUDENT_STATUS = [
-  'ACTIVE','INACTIVE','GRADUATED',
+  'ACTIVE','INACTIVE','GRADUATED','PENDING',
 ].map(v => ({ id: v, name: v }));
 
 const PAYMENT_METHODS = ['CASH','CARD','TRANSFER'].map(v => ({ id: v, name: v }));
 
-// Stiluri de culoare pentru fiecare status de student
-const studentRowStyle = (record, index) => {
-  if (!record) return {};
-  switch (record.status) {
-    case 'ACTIVE':
-      return { backgroundColor: 'rgba(96, 165, 250, 0.15)' };   // albastru pal
-    case 'INACTIVE':
-      return { backgroundColor: 'rgba(251, 191, 36, 0.15)' };   // galben pal
-    case 'GRADUATED':
-      return { backgroundColor: 'rgba(134, 239, 172, 0.15)' };  // verde pal
-    default:
-      return {};
-  }
-};
-
-
-// Students
-const StudentList = (props) => (
-  <List
-    {...props}
-    aside={<StudentListAside />}
-    filters={[]}
-    actions={<StudentListActions />}
-    empty={<ResourceEmptyState endpoint="students" message="No students yet. Create one or import a batch." />}
-  >
-    <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
-      <NumberField source="id" />
-      <TextField source="first_name" />
-      <TextField source="last_name" />
-      <EmailField source="email" />
-      <TextField source="phone_number" />
-      <DateField source="date_of_birth" />
-      <DateField source="enrollment_date" />
-      <TextField source="status" />
-    </Datagrid>
-  </List>
-);
-
-
+// Students Edit and Create components
 const StudentEdit = (props) => (
   <EditSmart {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
@@ -502,19 +467,6 @@ const VehicleCreate = (props) => (
 );
 
 // Courses (exposed as "classes")
-const CourseList = (props) => (
-  <List {...props}>
-    <Datagrid rowClick="edit">
-      <NumberField source="id" />
-      <TextField source="name" />
-      <TextField source="category" />
-      <TextField source="description" />
-      <NumberField source="price" />
-      <NumberField source="required_lessons" />
-    </Datagrid>
-  </List>
-);
-
 const CourseEdit = (props) => (
   <EditSmart {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>

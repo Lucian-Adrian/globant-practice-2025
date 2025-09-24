@@ -76,6 +76,11 @@ const dataProvider = {
     return dataProvider.getList(resource, { ...params, filter });
   },
   update: async (resource, params) => {
+    if (resource === 'lessons') {
+      // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
+      // Remove after verifying
+      try { console.debug('[DP:update] lessons payload', params.data); } catch (_) {}
+    }
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
     const resp = await rawFetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });
@@ -101,6 +106,11 @@ const dataProvider = {
     return { data: results };
   },
   create: async (resource, params) => {
+    if (resource === 'lessons') {
+      // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
+      // Remove after verifying
+      try { console.debug('[DP:create] lessons payload', params.data); } catch (_) {}
+    }
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}`;
   const resp = await rawFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params.data) });

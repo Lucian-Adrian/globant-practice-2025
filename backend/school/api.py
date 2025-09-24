@@ -4,6 +4,7 @@ from django.http import HttpResponse
 import csv
 from io import StringIO, TextIOWrapper
 from django.db import models
+from django.db.models import Count, Q
 from django.utils.timezone import now
 from datetime import timedelta
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
@@ -125,6 +126,35 @@ class StudentViewSet(FullCrudViewSet):
 class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
+    # Allow filtering by hire_date ranges from RA side filters
+    filterset_fields = {
+        'hire_date': ['gte', 'lte', 'gt', 'lt'],
+    }
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        level = self.request.query_params.get('experience_level')
+        if level:
+            # Map virtual experience_level to hire_date ranges
+            today = now().date()
+            # Helper to compute date X years ago (approx 365 days per year is ok for filtering)
+            def years_ago(years: int):
+                return today.replace(year=today.year - years)
+
+            if level.upper() == 'NEW':
+                # Hired within last year
+                threshold = years_ago(1)
+                qs = qs.filter(hire_date__gte=threshold)
+            elif level.upper() == 'EXPERIENCED':
+                # Between 1 and 5 years
+                lower = years_ago(5)
+                upper = years_ago(1)
+                qs = qs.filter(hire_date__gte=lower, hire_date__lt=upper)
+            elif level.upper() == 'SENIOR':
+                # More than 5 years
+                threshold = years_ago(5)
+                qs = qs.filter(hire_date__lt=threshold)
+        return qs
 
 
 class VehicleViewSet(FullCrudViewSet):
@@ -177,3 +207,80 @@ class UtilityViewSet(viewsets.ViewSet):
             .order_by('scheduled_time')
         serializer = LessonSerializer(lessons, many=True)
         return response.Response(serializer.data)
+
+    @decorators.action(detail=False, methods=["get"], url_path="lesson-stats")
+    def lesson_stats(self, request):
+        """Return lesson-related KPIs for the admin dashboard.
+
+        Metrics returned (camelCase to match frontend expectations):
+        - todayScheduled: SCHEDULED lessons scheduled for today
+        - thisWeekCompleted: COMPLETED lessons in current ISO week
+        - attendanceRate: for current week, completed / (completed + canceled) * 100
+        - topInstructors: top 3 instructors over last 4 weeks with completion rate
+        - weeklyTrend: total lessons per week for last 4 weeks (oldest -> newest)
+        """
+        now_ts = now()
+        # Normalize to start of today
+        today_start = now_ts.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+
+        # ISO week: Monday is 0
+        week_start = today_start - timedelta(days=today_start.weekday())
+        week_end = week_start + timedelta(days=7)
+
+        # Lessons created (registered) today
+        today_scheduled = Lesson.objects.filter(
+            created_at__gte=today_start,
+            created_at__lt=today_end,
+        ).count()
+
+        # This week completed and canceled
+        week_qs = Lesson.objects.filter(
+            scheduled_time__gte=week_start,
+            scheduled_time__lt=week_end,
+        )
+        this_week_completed = week_qs.filter(status='COMPLETED').count()
+        this_week_canceled = week_qs.filter(status='CANCELED').count()
+        denom = this_week_completed + this_week_canceled
+        attendance_rate = int(round((this_week_completed / denom) * 100)) if denom else 0
+
+        # Top instructors over last 4 weeks
+        last4_start = week_start - timedelta(days=21)
+        instr_stats = (
+            Lesson.objects.filter(
+                scheduled_time__gte=last4_start,
+                scheduled_time__lt=week_end,
+            )
+            .values('instructor_id', 'instructor__first_name', 'instructor__last_name')
+            .annotate(
+                total=Count('id'),
+                completed=Count('id', filter=Q(status='COMPLETED')),
+            )
+            .order_by('-total')[:3]
+        )
+        top_instructors = [
+            {
+                "name": f"{row['instructor__first_name']} {row['instructor__last_name']}",
+                "total": row['total'] or 0,
+                "completed": row['completed'] or 0,
+                "completionRate": int(round(((row['completed'] or 0) / row['total']) * 100)) if row['total'] else 0,
+            }
+            for row in instr_stats
+        ]
+
+        # Weekly trend for last 4 weeks (oldest to newest)
+        weekly_trend = []
+        for i in range(4):
+            # oldest is i=0 -> 3 weeks ago
+            start = week_start - timedelta(days=7 * (3 - i))
+            end = start + timedelta(days=7)
+            cnt = Lesson.objects.filter(scheduled_time__gte=start, scheduled_time__lt=end).count()
+            weekly_trend.append({"week": f"W{i+1}", "lessons": cnt})
+
+        return response.Response({
+            "todayScheduled": today_scheduled,
+            "thisWeekCompleted": this_week_completed,
+            "attendanceRate": attendance_rate,
+            "topInstructors": top_instructors,
+            "weeklyTrend": weekly_trend,
+        })

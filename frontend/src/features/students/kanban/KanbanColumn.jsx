@@ -1,7 +1,7 @@
 import * as React from 'react';
 import KanbanCard from './KanbanCard';
 import { useDroppable } from '@dnd-kit/core';
-import { useTranslation } from 'react-i18next';
+import { useTranslate } from 'react-admin';
 
 const STATUS_TINTS = {
   PENDING: 'rgba(156,163,175,0.12)', // gray-400 light
@@ -11,7 +11,7 @@ const STATUS_TINTS = {
 };
 
 export default function KanbanColumn({ title, statusId, items, loading, count, hasMore, onLoadMore }) {
-  const { t } = useTranslation();
+  const t = useTranslate();
   const { isOver, setNodeRef } = useDroppable({ id: statusId });
   return (
     <div style={{ flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column' }}>

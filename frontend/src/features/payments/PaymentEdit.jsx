@@ -1,17 +1,131 @@
 import * as React from 'react';
-import { Edit, SimpleForm, NumberInput, SelectInput, ReferenceInput, TextInput, required } from 'react-admin';
+import { Edit, SimpleForm, NumberInput, SelectInput, ReferenceInput, TextInput, required, useGetRecordId, useTranslate } from 'react-admin';
+
+// Build translated payment status choices
+const buildStatusChoices = (t) => ([
+  { id: 'PENDING', name: t('filters.pending', 'Pending') },
+  { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
+  { id: 'REFUNDED', name: t('filters.refunded', 'Refunded') },
+  { id: 'FAILED', name: t('filters.failed', 'Failed') },
+]);
+
+// Custom validation functions
+const validatePaymentAmount = (value, allValues) => {
+  if (!value || value <= 0) {
+    return 'Suma trebuie să fie mai mare decât 0';
+  }
+  
+  // Cannot mark as completed if amount is 0
+  if (allValues?.status === 'COMPLETED' && value === 0) {
+    return 'Nu poți marca ca achitat o plată de 0 MDL';
+  }
+  
+  // Large amounts need verification
+  if (value > 10000) {
+    return 'Sumele mari (>10,000 MDL) necesită verificare suplimentară';
+  }
+  
+  return undefined;
+};
+
+const validatePaymentStatus = (value, allValues) => {
+  if (!value) {
+    return 'Statusul este obligatoriu';
+  }
+  
+  const amount = parseFloat(allValues?.amount || 0);
+  
+  // Business rules validation
+  switch (value) {
+    case 'COMPLETED':
+      if (amount <= 0) {
+        return 'Nu poți marca ca achitat o plată de 0 MDL';
+      }
+      if (amount > 10000 && allValues?.payment_method !== 'TRANSFER') {
+        return 'Sumele mari necesită transfer bancar pentru a fi marcate ca achitate';
+      }
+      break;
+      
+    case 'REFUNDED':
+      if (amount <= 0) {
+        return 'Nu poți rambursa o plată de 0 MDL';
+      }
+      // Could add additional checks like "payment must have been completed first"
+      break;
+      
+    case 'FAILED':
+      // Failed payments typically shouldn't have restrictions
+      break;
+      
+    case 'PENDING':
+      // Pending is always valid
+      break;
+      
+    default:
+      return 'Status invalid';
+  }
+  
+  return undefined;
+};
+
+const validatePaymentMethod = (value, allValues) => {
+  if (!value) {
+    return 'Metoda de plată este obligatorie';
+  }
+  
+  const amount = parseFloat(allValues?.amount || 0);
+  const status = allValues?.status;
+  
+  // Business rules for payment methods
+  if (amount > 5000 && value === 'CASH' && status === 'COMPLETED') {
+    return 'Plăți mari în numerar (>5,000 MDL) necesită verificare suplimentară';
+  }
+  
+  return undefined;
+};
 
 export default function makePaymentEdit(paymentChoices) {
   return function PaymentEdit(props) {
-    return (
+    const t = useTranslate();
+  const STATUS_CHOICES = React.useMemo(() => buildStatusChoices(t), [t]);
+  return (
       <Edit {...props}>
-        <SimpleForm>
-          <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
-            <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+        <SimpleForm mode="onChange" reValidateMode="onChange">
+          <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
+            <SelectInput 
+              label={t('resources.payments.fields.enrollment', 'Enrollment')}
+              optionText={(r) => r.label || `#${r.id}`} 
+              validate={[required()]} 
+            />
           </ReferenceInput>
-          <NumberInput source="amount" validate={[required()]} />
-          <SelectInput source="payment_method" choices={paymentChoices} validate={[required()]} />
-          <TextInput source="description" />
+          
+          <NumberInput 
+            source="amount"
+            label={t('resources.payments.fields.amount', 'Amount')}
+            validate={[required(), validatePaymentAmount]}
+          />
+          
+          <SelectInput 
+            source="payment_method"
+            label={t('resources.payments.fields.payment_method', 'Payment method')}
+            choices={paymentChoices} 
+            validate={[required(), validatePaymentMethod]}
+          />
+          
+          <SelectInput
+            source="status"
+            label={t('resources.payments.fields.status', 'Status')}
+            choices={STATUS_CHOICES}
+            validate={[required(), validatePaymentStatus]}
+            defaultValue="PENDING"
+          />
+          
+          <TextInput 
+            source="description"
+            label={t('resources.payments.fields.description', 'Description')}
+            multiline
+            rows={3}
+          />
         </SimpleForm>
       </Edit>
     );

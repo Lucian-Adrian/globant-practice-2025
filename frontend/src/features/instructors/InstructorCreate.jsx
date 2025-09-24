@@ -1,25 +1,32 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, DateInput, required, RadioButtonGroupInput } from 'react-admin';
+import { Create, SimpleForm, TextInput, DateInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
 import PhoneInput from '../../shared/components/PhoneInput';
 import { validateEmail, validatePhoneClient } from '../../shared/validation/validators';
 
 export default function InstructorCreate(props) {
+  const t = useTranslate();
   return (
     <Create {...props}>
-  <SimpleForm>
-        <TextInput source="first_name" validate={[required()]} />
-        <TextInput source="last_name" validate={[required()]} />
-        <TextInput source="email" validate={[validateEmail]} />
-        <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
-        <DateInput source="hire_date" validate={[required()]} />
-        <TextInput source="license_categories" helperText="Comma separated e.g. B,BE,C" />
+      <SimpleForm>
+        <TextInput source="first_name" label={t('resources.instructors.fields.first_name')} validate={[required()]} />
+        <TextInput source="last_name" label={t('resources.instructors.fields.last_name')} validate={[required()]} />
+        <TextInput source="email" label={t('resources.instructors.fields.email')} validate={[validateEmail, required()]} />
+        <PhoneInput source="phone_number" label={t('resources.instructors.fields.phone_number')} validate={[validatePhoneClient]} />
+        <DateInput source="hire_date" label={t('resources.instructors.fields.hire_date')} validate={[required()]} />
+        <TextInput
+          source="license_categories"
+          label={t('resources.instructors.fields.license_categories')}
+          helperText={t('resources.instructors.fields.license_categories_hint')}
+          validate={[required()]}
+        />
         <RadioButtonGroupInput
           source="car_category"
-          label="Car Category"
+          label={t('resources.vehicles.fields.category')}
+          validate={[required()]}
           choices={[
-            { id: 'manual', name: 'Manual' },
-            { id: 'automatic', name: 'Automatic' },
-            { id: 'both', name: 'Both' },
+            { id: 'manual', name: t('instructors.gearbox.manual') },
+            { id: 'automatic', name: t('instructors.gearbox.automatic') },
+            { id: 'both', name: t('instructors.gearbox.both') },
           ]}
           optionText="name"
           optionValue="id"

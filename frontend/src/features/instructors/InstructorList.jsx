@@ -1,11 +1,73 @@
 import PeopleIcon from '@mui/icons-material/People';
 import { useMediaQuery, Drawer, Box, Card, CardHeader, CardContent, CardActions, Avatar, Typography } from '@mui/material';
+import { Chip } from '@mui/material';
 import * as React from 'react';
-import { BulkDeleteWithConfirmButton, List, SearchInput, SimpleList, TextInput, EditButton, ShowButton, DateField, TextField, EmailField } from 'react-admin';
-import { useListContext } from 'react-admin';
+import { BulkDeleteWithConfirmButton, List, SearchInput, SimpleList, TextInput, EditButton, ShowButton, DateField, TextField, EmailField, Datagrid, NumberField, FunctionField, useTranslate, useListContext } from 'react-admin';
 import InstructorListAside from './InstructorListAside.jsx';
+import ListImportActions from '../../shared/components/ListImportActions';
 
 export const InstructorIcon = PeopleIcon;
+
+// Function to determine instructor status based on hire date and experience
+const getInstructorStatus = (record) => {
+  if (!record || !record.hire_date) {
+    return { status: 'UNKNOWN', colorHex: '#9ca3af' };
+  }
+
+  const hireDate = new Date(record.hire_date);
+  const now = new Date();
+  const yearsExperience = (now - hireDate) / (1000 * 60 * 60 * 24 * 365);
+
+  // Map experience buckets to hex colors (match InstructorListAside)
+  if (yearsExperience < 1) {
+    return { status: 'NEW', colorHex: '#60a5fa' };
+  } else if (yearsExperience >= 1 && yearsExperience <= 5) {
+    return { status: 'EXPERIENCED', colorHex: '#10b981' };
+  } else if (yearsExperience > 5) {
+    return { status: 'SENIOR', colorHex: '#ef4444' };
+  } else {
+    return { status: 'UNKNOWN', colorHex: '#9ca3af' };
+  }
+};
+
+// helper to convert a hex color to rgba with alpha
+const hexToRgba = (hex, alpha = 1) => {
+  const cleaned = hex.replace('#', '');
+  const full = cleaned.length === 3 ? cleaned.split('').map(c => c + c).join('') : cleaned;
+  const num = parseInt(full, 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+// Status field component with colored chips (translated)
+const InstructorStatusField = (recordOrProps) => {
+  const t = useTranslate();
+  const record = recordOrProps?.record ?? recordOrProps;
+  const { status, colorHex } = getInstructorStatus(record);
+  // Map status values to translation keys
+  const statusKeyMap = {
+    NEW: 'filters_extra.new',
+    EXPERIENCED: 'filters_extra.experienced',
+    SENIOR: 'filters_extra.senior',
+    UNKNOWN: 'filters.unknown'
+  };
+  const labelKey = statusKeyMap[status] || statusKeyMap.UNKNOWN || 'filters.unknown';
+  const label = t(labelKey, status);
+  return (
+    <Chip
+      label={label}
+      size="small"
+      sx={{
+        fontWeight: 'bold',
+        minWidth: '100px',
+        backgroundColor: colorHex,
+        color: 'white'
+      }}
+    />
+  );
+};
 
 const getInstructorFilters = () => [
   <SearchInput source="q" alwaysOn />,
@@ -26,6 +88,7 @@ export default function InstructorList() {
       filters={getInstructorFilters()}
       sort={{ field: 'first_name', order: 'ASC' }}
       aside={<InstructorListAside />}
+      actions={<ListImportActions endpoint="instructors" />}
     >
       {isSmall ? (
         <SimpleList
@@ -34,10 +97,45 @@ export default function InstructorList() {
           onClick={record => setSelectedId(record.id)}
         />
       ) : (
-        <InstructorRowList onSelect={setSelectedId} selectedId={selectedId} />
+        <FilteredInstructorDatagrid setSelectedId={setSelectedId} />
       )}
       <InstructorDetailPanel selectedId={selectedId} onClose={() => setSelectedId(null)} />
     </List>
+  );
+}
+
+function FilteredInstructorDatagrid({ setSelectedId }) {
+  const isSmall = useMediaQuery(theme => theme.breakpoints.down('md'));
+  const t = useTranslate();
+  const alpha = 0.15;
+  const [selectedId, setSelectedIdLocal] = React.useState(null);
+  return (
+  <Datagrid 
+      rowClick={(id, basePath, record) => {
+        setSelectedId(id);
+        return undefined; // Prevent navigation
+      }}
+      rowStyle={(record) => {
+        const { colorHex } = getInstructorStatus(record);
+        if (!colorHex) return {};
+        return {
+          backgroundColor: hexToRgba(colorHex, alpha),
+          borderLeft: `4px solid ${colorHex}`
+        };
+      }}
+    >
+      <NumberField source="id" />
+      <TextField source="first_name" />
+      <TextField source="last_name" />
+      <EmailField source="email" />
+      <TextField source="phone_number" />
+      <DateField source="hire_date" />
+      <TextField source="license_categories" />
+      <FunctionField 
+        label={t('resources.instructors.fields.experience', 'Experience')} 
+        render={(record) => <InstructorStatusField record={record} />}
+      />
+    </Datagrid>
   );
 }
 
