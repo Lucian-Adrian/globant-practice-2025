@@ -5,6 +5,7 @@ import ResourceEmptyState from './components/ResourceEmptyState';
 import InstructorDetails from './instructors/InstructorDetails';
 import InstructorCalendar from './instructors/InstructorCalendar';
 import { ClassDetails, CourseList as CourseListComponent } from './features/courses';
+import { InstructorAvailabilityList, InstructorAvailabilityEdit } from './features/instructoravailabilities';
 
 import * as React from 'react';
 import {
@@ -276,6 +277,10 @@ export default function App() {
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
       <Resource name="classes" list={CourseListComponent} edit={CourseEdit} create={CourseCreate} />
       <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
+    {/* <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
+      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
+      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} /> */}
+      <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} />
     </Admin>
   );
 }

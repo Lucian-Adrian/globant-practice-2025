@@ -11,12 +11,12 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer
 )
-from .enums import all_enums_for_meta, StudentStatus
+from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
 from .validators import normalize_phone
 
@@ -161,6 +161,11 @@ class StudentViewSet(FullCrudViewSet):
 class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
+
+
+class InstructorAvailabilityViewSet(FullCrudViewSet):
+    queryset = InstructorAvailability.objects.select_related('instructor').all()
+    serializer_class = InstructorAvailabilitySerializer
 
 
 class VehicleViewSet(FullCrudViewSet):
@@ -373,13 +378,93 @@ def student_dashboard(request):
     course_data = CourseSerializer(courses, many=True).data
     
     # Get student's enrollments and lessons
-    enrollments = Enrollment.objects.filter(student=student)
+    enrollments = Enrollment.objects.filter(student=student).select_related('course')
     lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'vehicle').order_by('scheduled_time')
     lesson_data = LessonSerializer(lessons, many=True).data
     
     # Get payments for the student's enrollments
     payments = Payment.objects.filter(enrollment__in=enrollments).select_related('enrollment__course').order_by('-payment_date')
     payment_data = PaymentSerializer(payments, many=True).data
+    # Serialize enrollments for frontend aggregation
+    from .serializers import EnrollmentSerializer
+    enrollment_data = EnrollmentSerializer(enrollments.select_related('course', 'student'), many=True).data
+    
+    # If no enrollments, return mock data for testing
+    if not enrollments.exists():
+        mock_course = {
+            "id": 1,
+            "name": "Mock Driving Course B",
+            "category": "B",
+            "type": "PRACTICE",
+            "description": "Mock course for testing",
+            "price": "1500.00",
+            "required_lessons": 20
+        }
+        mock_enrollment = {
+            "id": 1,
+            "student": student.id,
+            "course": mock_course,
+            "enrollment_date": student.enrollment_date.isoformat(),
+            "type": "PRACTICE",
+            "status": "IN_PROGRESS"
+        }
+        lesson_data = [{
+            "id": 1,
+            "enrollment": mock_enrollment,
+            "instructor": {"id": 1, "first_name": "Mock", "last_name": "Instructor", "email": "mock@example.com", "phone_number": "+37312345678", "hire_date": "2020-01-01", "license_categories": "B"},
+            "vehicle": {"id": 1, "make": "Mock", "model": "Car", "license_plate": "MOCK001", "year": 2020, "category": "B", "is_available": True},
+            "scheduled_time": "2024-10-25T10:00:00Z",
+            "duration_minutes": 50,
+            "status": "SCHEDULED",
+            "notes": "Mock lesson"
+        }]
+        payment_data = [{
+            "id": 1,
+            "enrollment": mock_enrollment,
+            "amount": "500.00",
+            "payment_date": "2024-10-01T00:00:00Z",
+            "payment_method": "CASH",
+            "description": "Mock payment"
+        }]
+        course_data = [mock_course]
+        instructor_data = [{
+            "id": 1,
+            "first_name": "Mock",
+            "last_name": "Instructor", 
+            "email": "mock@example.com",
+            "phone_number": "+37312345678",
+            "hire_date": "2020-01-01",
+            "license_categories": "B"
+        }]
+    
+    # Calculate lesson summaries
+    lesson_summary = {
+        "remaining": {"theory": {}, "practice": {}},
+        "completed": {"theory": {}, "practice": {}}
+    }
+    
+    for enrollment in enrollments:
+        course = enrollment.course
+        course_type = course.type.lower()  # theory or practice
+        course_category = course.category
+        
+        # Count completed lessons for this enrollment
+        completed_count = Lesson.objects.filter(
+            enrollment=enrollment,
+            status=LessonStatus.COMPLETED.value
+        ).count()
+        
+        # Remaining lessons = required lessons - completed lessons
+        remaining_count = max(0, course.required_lessons - completed_count)
+        
+        # Initialize category if not exists
+        if course_category not in lesson_summary["remaining"][course_type]:
+            lesson_summary["remaining"][course_type][course_category] = 0
+        if course_category not in lesson_summary["completed"][course_type]:
+            lesson_summary["completed"][course_type][course_category] = 0
+            
+        lesson_summary["remaining"][course_type][course_category] += remaining_count
+        lesson_summary["completed"][course_type][course_category] += completed_count
     
     # Check if read-only (graduated)
     read_only = student.status == StudentStatus.GRADUATED.value
@@ -398,4 +483,6 @@ def student_dashboard(request):
         "courses": course_data,
         "lessons": lesson_data,
         "payments": payment_data,
+        "enrollments": enrollment_data,
+        "lesson_summary": lesson_summary,
     })

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
 from .enums import CourseType
 from .validators import validate_name, normalize_phone
 
@@ -119,6 +119,15 @@ class InstructorSerializer(serializers.ModelSerializer):
         fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories"]
 
 
+class InstructorAvailabilitySerializer(serializers.ModelSerializer):
+    instructor = InstructorSerializer(read_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
+
+    class Meta:
+        model = InstructorAvailability
+        fields = ["id", "instructor", "instructor_id", "day", "hours"]
+
+
 class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
@@ -145,17 +154,26 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     def get_label(self, obj):  # Name - Type - Category
         return f"{obj.student.first_name} {obj.student.last_name} - {obj.type or obj.course.type} - {obj.course.category}"
 
+    def create(self, validated_data):
+        # If type not provided, copy from course
+        if 'type' not in validated_data:
+            course = validated_data['course']
+            validated_data['type'] = course.type
+        return super().create(validated_data)
+
 
 class LessonSerializer(serializers.ModelSerializer):
     instructor = InstructorSerializer(read_only=True)
     enrollment = EnrollmentSerializer(read_only=True)
+    vehicle = VehicleSerializer(read_only=True)
     instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
     enrollment_id = serializers.PrimaryKeyRelatedField(queryset=Enrollment.objects.all(), source="enrollment", write_only=True)
+    vehicle_id = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all(), source="vehicle", write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Lesson
         fields = [
-            "id", "enrollment", "instructor", "enrollment_id", "instructor_id", "vehicle", "scheduled_time",
+            "id", "enrollment", "instructor", "vehicle", "enrollment_id", "instructor_id", "vehicle_id", "scheduled_time",
             "duration_minutes", "status", "notes"
         ]
 

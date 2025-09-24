@@ -81,6 +81,17 @@ export default function makePaymentCreate(paymentChoices) {
               optionText={(r) => r.label || `#${r.id}`} 
               validate={[required()]} 
             />
+
+{/*
+export default function makePaymentCreate(paymentChoices) {
+  return function PaymentCreate(props) {
+    const translate = useTranslate();
+    return (
+      <Create {...props} title={translate('ra.page.create', { defaultValue: 'Create' })}>
+        <SimpleForm>
+          <ReferenceInput label={translate('resources.payments.fields.enrollment', { defaultValue: 'Enrollment' })} source="enrollment_id" reference="enrollments" perPage={50}>
+            <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+*/}
           </ReferenceInput>
           
           <NumberInput 

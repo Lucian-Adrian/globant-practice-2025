@@ -97,6 +97,18 @@ export default function makePaymentEdit(paymentChoices) {
               optionText={(r) => r.label || `#${r.id}`} 
               validate={[required()]} 
             />
+{/*
+import { Edit, SimpleForm, NumberInput, SelectInput, ReferenceInput, TextInput, required, useTranslate } from 'react-admin';
+
+export default function makePaymentEdit(paymentChoices) {
+  return function PaymentEdit(props) {
+    const translate = useTranslate();
+    return (
+      <Edit {...props} title={translate('ra.page.edit', { defaultValue: 'Edit' })}>
+        <SimpleForm>
+          <ReferenceInput label={translate('resources.payments.fields.enrollment', { defaultValue: 'Enrollment' })} source="enrollment_id" reference="enrollments" perPage={50}>
+            <SelectInput optionText={(r) => r.label || `#${r.id}`} />
+*/}
           </ReferenceInput>
           
           <NumberInput 

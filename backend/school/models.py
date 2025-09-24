@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from .enums import (
     StudentStatus, EnrollmentStatus, LessonStatus,
-    PaymentMethod, VehicleCategory, CourseType,
+    PaymentMethod, VehicleCategory, CourseType, DayOfWeek,
 )
 
 
@@ -55,6 +55,18 @@ class Instructor(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+class InstructorAvailability(models.Model):
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='availabilities')
+    day = models.CharField(max_length=10, choices=DayOfWeek.choices())
+    hours = models.JSONField(default=list, help_text="List of available start times in HH:MM format, e.g. ['08:00', '09:30']")
+
+    class Meta:
+        unique_together = ('instructor', 'day')
+
+    def __str__(self):
+        return f"{self.instructor} - {self.day}: {self.hours}"
+
+
 class Vehicle(models.Model):
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
@@ -92,7 +104,7 @@ class Enrollment(models.Model):
     )
 
     class Meta:
-        unique_together = ('student', 'course')
+        unique_together = ()
 
     def __str__(self):
         return f"{self.student} înscris la {self.course}"
@@ -103,7 +115,7 @@ class Lesson(models.Model):
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='lessons')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name='lessons')
     scheduled_time = models.DateTimeField()
-    duration_minutes = models.IntegerField(default=50)
+    duration_minutes = models.IntegerField(default=60)
     status = models.CharField(
         max_length=20,
         choices=LessonStatus.choices(),

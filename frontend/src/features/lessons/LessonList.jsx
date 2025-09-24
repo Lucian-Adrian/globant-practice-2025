@@ -7,208 +7,150 @@ import ListImportActions from '../../shared/components/ListImportActions';
 
 // Function to determine lesson status based on existing data
 const getLessonStatus = (record) => {
-  console.log('getLessonStatus called with record:', record); // Debug log
-  
-  if (!record) {
-    console.log('No record provided, returning UNKNOWN');
+  if (!record || !record.scheduled_time) {
     return { status: 'UNKNOWN', color: 'default' };
   }
   
   const scheduledTime = new Date(record.scheduled_time);
   const now = new Date();
-  const hoursUntilLesson = (scheduledTime - now) / (1000 * 60 * 60);
+  const hoursUntilLesson = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
   const daysUntilLesson = hoursUntilLesson / 24;
   
-  console.log('Lesson analysis:', {
-    scheduledTime: scheduledTime.toISOString(),
-    now: now.toISOString(),
-    hoursUntilLesson,
-    daysUntilLesson,
-    originalStatus: record.status
-  });
-  
-  // If lesson has an explicit status from backend, check if it's completed or canceled
+  // If lesson has an explicit status from backend, it takes precedence
   if (record.status === 'COMPLETED') {
-    console.log('Lesson explicitly marked as COMPLETED');
     return { status: 'COMPLETED', color: 'success' };
   }
-  
   if (record.status === 'CANCELED') {
-    console.log('Lesson explicitly marked as CANCELED');
     return { status: 'CANCELED', color: 'error' };
   }
   
-  // Business rules for lesson status determination based on time
-  
-  // 1. Past lessons that aren't explicitly marked
+  // Business rules for derived status based on time for 'SCHEDULED' lessons
   if (hoursUntilLesson < 0) {
-    // Lesson time has passed
-    if (Math.abs(hoursUntilLesson) < 2) {
-      // Just finished (within 2 hours)
-      console.log('Recently finished lesson, returning COMPLETED');
-      return { status: 'COMPLETED', color: 'success' };
-    } else {
-      // Older lesson, assume completed
-      console.log('Past lesson, returning COMPLETED');
-      return { status: 'COMPLETED', color: 'success' };
-    }
+    return { status: 'COMPLETED', color: 'success' }; // Assume past lessons are completed if not canceled
   }
-  
-  // 2. Very soon lessons (under 2 hours)
   if (hoursUntilLesson < 2) {
-    console.log('Lesson very soon (under 2h), returning IMMINENT');
     return { status: 'IMMINENT', color: 'warning' };
   }
-  
-  // 3. Today's lessons (same day, but more than 2 hours away)
-  if (hoursUntilLesson < 24) {
-    console.log('Lesson today, returning TODAY');
-    return { status: 'TODAY', color: 'info' };
+  if (scheduledTime.toDateString() === now.toDateString()) {
+      return { status: 'TODAY', color: 'info' };
   }
-  
-  // 4. This week's lessons (within 7 days)
   if (daysUntilLesson <= 7) {
-    console.log('Lesson this week, returning SCHEDULED');
     return { status: 'SCHEDULED', color: 'primary' };
   }
-  
-  // 5. Future lessons (more than 7 days away)
   if (daysUntilLesson > 7) {
-    console.log('Lesson far in future, returning PLANNED');
     return { status: 'PLANNED', color: 'secondary' };
   }
   
-  // 6. Fallback
-  console.log('Fallback case, returning SCHEDULED');
+  // Fallback
   return { status: 'SCHEDULED', color: 'primary' };
 };
 
-// Component for rendering lesson status badge (translated)
 // Map lesson status codes to translation keys
 const statusToTranslationKey = {
   COMPLETED: 'filters.completed',
   CANCELED: 'filters.canceled',
-  IMMINENT: 'filters.imminent',
+  IMMINENT: 'filters_extra_local.imminent',
   TODAY: 'filters.today',
   SCHEDULED: 'filters.scheduled',
-  PLANNED: 'filters.planned',
-  UNKNOWN: 'filters.unknown',
+  PLANNED: 'filters_extra_local.planned',
+  UNKNOWN: 'unknown',
 };
 
 const LessonStatusField = ({ record }) => {
   const t = useTranslate();
   if (!record) return null;
   const { status, color } = getLessonStatus(record);
-  const labelKey = statusToTranslationKey[status] || 'filters.unknown';
-  const label = t(labelKey, status);
+  const labelKey = statusToTranslationKey[status] || 'unknown';
+  const label = t(labelKey, { defaultValue: status });
   return <Chip label={label} color={color} size="small" />;
 };
 
 const FilteredDatagrid = (props) => {
-  const { data } = useListContext();
+  // This custom datagrid performs client-side filtering.
+  // Note: For large datasets, server-side filtering is generally preferred.
+  const { data, isLoading } = useListContext();
   const location = useLocation();
   const t = useTranslate();
 
-  // Read possible filters either from URL params or from list context (fallback)
-  const params = new URLSearchParams(location.search);
-  const statusFilter = params.get('status') || null;
-  const lessonTypeFilter = params.get('lesson_type') || params.get('type') || null;
-  const instructorFilter = params.get('instructor') || null;
-  const timeFilter = params.get('time') || null;
+  const filteredData = React.useMemo(() => {
+    if (isLoading || !data) return [];
+    
+    const params = new URLSearchParams(location.search);
+    const filterValues = JSON.parse(params.get('filter') || '{}');
+    
+    if (Object.keys(filterValues).length === 0) {
+      return data;
+    }
 
-  const filterLessons = (lessons) => {
-    if (!lessons) return [];
-    return lessons.filter(record => {
-      if (statusFilter) {
-        const { status } = getLessonStatus(record);
-        if (status !== statusFilter) return false;
-      }
-      if (lessonTypeFilter) {
-        const recordType = record.type || record.lesson_type || '';
-        if (recordType !== lessonTypeFilter) return false;
-      }
-      if (instructorFilter) {
-        const instructorId = record.instructor?.id || record.instructor_id || '';
-        if (String(instructorId) !== String(instructorFilter)) return false;
-      }
-      // timeFilter matching can be implemented later if needed
+    return data.filter(record => {
+      const { status: derivedStatus } = getLessonStatus(record);
+      if (filterValues.status && derivedStatus !== filterValues.status) return false;
+      if (filterValues.instructor_id && String(record.instructor.id) !== String(filterValues.instructor_id)) return false;
+      // Additional filters can be added here
       return true;
     });
-  };
-
-  const filteredData = filterLessons(data);
-
-  const statusLabel = t('filters.status', 'Status');
+  }, [data, location.search, isLoading]);
 
   return (
-    <Datagrid 
+    <Datagrid
       {...props}
       data={filteredData}
       rowClick="edit"
       sx={{
-        '& .RaDatagrid-rowEven, & .RaDatagrid-rowOdd': {
-          '&[data-lesson-status="COMPLETED"]': {
-            backgroundColor: '#f1f8e9',
-            '&:hover': { backgroundColor: '#e8f5e8' }
-          },
-          '&[data-lesson-status="TODAY"]': {
-            backgroundColor: '#e3f2fd',
-            '&:hover': { backgroundColor: '#e1f5fe' }
-          },
-          '&[data-lesson-status="IMMINENT"]': {
-            backgroundColor: '#fff3e0',
-            '&:hover': { backgroundColor: '#ffe0b2' }
-          },
-          '&[data-lesson-status="CANCELED"]': {
-            backgroundColor: '#ffebee',
-            '&:hover': { backgroundColor: '#ffcdd2' }
-          }
+        '& .RaDatagrid-row': {
+          '&[data-lesson-status="COMPLETED"]': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
+          '&[data-lesson-status="TODAY"]': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#e1f5fe' } },
+          '&[data-lesson-status="IMMINENT"]': { backgroundColor: '#fff3e0', '&:hover': { backgroundColor: '#ffe0b2' } },
+          '&[data-lesson-status="CANCELED"]': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
         }
       }}
-      rowStyle={(record) => {
-        const { status } = getLessonStatus(record || {});
-        return { 'data-lesson-status': status };
-      }}
+      rowStyle={(record) => ({ 'data-lesson-status': getLessonStatus(record).status })}
     >
       <NumberField source="id" label="ID" />
-      <FunctionField 
-        label={statusLabel}
+      <FunctionField
+        label={t('filters.status', { defaultValue: 'Status' })}
         render={(record) => <LessonStatusField record={record} />}
         sortable={false}
       />
-      <ReferenceField source="enrollment.id" reference="enrollments" label={t('resources.enrollments.name', 'Enrollment')}>
+      <ReferenceField source="enrollment.id" reference="enrollments" label={t('resources.lessons.fields.enrollment')}>
         <TextField source="label" />
       </ReferenceField>
-      <ReferenceField source="instructor.id" reference="instructors" label={t('resources.instructors.name', 'Instructor')} />
-      <TextField source="vehicle" label={t('resources.vehicles.name', 'Vehicle')} />
-      {/* Show only the date in this column */}
+      <ReferenceField source="instructor.id" reference="instructors" label={t('resources.lessons.fields.instructor')}>
+        <FunctionField render={record => record ? `${record.first_name} ${record.last_name}` : ''} />
+      </ReferenceField>
+      <TextField source="vehicle.license_plate" label={t('resources.lessons.fields.vehicle')} />
       <DateField
         source="scheduled_time"
-        label={t('resources.lessons.fields.scheduled_time', 'Scheduled date')}
+        label={t('resources.lessons.fields.scheduled_time')}
       />
-      {/* Separate time column (HH:mm), not sortable */}
-  <FunctionField
-        label={t('resources.lessons.fields.time', 'Time')}
+      <FunctionField
+        label={t('resources.lessons.fields.time', { defaultValue: 'Time' })}
         render={(record) => {
           if (!record?.scheduled_time) return '';
-          const d = new Date(record.scheduled_time);
           try {
-    // Use 24-hour format for clarity across locales
-    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+            return new Date(record.scheduled_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
           } catch (_) {
-            return d.toISOString().substring(11, 16); // Fallback HH:mm
+            return new Date(record.scheduled_time).toISOString().substring(11, 16);
           }
         }}
         sortable={false}
       />
-      <NumberField source="duration_minutes" label={t('resources.lessons.fields.duration_minutes', 'Duration (min)')} />
+      <NumberField source="duration_minutes" label={t('resources.lessons.fields.duration_minutes')} />
     </Datagrid>
   );
 };
 
 export default function LessonList(props) {
+  const t = useTranslate();
   return (
-    <List {...props} aside={<LessonListAside />} title="Listă Lecții" actions={<ListImportActions endpoint="lessons"/>}> 
+    <List 
+      {...props} 
+      aside={<LessonListAside />} 
+      title={t('resources.lessons.name', { defaultValue: 'Lessons' })}
+      actions={<ListImportActions endpoint="lessons"/>}
+      // Disable server-side sorting when using client-side filtering/display
+      sort={{ field: 'id', order: 'DESC' }}
+    >
       <FilteredDatagrid />
     </List>
   );

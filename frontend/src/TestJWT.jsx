@@ -15,7 +15,7 @@ const api = {
   refresh: async () => { const refresh = getRefreshToken(); const r = await fetch('/api/auth/token/refresh/', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ refresh }) }); const j = await r.json().catch(()=>({})); return { ok:r.ok, status:r.status, body:j }; },
 };
 export default function TestJWT() {
-  const [username, setUsername] = useState('testuser');
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('Test123!');
   const [email, setEmail] = useState('test@example.com');
   const [studentEmail, setStudentEmail] = useState('john@example.com');
@@ -30,6 +30,7 @@ export default function TestJWT() {
   const handleStudentDashboard = async () => { const r = await api.studentDashboard(); addLog({ where:'student-dashboard', status:r.status, body:r.body }); };
   const handleRefresh = async () => { const r = await api.refresh(); addLog({ where:'refresh', status:r.status, body:r.body }); if(r.ok && r.body.access) setAccessToken(r.body.access); };
   const handleLogout = async () => { clearTokens(); const m = await api.me(); setMe(m.ok?m.body:null); addLog({ where:'logout', status:m.status, body:m.body }); };
+  const handleClearStudentToken = () => { localStorage.removeItem('student_access_token'); addLog({ where:'clear-student-token', status:200, body:{ message:'Student token cleared' } }); };
   const tokens = useMemo(()=>({ access:getAccessToken(), refresh:getRefreshToken() }), [logs]);
   return (<div style={{ padding:16, fontFamily:'system-ui, sans-serif', display:'grid', gap:16 }}><h2>JWT Test Console</h2><div style={{ display:'grid', gridTemplateColumns:'repeat(2, minmax(320px, 1fr))', gap:16 }}>
     <Panel title="1) Create new user (DEBUG only)"><Row label="Username"><input value={username} onChange={e=>setUsername(e.target.value)} /></Row><Row label="Password"><input value={password} type="password" onChange={e=>setPassword(e.target.value)} /></Row><Row label="Email"><input value={email} onChange={e=>setEmail(e.target.value)} /></Row><button onClick={handleSignup}>Create User</button></Panel>
@@ -39,6 +40,7 @@ export default function TestJWT() {
     <Panel title="5) View current user & tokens"><div>Current user (GET /api/auth/me/ or /api/auth/student/me/):</div><CodeBox value={me || { detail:'Not authenticated' }} /><div>Tokens (localStorage):</div><CodeBox value={tokens} /></Panel>
     <Panel title="6) Student Dashboard"><button onClick={handleStudentDashboard}>Get Dashboard</button></Panel>
     <Panel title="7) Refresh access token"><button onClick={handleRefresh}>Refresh</button></Panel>
-    <Panel title="8) Logout (clear tokens)"><button onClick={handleLogout}>Logout</button></Panel>
+    <Panel title="8) Logout (clear admin tokens)"><button onClick={handleLogout}>Logout</button></Panel>
+    <Panel title="9) Clear student token"><button onClick={handleClearStudentToken}>Clear Student Token</button></Panel>
   </div><Panel title="Logs (latest first)"><CodeBox value={logs} /></Panel></div>);
 }

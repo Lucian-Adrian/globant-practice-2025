@@ -8,6 +8,7 @@ import { fetchEnums, mapToChoices } from '../api/enumsClient';
 import { makeStudentList, makeStudentEdit, makeStudentCreate } from '../features/students';
 import { VehicleList, makeVehicleEdit, makeVehicleCreate } from '../features/vehicles';
 import { InstructorList, InstructorEdit, InstructorCreate } from '../features/instructors';
+import { InstructorAvailabilityList, InstructorAvailabilityEdit, InstructorAvailabilityCreate } from '../features/instructoravailabilities';
 import { CourseList, makeCourseEdit, makeCourseCreate } from '../features/courses';
 import { PaymentList, makePaymentEdit, makePaymentCreate } from '../features/payments';
 import { EnrollmentList, EnrollmentEdit, EnrollmentCreate } from '../features/enrollments';
@@ -32,6 +33,7 @@ export default function App() {
       <Resource name="students" list={makeStudentList()} edit={makeStudentEdit(studentChoices)} create={makeStudentCreate()} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={makeVehicleEdit(vehicleChoices)} create={makeVehicleCreate(vehicleChoices)} />
+  <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} create={InstructorAvailabilityCreate} />
       <Resource name="classes" list={CourseList} edit={makeCourseEdit(vehicleChoices, courseTypeChoices)} create={makeCourseCreate(vehicleChoices, courseTypeChoices)} />
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
