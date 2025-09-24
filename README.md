@@ -21,7 +21,7 @@ docker-compose up --build
 
 Services:
 - Database: port 5432
-- Backend: port 8000 (Python 3.11 image)
+- Backend: port 8000
 - Frontend: port 3000
 
 ## API Endpoints (development)
@@ -45,27 +45,6 @@ Creation field hints:
 - Payment: enrollment_id, amount, payment_method, description
 
 All endpoints currently have open access (no auth). Add authentication & permissions before production.
-
-### API Schema & Docs (Phase 2)
-
-OpenAPI schema and interactive docs are available once the backend is running:
-
-- Raw schema (JSON): `http://localhost:8000/api/schema/`
-- Swagger UI: `http://localhost:8000/api/docs/swagger/`
-- ReDoc UI: `http://localhost:8000/api/docs/redoc/`
-
-Use the enums meta endpoint to dynamically fetch choice lists:
-
-```
-curl http://localhost:8000/api/meta/enums/
-```
-
-## Backlog & Contribution
-
-The structured implementation backlog lives in `tasks.md` (Phase-based: foundations, validation, docs, tooling, etc.).
-Reference task IDs (e.g. `P0-STR-01`) in commit messages and PR titles to keep traceability.
-Backend enums & validation work is being tracked under Phase 0 tasks. Default
-currency is MDL (Moldovan Leu) and default phone country code assumption is +373.
 
 ## Stop
 

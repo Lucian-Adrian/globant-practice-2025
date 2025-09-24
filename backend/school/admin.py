@@ -12,12 +12,6 @@ class InstructorAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "hire_date")
     search_fields = ("first_name", "last_name", "email")
 
-@admin.register(models.InstructorAvailability)
-class InstructorAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ("instructor", "day", "hours")
-    list_filter = ("day", "instructor")
-    search_fields = ("instructor__first_name", "instructor__last_name")
-
 @admin.register(models.Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ("license_plate", "make", "model", "year", "category", "is_available")

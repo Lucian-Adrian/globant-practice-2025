@@ -16,20 +16,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
+from rest_framework import routers
+from school.api import (
+    StudentViewSet, InstructorViewSet, VehicleViewSet, CourseViewSet,
+    EnrollmentViewSet, LessonViewSet, PaymentViewSet, UtilityViewSet
 )
+
+router = routers.DefaultRouter()
+router.register(r'students', StudentViewSet)
+router.register(r'instructors', InstructorViewSet)
+router.register(r'vehicles', VehicleViewSet)
+router.register(r'courses', CourseViewSet)
+router.register(r'enrollments', EnrollmentViewSet)
+router.register(r'lessons', LessonViewSet)
+router.register(r'payments', PaymentViewSet)
+router.register(r'utils', UtilityViewSet, basename='utils')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('school.urls')),
-    # Auth - JWT endpoints
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    # OpenAPI schema endpoints (Phase 2)
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/', include(router.urls)),
 ]

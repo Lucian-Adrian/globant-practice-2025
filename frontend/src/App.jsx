@@ -1,9 +1,6 @@
 import StudentListAside from './students/StudentListAside';
 import ImportButton from './components/ImportButton';
 import ResourceEmptyState from './components/ResourceEmptyState';
-import InstructorDetails from './instructors/InstructorDetails';
-import InstructorCalendar from './instructors/InstructorCalendar';
-import { InstructorAvailabilityList, InstructorAvailabilityEdit } from './features/instructoravailabilities';
 
 import * as React from 'react';
 import {
@@ -37,7 +34,6 @@ import { raEmail, raPhone, raDob, raHireDate, req } from './validation/raValidat
 import { YEARS_125, YEARS_15, yyyyMmDdYearsAgo } from './constants';
 import PhoneFieldRA from './components/PhoneFieldRA';
 import DisabledUntilValidToolbar from './components/DisabledUntilValidToolbar';
-import { Route } from 'react-router-dom';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -259,22 +255,14 @@ const dataProvider = {
   },
 };
 
-const customRoutes = [
-  <Route key="instructor-details" path="/instructors/:id/details" element={<InstructorDetails />} />,
-  <Route key="instructor-calendar" path="/instructors/:id/calendar" element={<InstructorCalendar />} />,
-];
-
-import { i18nProvider } from './i18n.js';
-
 export default function App() {
   return (
-    <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
+    <Admin dataProvider={dataProvider}>
       <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
       <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} />
-  <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
-  <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} />
+      <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
     </Admin>
   );
 }
@@ -392,7 +380,7 @@ const InstructorList = (props) => (
     actions={<InstructorListActions />}
     empty={<ResourceEmptyState endpoint="instructors" message="No instructors yet. Create one or import a batch." />}
   >
-    <Datagrid rowClick={(id, resource) => `/instructors/${id}/details`}>
+    <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="first_name" />
       <TextField source="last_name" />
