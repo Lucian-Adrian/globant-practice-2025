@@ -1,6 +1,8 @@
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
+import { studentRawFetch } from "../../api/httpClient";
 
 // Minimal inline icons to avoid external deps
 const iconProps = "tw-w-4 tw-h-4";
@@ -110,49 +112,107 @@ const Badge: React.FC<React.PropsWithChildren<{ variant?: "default" | "secondary
 };
 
 const Lessons: React.FC = () => {
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialFilterParam = (searchParams.get('filter') || 'all').toLowerCase();
+  // Map URL param to internal state values
+  const mapParamToFilter = (p: string) => {
+    if (p === 'upcoming') return 'scheduled';
+    if (["all","scheduled","completed","canceled"].includes(p)) return p;
+    return 'all';
+  };
+  const [selectedFilter, setSelectedFilter] = useState(mapParamToFilter(initialFilterParam));
   const [tab, setTab] = useState<"list" | "calendar">("list");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
 
-  const lessons = [
-    { id: 1, type: "Driving", instructor: "Maria Popescu", date: "2024-10-22", time: "14:00", duration: "2 hours", vehicle: "Dacia Logan - B123XYZ", status: "confirmed", location: "Starting Point: School Parking" },
-    { id: 2, type: "Theory", instructor: "Ion Vasilescu", date: "2024-10-23", time: "10:00", duration: "1 hour", vehicle: "Classroom A", status: "confirmed", location: "Main Building, Floor 2" },
-    { id: 3, type: "Driving", instructor: "Ana Ionescu", date: "2024-10-20", time: "16:00", duration: "2 hours", vehicle: "Ford Focus - B456ABC", status: "completed", location: "City Center Route" },
-    { id: 4, type: "Theory", instructor: "Ion Vasilescu", date: "2024-10-18", time: "09:00", duration: "1 hour", vehicle: "Classroom B", status: "missed", location: "Main Building, Floor 1" },
-    { id: 5, type: "Driving", instructor: "Maria Popescu", date: "2024-10-25", time: "11:00", duration: "2 hours", vehicle: "Dacia Logan - B123XYZ", status: "pending", location: "Highway Practice Route" },
-  ];
+  // Keep filter in sync if URL query changes while on page
+  React.useEffect(() => {
+    const p = (searchParams.get('filter') || 'all').toLowerCase();
+    setSelectedFilter(mapParamToFilter(p));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
-  const getStatusBadge = (status: string) => {
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      try {
+        const resp = await studentRawFetch('/api/student/dashboard/', { headers: { 'Content-Type': 'application/json' } });
+        if (resp.status === 401) {
+          navigate('/login');
+          return;
+        }
+        const body = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(body?.detail || body?.message || 'Failed to load lessons');
+        if (mounted) {
+          setLessons(Array.isArray(body?.lessons) ? body.lessons : []);
+        }
+      } catch (e:any) {
+        if (mounted) setError(e?.message || 'Network error');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    run();
+    return () => { mounted = false; };
+  }, [navigate]);
+
+  const getStatusBadge = (statusRaw: string) => {
+    const status = (statusRaw || '').toUpperCase();
     switch (status) {
-      case "confirmed":
-        return <Badge className="tw-bg-success tw-text-success-foreground">Confirmed</Badge>;
-      case "completed":
+      case "SCHEDULED":
+        return <Badge className="tw-bg-success tw-text-success-foreground">Upcoming</Badge>;
+      case "COMPLETED":
         return <Badge className="tw-bg-primary tw-text-primary-foreground">Completed</Badge>;
-      case "missed":
-        return <Badge variant="destructive">Missed</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      default: {
+        // Treat any cancel(led) as missed
+        if (status.includes('CANCEL')) return <Badge variant="destructive">Missed</Badge>;
+        return <Badge variant="outline">{statusRaw}</Badge>;
+      }
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return <CheckCircleIcon className="tw-text-success" />;
-      case "completed":
-        return <CheckCircleIcon className="tw-text-primary" />;
-      case "missed":
-        return <XIcon className="tw-text-destructive" />;
-      case "pending":
-        return <AlertCircleIcon className="tw-text-warning" />;
-      default:
-        return null;
-    }
+  const getStatusIcon = (statusRaw: string) => {
+    const status = (statusRaw || '').toUpperCase();
+    if (status === 'SCHEDULED') return <CheckCircleIcon className="tw-text-success" />;
+    if (status === 'COMPLETED') return <CheckCircleIcon className="tw-text-primary" />;
+    if (status.includes('CANCEL')) return <XIcon className="tw-text-destructive" />;
+    return null;
   };
 
-  const filteredLessons = lessons.filter((lesson) => (selectedFilter === "all" ? true : lesson.status === selectedFilter));
-  const upcomingLessons = lessons.filter((l) => l.status === "confirmed" || l.status === "pending");
+  const normalizedStatus = (s: string) => (s || '').toUpperCase();
+  const isScheduled = (s: string) => normalizedStatus(s) === 'SCHEDULED';
+  const isCompleted = (s: string) => normalizedStatus(s) === 'COMPLETED';
+  const isCanceled = (s: string) => normalizedStatus(s).includes('CANCEL');
+
+  const filteredLessons = useMemo(() => {
+    return lessons.filter((lesson:any) => {
+      if (selectedFilter === 'all') return true;
+      if (selectedFilter === 'scheduled') return isScheduled(lesson.status);
+      if (selectedFilter === 'completed') return isCompleted(lesson.status);
+      if (selectedFilter === 'canceled') return isCanceled(lesson.status);
+      return true;
+    });
+  }, [lessons, selectedFilter]);
+
+  const upcomingLessons = useMemo(() => lessons.filter((l:any) => isScheduled(l.status)), [lessons]);
+  const completedLessons = useMemo(() => lessons.filter((l:any) => isCompleted(l.status)), [lessons]);
+  const missedLessons = useMemo(() => lessons.filter((l:any) => isCanceled(l.status)), [lessons]);
+
+  if (loading) {
+    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>Loading…</span></div>;
+  }
+  if (error) {
+    return (
+      <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center">
+        <div className="tw-text-center">
+          <p className="tw-text-red-600 tw-font-medium">{error}</p>
+          <a className="tw-text-primary tw-underline" href="/login">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
@@ -168,14 +228,13 @@ const Lessons: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4 tw-animate-fade-in-up">
+        {/* Quick Stats (no Pending) */}
+        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-animate-fade-in-up">
           {[
             { label: "Upcoming", value: upcomingLessons.length, color: "tw-text-primary" },
-            { label: "Completed", value: lessons.filter((l) => l.status === "completed").length, color: "tw-text-success" },
-            { label: "Pending", value: lessons.filter((l) => l.status === "pending").length, color: "tw-text-warning" },
-            { label: "Missed", value: lessons.filter((l) => l.status === "missed").length, color: "tw-text-destructive" },
-          ].map((s) => (
+            { label: "Completed", value: completedLessons.length, color: "tw-text-success" },
+            { label: "Missed", value: missedLessons.length, color: "tw-text-destructive" },
+          ].map((s:any) => (
             <Card key={s.label} className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
               <CardContent className="tw-p-4 tw-text-center">
                 <div className={`tw-text-2xl tw-font-bold ${s.color}`}>{s.value}</div>
@@ -202,7 +261,7 @@ const Lessons: React.FC = () => {
             <div className="tw-flex tw-items-center tw-gap-2">
               <FilterIcon className="tw-text-muted-foreground" />
               <div className="tw-flex tw-gap-1">
-                {["all", "confirmed", "completed", "pending", "missed"].map((filter) => (
+                {["all", "scheduled", "completed", "canceled"].map((filter) => (
                   <Button
                     key={filter}
                     variant={selectedFilter === filter ? "default" : "outline"}
@@ -210,7 +269,8 @@ const Lessons: React.FC = () => {
                     onClick={() => setSelectedFilter(filter)}
                     className="tw-capitalize"
                   >
-                    {filter}
+                    {/* Human labels */}
+                    {filter === 'scheduled' ? 'upcoming' : filter === 'canceled' ? 'missed' : filter}
                   </Button>
                 ))}
               </div>
@@ -219,18 +279,26 @@ const Lessons: React.FC = () => {
 
           {tab === "list" && (
             <div className="tw-space-y-4">
-              {filteredLessons.map((lesson) => (
+              {filteredLessons.map((lesson:any) => {
+                const statusUp = (lesson.status || '').toUpperCase();
+                const typeLabel = ((lesson?.enrollment?.course?.type || '').toUpperCase() === 'THEORY') ? 'Theory' : 'Driving';
+                const instructorName = lesson?.instructor ? `${lesson.instructor.first_name} ${lesson.instructor.last_name}` : '—';
+                const dt = lesson?.scheduled_time ? new Date(lesson.scheduled_time) : null;
+                const dateStr = dt ? dt.toLocaleDateString() : '—';
+                const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const vehicleStr = lesson?.vehicle?.license_plate || (lesson?.enrollment?.course?.name || '—');
+                return (
                 <Card
                   key={lesson.id}
                   className={`tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card tw-transition-all tw-duration-300 hover:tw-scale-[1.02] ${
-                    lesson.status === "confirmed" ? "tw-ring-2 tw-ring-success/20" : lesson.status === "missed" ? "tw-ring-2 tw-ring-destructive/20" : ""
+                    statusUp === "SCHEDULED" ? "tw-ring-2 tw-ring-success/20" : (statusUp.includes('CANCEL') ? "tw-ring-2 tw-ring-destructive/20" : "")
                   }`}
                 >
                   <CardContent className="tw-p-6">
                     <div className="tw-flex tw-items-center tw-justify-between tw-mb-4">
                       <div className="tw-flex tw-items-center tw-gap-3">
                         <div className="tw-w-12 tw-h-12 tw-bg-primary/10 tw-rounded-lg tw-flex tw-items-center tw-justify-center">
-                          {lesson.type === "Driving" ? (
+                          {typeLabel === "Driving" ? (
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="tw-w-6 tw-h-6 tw-text-primary">
                               <path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5" />
                               <path d="M5 16h14" />
@@ -247,49 +315,35 @@ const Lessons: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <h3 className="tw-text-lg tw-font-semibold tw-text-foreground">{lesson.type} Lesson</h3>
-                          <p className="tw-text-sm tw-text-muted-foreground">with {lesson.instructor}</p>
+                          <h3 className="tw-text-lg tw-font-semibold tw-text-foreground">{typeLabel} Lesson</h3>
+                          <p className="tw-text-sm tw-text-muted-foreground">with {instructorName}</p>
                         </div>
                       </div>
                       <div className="tw-flex tw-items-center tw-gap-2">
-                        {lesson.status === "confirmed" && <CheckCircleIcon className="tw-text-success" />}
-                        {lesson.status === "completed" && <CheckCircleIcon className="tw-text-primary" />}
-                        {lesson.status === "missed" && <XIcon className="tw-text-destructive" />}
-                        {lesson.status === "pending" && <AlertCircleIcon className="tw-text-warning" />}
-                        {getStatusBadge(lesson.status)}
+                        {getStatusIcon(statusUp)}
+                        {getStatusBadge(statusUp)}
                       </div>
                     </div>
 
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-text-sm">
                       <div className="tw-flex tw-items-center tw-gap-2 tw-text-muted-foreground">
                         <CalendarIcon />
-                        <span>{new Date(lesson.date).toLocaleDateString()}</span>
+                        <span>{dateStr}</span>
                       </div>
                       <div className="tw-flex tw-items-center tw-gap-2 tw-text-muted-foreground">
                         <ClockIcon />
-                        <span>
-                          {lesson.time} ({lesson.duration})
-                        </span>
+                        <span>{timeStr}</span>
                       </div>
                       <div className="tw-flex tw-items-center tw-gap-2 tw-text-muted-foreground">
                         <UserIcon />
-                        <span>{lesson.vehicle}</span>
+                        <span>{vehicleStr}</span>
                       </div>
                     </div>
 
-                    <div className="tw-mt-4 tw-pt-4 tw-border-t tw-border-border/30">
-                      <p className="tw-text-sm tw-text-muted-foreground">📍 {lesson.location}</p>
-                    </div>
-
-                    {lesson.status === "confirmed" && (
-                      <div className="tw-mt-4 tw-flex tw-gap-2">
-                        <Button size="sm" variant="outline">Reschedule</Button>
-                        <Button size="sm" variant="destructive">Cancel</Button>
-                      </div>
-                    )}
+                    {/* Optional actions can be added here for scheduled lessons */}
                   </CardContent>
                 </Card>
-              ))}
+              );})}
             </div>
           )}
 
@@ -297,19 +351,10 @@ const Lessons: React.FC = () => {
             <div className="tw-space-y-4">
               <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
                 <CardHeader>
-                  <CardTitle>October 2024</CardTitle>
+                  <CardTitle>Calendar</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="tw-text-center tw-text-muted-foreground tw-py-12">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="tw-w-16 tw-h-16 tw-mx-auto tw-mb-4 tw-opacity-50">
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    <p>Calendar view coming soon!</p>
-                    <p className="tw-text-sm tw-mt-2">For now, use the list view to see all your lessons.</p>
-                  </div>
+                  <CalendarGrid lessons={filteredLessons} />
                 </CardContent>
               </Card>
             </div>
@@ -321,7 +366,7 @@ const Lessons: React.FC = () => {
           <CardContent className="tw-p-6 tw-text-center">
             <h3 className="tw-text-xl tw-font-bold tw-mb-2">Ready for your next lesson?</h3>
             <p className="tw-mb-4 tw-opacity-90">Book a new driving or theory session with your instructor.</p>
-            <Button variant="secondary" size="lg" className="tw-animate-bounce-gentle">
+            <Button variant="secondary" size="lg" className="tw-animate-bounce-gentle" onClick={() => navigate('/book-lesson')}>
               Book New Lesson
             </Button>
           </CardContent>
@@ -332,3 +377,71 @@ const Lessons: React.FC = () => {
 };
 
 export default Lessons;
+
+// --- Simple month calendar grid component ---
+const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function startOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+function sameDay(a: Date, b: Date) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+const CalendarGrid: React.FC<{ lessons: any[] }>= ({ lessons }) => {
+  const [refDate, setRefDate] = React.useState(new Date());
+  const first = startOfMonth(refDate);
+  const last = endOfMonth(refDate);
+  const prefix = first.getDay();
+  const daysInMonth = last.getDate();
+  const cells: Array<{ date: Date | null }> = [];
+  for (let i=0;i<prefix;i++) cells.push({ date: null });
+  for (let d=1; d<=daysInMonth; d++) cells.push({ date: new Date(refDate.getFullYear(), refDate.getMonth(), d) });
+  while (cells.length % 7 !== 0) cells.push({ date: null });
+
+  function lessonsFor(date: Date) {
+    return lessons.filter((l:any) => l?.scheduled_time && sameDay(new Date(l.scheduled_time), date));
+  }
+
+  function shiftMonth(delta:number){
+    const d = new Date(refDate);
+    d.setMonth(d.getMonth()+delta);
+    setRefDate(d);
+  }
+
+  const monthYear = refDate.toLocaleString(undefined,{ month:'long', year:'numeric'});
+
+  return (
+    <div className="tw-space-y-3">
+      <div className="tw-flex tw-items-center tw-justify-between">
+        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(-1)}>&larr; Prev</button>
+        <div className="tw-font-semibold">{monthYear}</div>
+        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(1)}>Next &rarr;</button>
+      </div>
+      <div className="tw-grid tw-grid-cols-7 tw-gap-2">
+        {dayNames.map((dn) => (
+          <div key={dn} className="tw-text-xs tw-text-muted-foreground tw-text-center">{dn}</div>
+        ))}
+        {cells.map((cell, idx) => {
+          const isToday = cell.date ? sameDay(cell.date, new Date()) : false;
+          const dayLessons = cell.date ? lessonsFor(cell.date) : [];
+          return (
+            <div key={idx} className={`tw-min-h-24 tw-border tw-border-border/50 tw-rounded-md tw-p-2 ${cell.date ? 'tw-bg-background' : 'tw-bg-muted/30'} ${isToday ? 'tw-ring-2 tw-ring-primary/40' : ''}`}>
+              <div className="tw-text-xs tw-text-muted-foreground">{cell.date?.getDate() ?? ''}</div>
+              <div className="tw-mt-1 tw-space-y-1">
+                {dayLessons.slice(0,3).map((l:any) => {
+                  const type = ((l?.enrollment?.course?.type||'').toUpperCase()==='THEORY')?'Theory':'Driving';
+                  const t = new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const statusUp = (l.status||'').toUpperCase();
+                  const tone = statusUp==='COMPLETED' ? 'tw-bg-primary/15 tw-text-primary' : statusUp.includes('CANCEL') ? 'tw-bg-destructive/15 tw-text-destructive' : 'tw-bg-success/15 tw-text-success';
+                  return (
+                    <div key={l.id} className={`tw-text-[11px] tw-rounded tw-px-2 tw-py-1 tw-truncate ${tone}`}>{t} · {type}</div>
+                  );
+                })}
+                {dayLessons.length>3 && (
+                  <div className="tw-text-[11px] tw-text-muted-foreground">+{dayLessons.length-3} more…</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

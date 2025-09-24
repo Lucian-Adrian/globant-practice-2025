@@ -79,6 +79,12 @@ const StudentLogin = () => {
         // Store tokens in localStorage
         if (data.access) localStorage.setItem('student_access_token', data.access);
         if (data.refresh) localStorage.setItem('student_refresh_token', data.refresh);
+        if (data.student) {
+          try { localStorage.setItem('student_profile', JSON.stringify(data.student)); } catch {}
+        } else {
+          // fallback: clear old profile to avoid stale initials
+          localStorage.removeItem('student_profile');
+        }
 
         setApiMessage(t('common:loginSuccess', 'Logged in successfully.'));
         setDebugInfo(data);
