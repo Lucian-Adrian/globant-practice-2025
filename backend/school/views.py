@@ -166,6 +166,13 @@ class InstructorViewSet(FullCrudViewSet):
 class InstructorAvailabilityViewSet(FullCrudViewSet):
     queryset = InstructorAvailability.objects.select_related('instructor').all()
     serializer_class = InstructorAvailabilitySerializer
+    # Allow filtering by instructor_id and day from the frontend (e.g. ?instructor_id=3)
+    # This mirrors the pattern used on other viewsets (students, instructors) and
+    # allows the dataProvider getList calls to request per-instructor availabilities.
+    filterset_fields = {
+        'instructor_id': ['exact'],
+        'day': ['exact'],
+    }
 
 
 class VehicleViewSet(FullCrudViewSet):
