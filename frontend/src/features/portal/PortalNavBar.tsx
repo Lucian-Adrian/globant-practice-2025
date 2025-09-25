@@ -32,11 +32,11 @@ const PortalNavBar: React.FC = () => {
         <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-py-4 tw-w-full">
           <div className="tw-flex tw-items-center tw-justify-between">
             <div className="tw-flex tw-items-center tw-gap-3">
-              <div className="tw-w-10 tw-h-10 tw-bg-gradient-primary tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
-                <span className="tw-text-base tw-font-bold tw-text-primary-foreground">DA</span>
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
+                <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
               </div>
               <div>
-                <h1 className="tw-text-xl tw-font-bold">DriveAcademy</h1>
+                <h1 className="tw-text-xl tw-font-bold">DriveAdmin</h1>
                 <p className="tw-text-sm tw-text-muted-foreground">Student Portal</p>
               </div>
             </div>

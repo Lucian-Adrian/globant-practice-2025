@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    "tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-all tw-duration-200 tw-focus-visible:tw-outline-none tw-focus-visible:tw-ring-2 tw-focus-visible:tw-ring-ring tw-disabled:tw-opacity-50 tw-disabled:tw-pointer-events-none";
+    "tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-full tw-text-sm tw-font-medium tw-transition-all tw-duration-200 tw-focus-visible:tw-outline-none tw-focus-visible:tw-ring-2 tw-focus-visible:tw-ring-ring tw-disabled:tw-opacity-50 tw-disabled:tw-pointer-events-none";
   const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
     sm: "tw-h-9 tw-px-3",
     md: "tw-h-10 tw-px-4",
@@ -87,63 +87,49 @@ const StatCard: React.FC<{
   </CardRoot>
 );
 
-const NavBar: React.FC = () => (
-  <>
-    {/* Desktop Navigation */}
-    <nav className="tw-hidden md:tw-flex tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-50 tw-bg-background/80 tw-backdrop-blur-md tw-border-b tw-border-border">
-      <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-py-4 tw-w-full">
-        <div className="tw-flex tw-items-center tw-justify-between">
-          {/* Logo */}
-          <div className="tw-flex tw-items-center tw-gap-3">
-            <div className="tw-w-10 tw-h-10 tw-bg-gradient-primary tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
-              <span className="tw-text-base tw-font-bold tw-text-primary-foreground">DA</span>
+const NavBar: React.FC = () => {
+  return (
+    <>
+      <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4 tw-hidden md:tw-block">
+        <div className="tw-bg-white tw-rounded-full tw-px-6 tw-py-3 tw-shadow-lg">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            {/* Brand */}
+            <div className="tw-flex tw-items-center tw-space-x-2">
+              <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain" />
+              <span className="tw-text-xl tw-font-bold tw-text-gray-900">DriveAdmin</span>
             </div>
-            <div>
-              <h1 className="tw-text-xl tw-font-bold">DriveAcademy</h1>
-              <p className="tw-text-sm tw-text-muted-foreground">Student Portal</p>
+            {/* Nav Links */}
+            <div className="tw-flex tw-items-center tw-space-x-6">
+              {[
+                { path: "/dashboard", label: "Dashboard" },
+                { path: "/lessons", label: "Lessons" },
+                { path: "/progress", label: "Progress" },
+                { path: "/practice", label: "Practice" },
+                { path: "/payments", label: "Payments" },
+              ].map(item => (
+                <a key={item.path} href={item.path} className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors">
+                  {item.label}
+                </a>
+              ))}
             </div>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="tw-flex tw-items-center tw-gap-2">
-            {[
-              { path: "/dashboard", label: "Dashboard" },
-              { path: "/lessons", label: "Lessons" },
-              { path: "/progress", label: "Progress" },
-              { path: "/practice", label: "Practice" },
-              { path: "/payments", label: "Payments" },
-            ].map((item) => (
-              <a
-                key={item.path}
-                href={item.path}
-                className={`tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-all tw-duration-200 hover:tw-bg-secondary hover:tw-scale-105 tw-text-muted-foreground hover:tw-text-foreground`}
-              >
-                {/* Icon placeholder */}
-                <span className="tw-w-4 tw-h-4 tw-rounded-sm tw-bg-foreground/40"></span>
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Profile Avatar */}
-          <div className="tw-w-10 tw-h-10 tw-bg-gradient-card tw-rounded-full tw-flex tw-items-center tw-justify-center tw-border-2 tw-border-primary/20">
-            <div className="tw-w-8 tw-h-8 tw-bg-primary tw-rounded-full tw-flex tw-items-center tw-justify-center">
-              <span className="tw-text-xs tw-font-bold tw-text-primary-foreground">JS</span>
+            {/* Avatar */}
+            <div className="tw-w-10 tw-h-10 tw-bg-gradient-card tw-rounded-full tw-flex tw-items-center tw-justify-center tw-border-2 tw-border-primary/20">
+              <div className="tw-w-8 tw-h-8 tw-bg-primary tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                <span className="tw-text-xs tw-font-bold tw-text-primary-foreground">JS</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
-
-    {/* Mobile Spacer */}
-    <div className="tw-h-20 md:tw-h-24" />
-  </>
-);
+      </nav>
+      <div className="tw-h-32" />
+    </>
+  );
+};
 
 const LandingStudent: React.FC = () => {
   const navigate = useNavigate();
   return (
-    <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
+  <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
       <NavBar />
       <Container className="tw-pb-10">
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-2">
@@ -168,7 +154,7 @@ const LandingStudent: React.FC = () => {
             </div>
             <Button
               variant="primary"
-              className="tw-w-full sm:tw-w-auto"
+              className="tw-w-full sm:tw-w-auto tw-rounded-full"
               onClick={() => navigate('/signup')}
             >
               Get started
