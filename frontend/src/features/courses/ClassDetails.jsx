@@ -26,6 +26,7 @@ const ClassDetails = () => {
         setLoading(true);
         
         // Mock class data
+        /*
         const mockClass = {
           id: id,
           name: "Categoria B - Curs Complet",
@@ -98,10 +99,11 @@ const ClassDetails = () => {
           experience_years: 12,
           rating: 4.8
         };
+        */
 
-        setClassData(mockClass);
-        setEnrolledStudents(mockStudents);
-        setInstructor(mockInstructor);
+        setClassData(null); // Set to null instead of mock data
+        setEnrolledStudents([]); // Set empty array instead of mock data
+        setInstructor(null); // Set to null instead of mock data
       } catch (error) {
         console.error('Error fetching class details:', error);
       } finally {

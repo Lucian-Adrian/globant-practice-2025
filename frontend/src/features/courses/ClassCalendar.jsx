@@ -20,6 +20,7 @@ const ClassCalendar = ({ classId, className = '' }) => {
       setLoading(true);
       
       // Mock lessons for the class
+      /*
       const mockLessons = [
         {
           id: 1,
@@ -85,8 +86,9 @@ const ClassCalendar = ({ classId, className = '' }) => {
           status: "scheduled"
         }
       ];
+      */
 
-      setLessons(mockLessons);
+      setLessons([]); // Set empty array instead of mock data
       setLoading(false);
     };
 

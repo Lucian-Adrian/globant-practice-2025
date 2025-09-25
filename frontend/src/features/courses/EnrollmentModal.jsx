@@ -15,6 +15,7 @@ const EnrollmentModal = ({ isOpen, onClose, classData, onEnrollmentSuccess }) =>
         setLoading(true);
         
         // Mock available students (not already enrolled in this class)
+        /*
         const mockStudents = [
           {
             id: 4,
@@ -49,8 +50,9 @@ const EnrollmentModal = ({ isOpen, onClose, classData, onEnrollmentSuccess }) =>
             status: "ACTIVE"
           }
         ];
+        */
 
-        setStudents(mockStudents);
+        setStudents([]); // Set empty array instead of mock data
         setLoading(false);
       };
 
