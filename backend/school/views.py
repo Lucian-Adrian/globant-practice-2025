@@ -397,52 +397,52 @@ def student_dashboard(request):
     enrollment_data = EnrollmentSerializer(enrollments.select_related('course', 'student'), many=True).data
     
     # If no enrollments, return mock data for testing
-    if not enrollments.exists():
-        mock_course = {
-            "id": 1,
-            "name": "Mock Driving Course B",
-            "category": "B",
-            "type": "PRACTICE",
-            "description": "Mock course for testing",
-            "price": "1500.00",
-            "required_lessons": 20
-        }
-        mock_enrollment = {
-            "id": 1,
-            "student": student.id,
-            "course": mock_course,
-            "enrollment_date": student.enrollment_date.isoformat(),
-            "type": "PRACTICE",
-            "status": "IN_PROGRESS"
-        }
-        lesson_data = [{
-            "id": 1,
-            "enrollment": mock_enrollment,
-            "instructor": {"id": 1, "first_name": "Mock", "last_name": "Instructor", "email": "mock@example.com", "phone_number": "+37312345678", "hire_date": "2020-01-01", "license_categories": "B"},
-            "vehicle": {"id": 1, "make": "Mock", "model": "Car", "license_plate": "MOCK001", "year": 2020, "category": "B", "is_available": True},
-            "scheduled_time": "2024-10-25T10:00:00Z",
-            "duration_minutes": 50,
-            "status": "SCHEDULED",
-            "notes": "Mock lesson"
-        }]
-        payment_data = [{
-            "id": 1,
-            "enrollment": mock_enrollment,
-            "amount": "500.00",
-            "payment_date": "2024-10-01T00:00:00Z",
-            "payment_method": "CASH",
-            "description": "Mock payment"
-        }]
-        course_data = [mock_course]
-        instructor_data = [{
-            "id": 1,
-            "first_name": "Mock",
-            "last_name": "Instructor", 
-            "email": "mock@example.com",
-            "phone_number": "+37312345678",
-            "hire_date": "2020-01-01",
-            "license_categories": "B"
-        }]
+    # if not enrollments.exists():
+    #     mock_course = {
+    #         "id": 1,
+    #         "name": "Mock Driving Course B",
+    #         "category": "B",
+    #         "type": "PRACTICE",
+    #         "description": "Mock course for testing",
+    #         "price": "1500.00",
+    #         "required_lessons": 20
+    #     }
+    #     mock_enrollment = {
+    #         "id": 1,
+    #         "student": student.id,
+    #         "course": mock_course,
+    #         "enrollment_date": student.enrollment_date.isoformat(),
+    #         "type": "PRACTICE",
+    #         "status": "IN_PROGRESS"
+    #     }
+    #     lesson_data = [{
+    #         "id": 1,
+    #         "enrollment": mock_enrollment,
+    #         "instructor": {"id": 1, "first_name": "Mock", "last_name": "Instructor", "email": "mock@example.com", "phone_number": "+37312345678", "hire_date": "2020-01-01", "license_categories": "B"},
+    #         "vehicle": {"id": 1, "make": "Mock", "model": "Car", "license_plate": "MOCK001", "year": 2020, "category": "B", "is_available": True},
+    #         "scheduled_time": "2024-10-25T10:00:00Z",
+    #         "duration_minutes": 50,
+    #         "status": "SCHEDULED",
+    #         "notes": "Mock lesson"
+    #     }]
+    #     payment_data = [{
+    #         "id": 1,
+    #         "enrollment": mock_enrollment,
+    #         "amount": "500.00",
+    #         "payment_date": "2024-10-01T00:00:00Z",
+    #         "payment_method": "CASH",
+    #         "description": "Mock payment"
+    #     }]
+    #     course_data = [mock_course]
+    #     instructor_data = [{
+    #         "id": 1,
+    #         "first_name": "Mock",
+    #         "last_name": "Instructor", 
+    #         "email": "mock@example.com",
+    #         "phone_number": "+37312345678",
+    #         "hire_date": "2020-01-01",
+    #         "license_categories": "B"
+    #     }]
     
     # Calculate lesson summaries
     lesson_summary = {
