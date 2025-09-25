@@ -249,7 +249,20 @@ const languageData = {
       invalidDob: 'Nu puteți selecta o dată din viitor',
       tooYoung: 'Trebuie să aveți cel puțin {{years}} ani',
     },
-    admin: {},
+    // Duplicate resource labels under the 'admin' namespace to ensure RA menu/items resolve without falling back to EN
+    admin: {
+      resources: {
+        students: { name:'Studenți', empty:'Niciun student încă', invite:'Creați primul student', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', date_of_birth:'Data nașterii', enrollment_date:'Data înscrierii', status:'Statut', password:'Parolă', confirm_password:'Confirmă parola' } },
+        instructors: { name:'Instructori', empty:'Niciun instructor încă', invite:'Creați primul instructor', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', hire_date:'Data angajării', license_categories:'Categorii licență', license_categories_hint:'Separate prin virgulă ex.: B,BE,C', experience: 'Experiență' } },
+        vehicles: { name:'Vehicule', empty:'Niciun vehicul încă', invite:'Creați primul vehicul', fields:{ id:'ID', make:'Marcă', model:'Model', license_plate:'Număr înmatriculare', year:'An', category:'Categorie', is_available:'Disponibil', last_service:'Ultimul service', maintenance_status:'Stare mentenanță' } },
+        courses: { name:'Cursuri', empty:'Niciun curs încă', invite:'Creați primul curs', fields:{ id:'ID', name:'Nume', category:'Categorie', type:'Tip', description:'Descriere', price:'Preț', required_lessons:'Lecții necesare' } },
+        payments: { name:'Plăți', empty:'Nicio plată încă', invite:'Creați prima plată', fields:{ id:'ID', enrollment:'Înscriere', amount:'Sumă', payment_date:'Data plății', payment_method:'Metodă plată', status:'Statut', description:'Descriere' } },
+        enrollments: { name:'Înscrieri', empty:'Nicio înscriere încă', invite:'Creați prima înscriere', fields:{ id:'ID', student:'Student', course:'Curs', enrollment_date:'Data înscrierii', type:'Tip', status:'Statut', label:'Etichetă' } },
+        lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
+        'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
+        classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
+      }
+    },
     resources: {
       students: { name:'Studenți', empty:'Niciun student încă', invite:'Creați primul student', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', date_of_birth:'Data nașterii', enrollment_date:'Data înscrierii', status:'Statut', password:'Parolă', confirm_password:'Confirmă parola' } },
       instructors: { name:'Instructori', empty:'Niciun instructor încă', invite:'Creați primul instructor', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', hire_date:'Data angajării', license_categories:'Categorii licență', license_categories_hint:'Separate prin virgulă ex.: B,BE,C', experience: 'Experiență' } },
@@ -344,7 +357,20 @@ const languageData = {
       invalidDob: 'Вы не можете выбрать дату в будущем',
       tooYoung: 'Вам должно быть не менее {{years}} лет',
     },
-    admin: {},
+    // Duplicate resource labels under 'admin' for consistent RA lookups
+    admin: {
+      resources: {
+        students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
+        instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
+        vehicles: { name:'Транспорт', empty:'Транспортных средств пока нет', invite:'Добавьте первое транспортное средство', fields:{ id:'ID', make:'Марка', model:'Модель', license_plate:'Номер', year:'Год', category:'Категория', is_available:'Доступен', last_service:'Последний сервис', maintenance_status:'Статус обслуживания' } },
+        courses: { name:'Курсы', empty:'Курсов пока нет', invite:'Создайте первый курс', fields:{ id:'ID', name:'Название', category:'Категория', type:'Тип', description:'Описание', price:'Цена', required_lessons:'Требуемые уроки' } },
+        payments: { name:'Платежи', empty:'Платежей пока нет', invite:'Создайте первый платеж', fields:{ id:'ID', enrollment:'Запись', amount:'Сумма', payment_date:'Дата платежа', payment_method:'Метод платежа', status:'Статус', description:'Описание' } },
+        enrollments: { name:'Записи', empty:'Записей пока нет', invite:'Создайте первую запись', fields:{ id:'ID', student:'Студент', course:'Курс', enrollment_date:'Дата записи', type:'Тип', status:'Статус', label:'Метка' } },
+        lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', fields:{ id:'ID', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
+        'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
+        classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
+      }
+    },
     resources: {
       students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
       instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
