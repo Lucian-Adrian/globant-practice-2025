@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { List, useDataProvider, useNotify, useTranslate } from 'react-admin';
+import { ListBase, Title, useDataProvider, useNotify, useTranslate } from 'react-admin';
 
 const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
 // Slots represent 1h30m start times; show only full-hour start times from 08:00 to 22:00
@@ -45,7 +45,7 @@ function TimeGrid({ availMap, onToggle, translate }) {
 												borderRadius: 4,
 												cursor: 'pointer'
 											}}
-											title={active ? translate('instructorAvailabilities.availabilities_saved', { defaultValue: 'Available - click to remove' }) : translate('instructorAvailabilities.select_instructor', { defaultValue: 'Not available - click to add' })}
+											title={active ? translate('instructorAvailabilities.available', { defaultValue: 'Available - click to remove' }) : translate('instructorAvailabilities.not_available', { defaultValue: 'Not available - click to add' })}
 										/>
 									</td>
 								);
@@ -69,7 +69,13 @@ export default function InstructorAvailabilityList(props) {
 
 	useEffect(() => {
 		dp.getList('instructors', { pagination: { page:1, perPage: 200 }, sort: { field: 'id', order: 'ASC' }, filter: {} })
-			.then(r => setInstructors(r.data))
+			.then(r => {
+				setInstructors(r.data);
+				// Auto-select first instructor so the grid is visible immediately
+				if (!selected && Array.isArray(r.data) && r.data.length) {
+					setSelected(String(r.data[0].id));
+				}
+			})
 			.catch(() => notify(translate('instructorAvailabilities.failed_load_instructors', { defaultValue: 'Failed to load instructors' }), { type: 'error' }));
 	}, []);
 
@@ -128,7 +134,8 @@ export default function InstructorAvailabilityList(props) {
 	};
 
 	return (
-		<List {...props} title={translate('resources.instructor-availabilities.name', { defaultValue: 'Instructor Availability' })}>
+		<ListBase resource="instructor-availabilities">
+			<Title title={translate('resources.instructor-availabilities.name', { defaultValue: 'Instructor Availability' })} />
 			<div style={{ padding: 12 }}>
 				<div style={{ marginBottom: 12, maxWidth: 360 }}>
 					<label style={{ display: 'block', marginBottom: 6 }}>{translate('resources.instructor-availabilities.fields.instructor_id', { defaultValue: 'Instructor' })}</label>
@@ -140,9 +147,15 @@ export default function InstructorAvailabilityList(props) {
 					</select>
 				</div>
 
+				{/* Always show the grid, even when no availabilities exist yet */}
 				<TimeGrid availMap={availMap} onToggle={handleToggle} translate={translate} />
+				{selected && Object.keys(availMap).length === 0 && (
+					<p style={{ marginTop: 8, color: '#666' }}>
+						{translate('instructorAvailabilities.not_available', { defaultValue: 'Not available - click a cell to add' })}
+					</p>
+				)}
 			</div>
-		</List>
+		</ListBase>
 	);
 }
 

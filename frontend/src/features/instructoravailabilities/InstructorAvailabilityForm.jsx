@@ -18,9 +18,9 @@ function TimeGrid({ availMap, onToggle, translate }) {
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
           <tr>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Time</th>
+            <th style={{ border: '1px solid #ddd', padding: 8 }}>{translate('instructorAvailabilities.time_label', { defaultValue: 'Time' })}</th>
             {DAYS.map(d => (
-              <th key={d} style={{ border: '1px solid #ddd', padding: 8 }}>{d.slice(0,3)}</th>
+              <th key={d} style={{ border: '1px solid #ddd', padding: 8 }}>{translate(`days.${d}_short`, { defaultValue: d.slice(0,3) })}</th>
             ))}
           </tr>
         </thead>
@@ -65,7 +65,13 @@ export default function InstructorAvailabilityForm({ initialInstructorId = null,
 
   useEffect(() => {
     dp.getList('instructors', { pagination: { page:1, perPage: 200 }, sort: { field: 'id', order: 'ASC' }, filter: {} })
-      .then(r => setInstructors(r.data))
+      .then(r => {
+        setInstructors(r.data);
+        // Auto-select first instructor to show grid immediately
+        if (!selectedInstructor && Array.isArray(r.data) && r.data.length) {
+          setSelectedInstructor(String(r.data[0].id));
+        }
+      })
       .catch(() => notify('Failed to load instructors', { type: 'error' }));
   }, []);
 
@@ -84,6 +90,12 @@ export default function InstructorAvailabilityForm({ initialInstructorId = null,
   }, [selectedInstructor]);
 
   const handleToggle = (day, slot) => {
+    if (!selectedInstructor) {
+      return notify(
+        translate('instructorAvailabilities.select_instructor_first', { defaultValue: 'Select an instructor first' }),
+        { type: 'warning' }
+      );
+    }
     const key = `${day}|${slot}`;
     const newMap = { ...availMap };
     if (newMap[key]) delete newMap[key]; else newMap[key] = true;
@@ -149,7 +161,13 @@ export default function InstructorAvailabilityForm({ initialInstructorId = null,
         </select>
       </div>
 
+  {/* Always show the grid even when there are no availabilities yet */}
   <TimeGrid availMap={availMap} onToggle={handleToggle} translate={translate} />
+  {selectedInstructor && Object.keys(availMap).length === 0 && (
+    <p style={{ marginTop: 8, color: '#666' }}>
+      {translate('instructorAvailabilities.not_available', { defaultValue: 'Not available - click a cell to add' })}
+    </p>
+  )}
 
       <div style={{ marginTop: 12 }}>
         <button onClick={handleSave} style={{ padding: '8px 14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>{translate('instructorAvailabilities.save', { defaultValue: 'Save availabilities' })}</button>
