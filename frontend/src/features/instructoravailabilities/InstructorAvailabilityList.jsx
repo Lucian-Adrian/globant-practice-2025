@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { List, useDataProvider, useNotify, useTranslate } from 'react-admin';
 
 const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
@@ -65,6 +65,7 @@ export default function InstructorAvailabilityList(props) {
 	const [instructors, setInstructors] = useState([]);
 	const [selected, setSelected] = useState('');
 	const [availMap, setAvailMap] = useState({});
+	const currentSelectedRef = useRef('');
 
 	useEffect(() => {
 		dp.getList('instructors', { pagination: { page:1, perPage: 200 }, sort: { field: 'id', order: 'ASC' }, filter: {} })
@@ -73,9 +74,12 @@ export default function InstructorAvailabilityList(props) {
 	}, []);
 
 	useEffect(() => {
-		if (!selected) { setAvailMap({}); return; }
+		if (!selected) { setAvailMap({}); currentSelectedRef.current = ''; return; }
+		setAvailMap({}); // Clear immediately when switching instructors
+		currentSelectedRef.current = selected;
 		dp.getList('instructor-availabilities', { pagination: { page:1, perPage: 100 }, sort: { field: 'id', order: 'ASC' }, filter: { instructor_id: selected } })
 			.then(r => {
+				if (currentSelectedRef.current !== selected) return; // Stale response
 				const map = {};
 				r.data.forEach(av => {
 					const day = av.day;
@@ -85,7 +89,11 @@ export default function InstructorAvailabilityList(props) {
 				});
 				setAvailMap(map);
 			})
-			.catch(() => notify(translate('instructorAvailabilities.failed_load_availabilities', { defaultValue: 'Failed to load availabilities' }), { type: 'error' }));
+			.catch(() => {
+				if (currentSelectedRef.current !== selected) return; // Stale response
+				setAvailMap({}); // Clear the map on error to avoid showing stale data
+				notify(translate('instructorAvailabilities.failed_load_availabilities', { defaultValue: 'Failed to load availabilities' }), { type: 'error' });
+			});
 	}, [selected]);
 
 	const upsertDay = async (instructorId, day, hours) => {
