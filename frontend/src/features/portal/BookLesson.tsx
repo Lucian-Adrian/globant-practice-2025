@@ -1,7 +1,8 @@
 import * as React from "react";
 import PortalNavBar from "./PortalNavBar";
 import { useNavigate } from "react-router-dom";
-import { studentRawFetch, studentHttpJson } from "../../api/httpClient";
+import { studentRawFetch } from "../../api/httpClient";
+import InstructorCalendarAvailability from "./InstructorCalendarAvailability";
 
 // Minimal UI primitives matching portal styling
 const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = "" }) => (
@@ -47,6 +48,15 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
 
 type Instructor = { id: number; first_name: string; last_name: string };
 type Enrollment = { id: number; type?: string; course?: { type?: string } };
+type Vehicle = { id: number; category: string; is_available?: boolean };
+type Lesson = {
+  id: number;
+  scheduled_time: string;
+  duration_minutes?: number;
+  status?: string;
+  vehicle?: Vehicle | number | null;
+  instructor?: { id: number } | number;
+};
 
 const BookLesson: React.FC = () => {
   const navigate = useNavigate();
@@ -54,10 +64,27 @@ const BookLesson: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [instructors, setInstructors] = React.useState<Instructor[]>([]);
   const [enrollments, setEnrollments] = React.useState<Enrollment[]>([]);
+  const [studentLessons, setStudentLessons] = React.useState<Lesson[]>([]);
+  const [allLessons, setAllLessons] = React.useState<Lesson[]>([]);
+  const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
 
   const [selectedInstructor, setSelectedInstructor] = React.useState<string>("");
   const [selectedDate, setSelectedDate] = React.useState<string>("");
   const [selectedTime, setSelectedTime] = React.useState<string>("");
+
+  // Availability and lessons for the selected instructor
+  const [availability, setAvailability] = React.useState<Record<string,string[]>>({});
+  const [instructorLessons, setInstructorLessons] = React.useState<any[]>([]);
+  const [availLoading, setAvailLoading] = React.useState(false);
+  const [weekStart, setWeekStart] = React.useState<Date | undefined>(undefined);
+
+  // Combined lessons for calendar (instructor + student's), de-duplicated by id
+  const calendarLessons = React.useMemo(() => {
+    const byId = new Map<number, any>();
+    for (const l of instructorLessons as any[]) { if (l && typeof l.id === 'number') byId.set(l.id, l); }
+    for (const l of studentLessons as any[]) { if (l && typeof l.id === 'number') byId.set(l.id, l); }
+    return Array.from(byId.values());
+  }, [instructorLessons, studentLessons]);
 
   // Load student dashboard data to get instructors and enrollments
   React.useEffect(() => {
@@ -72,10 +99,12 @@ const BookLesson: React.FC = () => {
         const body = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(body?.detail || body?.message || 'Failed to load');
         if (!mounted) return;
-        const ins: Instructor[] = Array.isArray(body?.instructors) ? body.instructors : [];
-        const ens: Enrollment[] = Array.isArray(body?.enrollments) ? body.enrollments : [];
+  const ins: Instructor[] = Array.isArray(body?.instructors) ? body.instructors : [];
+  const ens: Enrollment[] = Array.isArray(body?.enrollments) ? body.enrollments : [];
+  const stuLessons: Lesson[] = Array.isArray(body?.lessons) ? body.lessons : [];
         setInstructors(ins);
         setEnrollments(ens);
+  setStudentLessons(stuLessons);
         if (ins.length) setSelectedInstructor(String(ins[0].id));
       } catch (e: any) {
         if (mounted) setError(e?.message || 'Network error');
@@ -87,22 +116,77 @@ const BookLesson: React.FC = () => {
     return () => { mounted = false; };
   }, [navigate]);
 
-  // Realistic hours helper: 09:00-16:00, hourly slots; if today, only future hours
+  // Fetch vehicles once for auto-selection logic
+  React.useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const r = await fetch('/api/vehicles/?page_size=500');
+        const b = await r.json().catch(() => ({} as any));
+        const arr = Array.isArray(b) ? b : (Array.isArray(b?.results) ? b.results : []);
+        if (!cancelled) setVehicles(arr as Vehicle[]);
+      } catch { /* ignore */ }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch availability+lessons when instructor changes
+  React.useEffect(() => {
+    const fetchData = async () => {
+      if (!selectedInstructor) { setAvailability({}); setInstructorLessons([]); return; }
+      setAvailLoading(true);
+      try {
+        const insId = Number(selectedInstructor);
+        // NOTE: backend currently does not implement filter param ?instructor=; response may be paginated: {count, next, previous, results: []}
+        const availResp = await fetch(`/api/instructor-availabilities/?page_size=200`);
+        const availBody = await availResp.json().catch(()=>({ results: [] }));
+        const rawList = Array.isArray(availBody) ? availBody : (Array.isArray(availBody?.results) ? availBody.results : []);
+        const filtered = rawList.filter((r: any) => r?.instructor?.id === insId || r?.instructor === insId || r?.instructor_id === insId);
+        const map: Record<string,string[]> = {};
+        for (const rec of filtered) {
+          if (rec && rec.day && Array.isArray(rec.hours)) map[rec.day] = rec.hours;
+        }
+        setAvailability(map);
+        // Lessons (also paginated) – fetch large page size to minimize misses
+        const lessonsResp = await fetch(`/api/lessons/?ordering=scheduled_time&page_size=1000`);
+        const lessonsBody = await lessonsResp.json().catch(()=>({}));
+        const lessonsArr: Lesson[] = Array.isArray(lessonsBody) ? lessonsBody : (Array.isArray(lessonsBody?.results) ? lessonsBody.results : []);
+        setAllLessons(lessonsArr);
+        setInstructorLessons(lessonsArr.filter((l:any) => (l.instructor?.id === insId || l.instructor === insId) && l.status === 'SCHEDULED'));
+      } catch (e) { /* ignore silently */ }
+      finally { setAvailLoading(false); }
+    };
+    fetchData();
+  }, [selectedInstructor]);
+
+  // Compute valid time slots for the selected date based on availability + conflicts
   const getTimeOptions = React.useCallback(() => {
-    const opts: string[] = [];
-    const todayStr = new Date().toISOString().split('T')[0];
-    const baseHours = [9, 10, 11, 13, 14, 15, 16]; // skip 12:00 for lunch
+    if (!selectedInstructor || !selectedDate) return [] as string[];
+    const d = new Date(`${selectedDate}T00:00:00`);
+    const dayEnum = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'][(d.getDay()+6)%7];
+    const allowed = availability[dayEnum] || [];
     const now = new Date();
-    for (const h of baseHours) {
-      const t = `${String(h).padStart(2,'0')}:00`;
-      if (!selectedDate) { opts.push(t); continue; }
-      if (selectedDate !== todayStr) { opts.push(t); continue; }
-      // same day: only future times
-      const dt = new Date(`${selectedDate}T${t}:00`);
-      if (dt > now) opts.push(t);
+    const cleaned: string[] = [];
+    for (const hhmm of allowed) {
+      const start = new Date(`${selectedDate}T${hhmm}:00`);
+      if (start < now) continue; // no past
+      const end = new Date(start.getTime() + 60*60000);
+      const conflict = instructorLessons.some((l:any) => {
+        const lStart = new Date(l.scheduled_time);
+        const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60)*60000);
+        return lStart < end && start < lEnd; // allow adjacency
+      });
+      const studentConflict = studentLessons.some((l:any) => {
+        if (l?.status !== 'SCHEDULED') return false;
+        const lStart = new Date(l.scheduled_time);
+        const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60)*60000);
+        return lStart < end && start < lEnd; // allow adjacency
+      });
+      if (!conflict && !studentConflict) cleaned.push(hhmm);
     }
-    return opts;
-  }, [selectedDate]);
+    return cleaned.sort();
+  }, [selectedInstructor, selectedDate, availability, instructorLessons, studentLessons]);
 
   const canSubmit = Boolean(selectedInstructor && selectedDate && selectedTime && enrollments.length);
 
@@ -112,12 +196,79 @@ const BookLesson: React.FC = () => {
     return practice?.id || enrollments[0]?.id;
   };
 
+  const findEnrollmentById = (id: number | undefined) => enrollments.find(e => e.id === id);
+
+  // Auto-pick vehicle: most recently used by this student and available; otherwise random available
+  const pickVehicleId = (start: Date, end: Date, enrollmentId: number | undefined): number | null => {
+    if (!enrollmentId) return null;
+    const enr = findEnrollmentById(enrollmentId);
+    const courseCategory = (enr as any)?.course?.category || (enr as any)?.category;
+    if (!courseCategory) return null;
+
+    // Candidates: vehicles matching course category and marked available (or missing flag treated as available)
+    const matching = vehicles.filter(v => v.category === courseCategory && v.is_available !== false);
+    if (matching.length === 0) return null;
+
+    // Exclude vehicles with overlapping SCHEDULED lessons at this time
+    const overlaps = (l: Lesson) => {
+      if (!l || l.status !== 'SCHEDULED') return false;
+      const lStart = new Date(l.scheduled_time);
+      const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60) * 60000);
+      return lStart < end && start < lEnd;
+    };
+    const busy = new Set<number>();
+    for (const l of allLessons) {
+      const veh = l?.vehicle as any;
+      const vId = typeof veh === 'number' ? veh : veh?.id;
+      if (!vId) continue;
+      if (overlaps(l)) busy.add(vId);
+    }
+    const free = matching.filter(v => !busy.has(v.id));
+    if (free.length === 0) return null;
+
+    // Try most-recently-used vehicle by this student that is free
+    const sortedByRecent = [...studentLessons]
+      .filter(l => l.vehicle)
+      .sort((a, b) => new Date(b.scheduled_time).getTime() - new Date(a.scheduled_time).getTime());
+    for (const l of sortedByRecent) {
+      const veh = l.vehicle as any;
+      const vId = typeof veh === 'number' ? veh : veh?.id;
+      const vCat = typeof veh === 'number' ? undefined : veh?.category;
+      if (!vId) continue;
+      if (vCat && vCat !== courseCategory) continue;
+      if (free.some(v => v.id === vId)) return vId;
+    }
+
+    // Fallback: pick a random free vehicle
+    const pick = free[Math.floor(Math.random() * free.length)];
+    return pick?.id ?? null;
+  };
+
   const onSubmit = async () => {
     if (!canSubmit) return;
     const enrollmentId = findPracticeEnrollmentId();
     if (!enrollmentId) { setError('No active enrollment found'); return; }
     const instructorId = Number(selectedInstructor);
     const iso = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
+    const start = new Date(`${selectedDate}T${selectedTime}:00`);
+    const end = new Date(start.getTime() + 60*60000);
+    // Block if the student already has a lesson overlapping this time
+    const hasStudentConflict = studentLessons.some(l => {
+      if (l?.status !== 'SCHEDULED') return false;
+      const lStart = new Date(l.scheduled_time);
+      const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60) * 60000);
+      return lStart < end && start < lEnd; // adjacency allowed
+    });
+    if (hasStudentConflict) {
+      setError('You already have a lesson at this time. Please choose another slot.');
+      return;
+    }
+
+    const vehicleId = pickVehicleId(start, end, enrollmentId);
+    if (vehicleId == null) {
+      setError('No vehicle available for this time. Please choose another slot.');
+      return;
+    }
     try {
       // IMPORTANT: Do not send Authorization header for this endpoint to avoid JWT auth failure (401)
       const resp = await fetch('/api/lessons/', {
@@ -126,6 +277,7 @@ const BookLesson: React.FC = () => {
         body: JSON.stringify({
           enrollment_id: enrollmentId,
           instructor_id: instructorId,
+          vehicle_id: vehicleId,
           scheduled_time: iso,
           duration_minutes: 60,
           status: 'SCHEDULED',
@@ -177,17 +329,32 @@ const BookLesson: React.FC = () => {
             <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
               <div className="tw-space-y-2">
                 <Label htmlFor="date">Select Date</Label>
-                <Input id="date" type="date" min={new Date().toISOString().split('T')[0]} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+                <Input id="date" type="date" min={new Date().toISOString().split('T')[0]} value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setSelectedTime(''); }} />
               </div>
               <div className="tw-space-y-2">
                 <Label htmlFor="time">Time</Label>
-                <Select id="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)}>
+                <Select id="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} disabled={!selectedInstructor || !selectedDate}>
                   <option value="" disabled>Select time</option>
                   {getTimeOptions().map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </Select>
+                {selectedInstructor && selectedDate && getTimeOptions().length === 0 && (
+                  <div className="tw-text-[11px] tw-text-muted-foreground">No free slots for this day.</div>
+                )}
               </div>
+            </div>
+
+            <div className="tw-pt-2">
+              <InstructorCalendarAvailability
+                instructorId={selectedInstructor ? Number(selectedInstructor) : null}
+                lessons={calendarLessons as any}
+                availability={availability}
+                loading={availLoading}
+                weekStart={weekStart}
+                onWeekChange={(d) => setWeekStart(d)}
+                onSelect={(dateStr, time) => { setSelectedDate(dateStr); setSelectedTime(time); }}
+              />
             </div>
 
             <div className="tw-flex tw-justify-end tw-gap-3">
