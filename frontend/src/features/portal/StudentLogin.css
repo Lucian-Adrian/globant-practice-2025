@@ -1,0 +1,125 @@
+:root {
+  --zeely-text: hsl(220 12% 14%);
+  --zeely-text-muted: hsl(220 8% 46%);
+  --zeely-button: hsl(217 76% 37%); /* warm blue */
+  --zeely-button-text: hsl(0 0% 100%);
+  --border: hsl(220 8% 93%);
+  --input: hsl(220 8% 98%);
+  --background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  --soft-shadow: 0 6px 18px rgba(20, 30, 60, 0.08);
+}
+
+.student-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .student-login-page { flex-direction: row; }
+}
+
+.student-login-page .hero-section { flex: 1; position: relative; overflow: hidden; height: 14rem; min-height: 14rem; }
+@media (min-width: 768px) { .student-login-page .hero-section { height: auto; min-height: 28rem; } }
+.student-login-page .hero-image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: transform .6s ease, filter .35s ease; /* gentle hover/shift */
+}
+.student-login-page .logo-container { position: absolute; top: 2rem; left: 2rem; display:flex; align-items:center; gap:.75rem; }
+.student-login-page .logo-icon { width: 2.75rem; height:2.75rem; background: var(--zeely-text); border-radius:.5rem; display:flex; align-items:center; justify-content:center; }
+.student-login-page .logo-symbol { width:1.65rem; height:1.65rem; border:2px solid var(--zeely-button-text); border-radius:.125rem; position:relative; }
+.student-login-page .logo-symbol:after { content:""; position:absolute; top:-.3rem; right:-.3rem; width:.8rem; height:.8rem; background:var(--zeely-button-text); border-radius:50%; }
+.student-login-page .logo-text { font-size:1.3rem; font-weight:700; color:var(--zeely-text); }
+
+.student-login-page .form-section { flex:1; background:var(--background); display:flex; flex-direction:column; }
+.student-login-page .form-container { flex:1; display:flex; align-items:center; justify-content:center; padding:1rem 1rem 2rem; }
+@media (min-width: 768px) { .student-login-page .form-container { padding:2.5rem 2rem; } }
+.student-login-page .form-wrapper { width:100%; max-width:24rem; animation: fade-in 0.35s ease-out; }
+.student-login-page .form-wrapper { background: white; padding:1.2rem 1.25rem; border-radius:12px; box-shadow:var(--soft-shadow); }
+.student-login-page .form-header { margin-bottom:2rem; }
+.student-login-page .form-title { font-size:1.875rem; font-weight:700; color:var(--zeely-text); margin-bottom:.5rem; }
+.student-login-page .form-subtitle { font-size:.875rem; color:var(--zeely-text-muted); }
+
+.student-login-page form.ui-form { display:flex; flex-direction:column; gap:1rem; }
+.student-login-page .input-group { position:relative; }
+.student-login-page .input-icon { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:var(--zeely-text-muted); width:1.25rem; height:1.25rem; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+.student-login-page .input, .student-login-page .select { width:100%; height:3rem; padding:.5rem .75rem; padding-left:3rem; background:var(--input); border:1px solid var(--border); border-radius:.5rem; color:var(--zeely-text); font-size:.875rem; }
+.student-login-page .input::placeholder { color:var(--zeely-text-muted); }
+.student-login-page .password-toggle { position:absolute; right:.75rem; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--zeely-text-muted); cursor:pointer; width:1.25rem; height:1.25rem; }
+.student-login-page .password-toggle:hover { color:var(--zeely-text); }
+.student-login-page .select { appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position:right .5rem center; background-repeat:no-repeat; background-size:1.25rem 1.25rem; }
+.student-login-page .forgot-password { text-align:right; }
+.student-login-page .forgot-password a { color:var(--zeely-text); text-decoration:underline; font-size:.75rem; }
+.student-login-page .forgot-password a:hover { text-decoration:none; }
+.student-login-page .button { width:100%; height:3rem; background:var(--zeely-button); color:var(--zeely-button-text); border:none; border-radius:10px; font-weight:600; font-size:.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem; transition:transform .12s ease, box-shadow .12s ease; box-shadow: 0 6px 12px rgba(16,24,40,0.06); }
+.student-login-page .button:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(16,24,40,0.08); }
+.student-login-page .button:disabled { background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(59,130,246,0.08)); color: rgba(30,58,138,0.6); cursor: not-allowed; box-shadow: none; transform: none; }
+.student-login-page .form-footer { margin-top:1.5rem; text-align:center; font-size:.75rem; color:var(--zeely-text-muted); }
+.student-login-page .form-footer button, .student-login-page .form-footer a { color:var(--zeely-text); text-decoration:underline; background:none; border:none; cursor:pointer; font:inherit; padding:0; }
+.student-login-page .form-footer button:hover, .student-login-page .form-footer a:hover { text-decoration:none; }
+.student-login-page .footer { padding:0 0 2rem; text-align:center; font-size:.75rem; color:var(--zeely-text-muted); display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+.student-login-page .footer a { color:var(--zeely-text-muted); text-decoration:none; transition:color .2s; }
+.student-login-page .footer a:hover { color:var(--zeely-text); }
+.student-login-page .optional-label { color:var(--zeely-text-muted); font-size:.625rem; margin-top:.25rem; position:absolute; left:3rem; bottom:-.9rem; }
+.student-login-page .error-text { color:#dc2626; font-size:.65rem; margin-top:.35rem; }
+.student-login-page .message {
+  margin-top: 1rem;
+  font-size: .95rem;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .9rem 1rem;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 6px 20px rgba(16,24,40,0.04);
+  position: relative;
+  transform-origin: left center;
+  animation: slide-in-left .28s ease-out;
+}
+.student-login-page .message .message-icon { width:2rem; height:2rem; flex: 0 0 2rem; display:flex; align-items:center; justify-content:center; border-radius:999px; background: rgba(59,130,246,0.1); color: #2563eb; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+.student-login-page .message .message-icon svg { width:1.05rem; height:1.05rem; }
+.student-login-page .message .message-text { line-height:1.25; color:var(--zeely-text); }
+.student-login-page .message.error { background: #fff5f5; border-left: 4px solid #ef4444; color: #991b1b; }
+.student-login-page .message.error .message-text { color: #991b1b; }
+.student-login-page .message.success { background: #f0fdf4; border-left: 4px solid #16a34a; color: #065f46; }
+.student-login-page .message.success .message-text { color: #065f46; }
+.student-login-page .message.info {
+  background: linear-gradient(90deg, rgba(239,246,255,0.95), rgba(250,254,255,0.98));
+  border-left: none; /* softer look */
+  color: #1e3a8a;
+}
+.student-login-page .message.info .message-text { color: #1e3a8a; font-weight:600; }
+.student-login-page .message.info .message-icon { background: linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.08)); color:#1e3a8a; animation: pulse 2.2s ease-in-out infinite; }
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: .95; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Motto overlay on hero for guests */
+.student-login-page .hero-motto {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  background: rgba(255,255,255,0.85);
+  padding: .6rem .9rem;
+  border-radius: 999px;
+  font-weight:600;
+  color: var(--zeely-text);
+  box-shadow: 0 6px 20px rgba(16,24,40,0.06);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fade-in { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:translateY(0);} }

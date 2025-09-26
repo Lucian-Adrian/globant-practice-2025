@@ -1,4 +1,9 @@
 import * as React from "react";
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SportsMotorsportsIcon from '@mui/icons-material/SportsMotorsports';
+import PaymentIcon from '@mui/icons-material/Payment';
 
 function getStudentInitials(): string {
   try {
@@ -42,16 +47,16 @@ const PortalNavBar: React.FC = () => {
             </div>
 
             <div className="tw-flex tw-items-center tw-gap-2">
-              {[ 
-                { path: "/dashboard", label: "Dashboard" },
-                { path: "/lessons", label: "Lessons" },
-                { path: "/progress", label: "Progress" },
-                { path: "/practice", label: "Practice" },
-                { path: "/payments", label: "Payments" },
+              {[
+                { path: "/dashboard", label: "Dashboard", icon: <DashboardIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/lessons", label: "Lessons", icon: <MenuBookIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/progress", label: "Progress", icon: <TrendingUpIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/practice", label: "Practice", icon: <SportsMotorsportsIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/payments", label: "Payments", icon: <PaymentIcon className="tw-w-4 tw-h-4" color="inherit" /> },
               ].map((item) => (
                 <a key={item.path} href={item.path} className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-all tw-duration-200 hover:tw-bg-secondary hover:tw-scale-105 tw-text-muted-foreground hover:tw-text-foreground">
-                  <span className="tw-w-4 tw-h-4 tw-rounded-sm tw-bg-foreground/40"></span>
-                  {item.label}
+                  <span className="tw-flex tw-items-center tw-justify-center" aria-hidden="true">{item.icon}</span>
+                  <span className="tw-select-none">{item.label}</span>
                 </a>
               ))}
             </div>

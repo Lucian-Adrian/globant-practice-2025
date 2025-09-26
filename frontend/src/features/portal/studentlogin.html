@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveAdmin - Driving School Management</title>
+    <meta name="description" content="DriveAdmin - Complete driving school management system" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 45%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 72% 51%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%;
+            --radius: 0.5rem;
+            --zeely-text: 240 10% 3.9%;
+            --zeely-text-muted: 240 3.8% 45%;
+            --zeely-button: 240 5.9% 10%;
+            --zeely-button-text: 0 0% 98%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .hero-section {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: hsl(var(--zeely-text));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-symbol {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid hsl(var(--zeely-button-text));
+            border-radius: 0.125rem;
+            position: relative;
+        }
+
+        .logo-symbol::after {
+            content: '';
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: hsl(var(--zeely-button-text));
+            border-radius: 50%;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: hsl(var(--zeely-text));
+        }
+
+        .form-section {
+            flex: 1;
+            background-color: hsl(var(--background));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 24rem;
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: hsl(var(--zeely-text));
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: hsl(var(--zeely-text-muted));
+            font-size: 0.875rem;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: hsl(var(--zeely-text-muted));
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .input {
+            width: 100%;
+            height: 3rem;
+            padding: 0.5rem 0.75rem;
+            padding-left: 3rem;
+            background-color: hsl(var(--input));
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            color: hsl(var(--zeely-text));
+            font-size: 0.875rem;
+        }
+
+        .input::placeholder {
+            color: hsl(var(--zeely-text-muted));
+        }
+
+        .input:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: hsl(var(--ring));
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: hsl(var(--zeely-text-muted));
+            cursor: pointer;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .select {
+            width: 100%;
+            height: 3rem;
+            padding: 0.5rem 0.75rem;
+            padding-left: 3rem;
+            background-color: hsl(var(--input));
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            color: hsl(var(--zeely-text));
+            font-size: 0.875rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        .forgot-password {
+            text-align: right;
+        }
+
+        .forgot-password a {
+            color: hsl(var(--zeely-text));
+            text-decoration: underline;
+            font-size: 0.875rem;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: none;
+        }
+
+        .button {
+            width: 100%;
+            height: 3rem;
+            background-color: hsl(var(--zeely-button));
+            color: hsl(var(--zeely-button-text));
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: hsl(var(--zeely-button) / 0.9);
+        }
+
+        .form-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: hsl(var(--zeely-text-muted));
+        }
+
+        .form-footer a {
+            color: hsl(var(--zeely-text));
+            text-decoration: underline;
+        }
+
+        .form-footer a:hover {
+            text-decoration: none;
+        }
+
+        .footer {
+            padding-bottom: 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: hsl(var(--zeely-text-muted));
+        }
+
+        .footer a {
+            color: hsl(var(--zeely-text-muted));
+            text-decoration: none;
+            margin: 0 1rem;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: hsl(var(--zeely-text));
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .optional-label {
+            color: hsl(var(--zeely-text-muted));
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Icons using CSS */
+        .icon {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .icon-phone::before {
+            content: "📱";
+            font-size: 1rem;
+        }
+
+        .icon-lock::before {
+            content: "🔒";
+            font-size: 1rem;
+        }
+
+        .icon-user::before {
+            content: "👤";
+            font-size: 1rem;
+        }
+
+        .icon-category::before {
+            content: "📋";
+            font-size: 1rem;
+        }
+
+        .icon-calendar::before {
+            content: "📅";
+            font-size: 1rem;
+        }
+
+        .icon-arrow::before {
+            content: "→";
+            font-size: 1rem;
+        }
+
+        .icon-eye::before {
+            content: "👁";
+            font-size: 1rem;
+        }
+
+        .icon-eye-off::before {
+            content: "🙈";
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .hero-section {
+                height: 40vh;
+            }
+            
+            .form-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <img src="src/assets/drive-admin-hero.jpg" alt="Professional driving instructor with car" class="hero-image" />
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <div class="logo-symbol"></div>
+                </div>
+                <span class="logo-text">DriveAdmin</span>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-container">
+                <!-- Login Form -->
+                <div id="loginForm" class="form-wrapper">
+                    <div class="form-header">
+                        <h1 class="form-title">Welcome to DriveAdmin!</h1>
+                        <p class="form-subtitle">Log in with your phone number and password</p>
+                    </div>
+
+                    <form class="form" onsubmit="handleLogin(event)">
+                        <div class="input-group">
+                            <div class="input-icon icon icon-phone"></div>
+                            <input
+                                type="tel"
+                                placeholder="Phone Number"
+                                class="input"
+                                id="loginPhone"
+                                required
+                            />
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-lock"></div>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                class="input"
+                                id="loginPassword"
+                                required
+                            />
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
+                                <span class="icon icon-eye"></span>
+                            </button>
+                        </div>
+
+                        <div class="forgot-password">
+                            <a href="#">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="button">
+                            Log in
+                            <span class="icon icon-arrow"></span>
+                        </button>
+                    </form>
+
+                    <div class="form-footer">
+                        Don't have an account?
+                        <a href="#" onclick="showSignup()">Create one</a>
+                    </div>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="form-wrapper hidden">
+                    <div class="form-header">
+                        <h1 class="form-title">Create Account</h1>
+                        <p class="form-subtitle">Sign up to start managing your driving school</p>
+                    </div>
+
+                    <form class="form" onsubmit="handleSignup(event)">
+                        <div class="input-group">
+                            <div class="input-icon icon icon-user"></div>
+                            <input
+                                type="text"
+                                placeholder="Full Name"
+                                class="input"
+                                id="signupName"
+                                required
+                            />
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-phone"></div>
+                            <input
+                                type="tel"
+                                placeholder="Phone Number"
+                                class="input"
+                                id="signupPhone"
+                                required
+                            />
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-category"></div>
+                            <select class="select" id="signupCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="student">Student</option>
+                                <option value="instructor">Instructor</option>
+                                <option value="admin">Admin</option>
+                                <option value="parent">Parent/Guardian</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-calendar"></div>
+                            <input
+                                type="date"
+                                placeholder="Birthday"
+                                class="input"
+                                id="signupBirthday"
+                            />
+                            <div class="optional-label">Optional</div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-lock"></div>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                class="input"
+                                id="signupPassword"
+                                required
+                            />
+                            <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)">
+                                <span class="icon icon-eye"></span>
+                            </button>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-icon icon icon-lock"></div>
+                            <input
+                                type="password"
+                                placeholder="Confirm Password"
+                                class="input"
+                                id="confirmPassword"
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" class="button">
+                            Create Account
+                            <span class="icon icon-arrow"></span>
+                        </button>
+                    </form>
+
+                    <div class="form-footer">
+                        Already have an account?
+                        <a href="#" onclick="showLogin()">Log in</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <a href="#">Legal Center</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('.icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'icon icon-eye-off';
+            } else {
+                input.type = 'password';
+                icon.className = 'icon icon-eye';
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('loginPhone').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            console.log('Login attempt:', {
+                phone: phone,
+                password: password
+            });
+            
+            alert('Login form submitted! Check console for details.');
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const phone = document.getElementById('signupPhone').value;
+            const category = document.getElementById('signupCategory').value;
+            const birthday = document.getElementById('signupBirthday').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            console.log('Signup attempt:', {
+                name: name,
+                phone: phone,
+                category: category,
+                birthday: birthday || 'Not provided',
+                password: password
+            });
+            
+            alert('Signup form submitted! Check console for details.');
+        }
+    </script>
+</body>
+</html>

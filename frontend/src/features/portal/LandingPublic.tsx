@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -34,8 +35,9 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
+// Shared constrained layout width (match NavBar's max-w-6xl so edges align)
 const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = "" }) => (
-  <div className={`tw-max-w-7xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 ${className}`}>{children}</div>
+  <div className={`tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 ${className}`}>{children}</div>
 );
 
 // Inline icons (avoid external deps)
@@ -48,6 +50,7 @@ const ArrowRight: React.FC<{ className?: string }> = ({ className = "" }) => (
 
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
+  const loggedIn = useIsLoggedIn();
   return (
     <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4">
       <div className="tw-bg-white tw-rounded-full tw-px-6 tw-py-3 tw-shadow-lg">
@@ -59,21 +62,35 @@ const NavBar: React.FC = () => {
           </div>
 
             {/* Navigation Menu */}
-          <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
-            <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-              <span>Features</span>
-              <ChevronDown className="tw-w-4 tw-h-4" />
+          {/* hide the md menu for guests */}
+          {/* For md+ screens: show pages when logged in; show motto when guest */}
+          {loggedIn ? (
+            <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
+              <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
+                <span>Features</span>
+                <ChevronDown className="tw-w-4 tw-h-4" />
+              </div>
+              <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
+                <span>Cases</span>
+                <ChevronDown className="tw-w-4 tw-h-4" />
+              </div>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Pricing</span>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Reviews</span>
             </div>
-            <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-              <span>Cases</span>
-              <ChevronDown className="tw-w-4 tw-h-4" />
+          ) : (
+            <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
+              <span className="tw-text-sm tw-text-muted-foreground">Learn, practice, and pass with confidence</span>
             </div>
-            <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Pricing</span>
-            <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Reviews</span>
-          </div>
+          )}
 
           {/* CTA Buttons (Get started + Log in) */}
           <div className="tw-flex tw-items-center tw-space-x-3">
+            <button
+              onClick={() => navigate('/login')}
+              className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors"
+            >
+              Log in
+            </button>
             <Button
               className="tw-bg-primary hover:tw-bg-primary/90 tw-text-white tw-rounded-full tw-px-6 tw-py-2 tw-flex tw-items-center tw-space-x-2"
               onClick={() => navigate('/signup')}
@@ -81,12 +98,6 @@ const NavBar: React.FC = () => {
               <span>Get started</span>
               <ArrowRight className="tw-w-4 tw-h-4" />
             </Button>
-            <button
-              onClick={() => navigate('/login')}
-              className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors"
-            >
-              Log in
-            </button>
           </div>
         </div>
       </div>
@@ -108,6 +119,7 @@ const LandingPublic: React.FC = () => {
             <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground tw-mt-6">
               Your path to driving success
             </div>
+            {/* If guest, show a short motto; otherwise show the main heading */}
             <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">
               Master driving with expert lessons and real practice
               <br className="tw-hidden sm:tw-inline" /> 
@@ -129,11 +141,12 @@ const LandingPublic: React.FC = () => {
 
           {/* Right: landing image (smaller, no animation, no mask) */}
           <div className="tw-flex tw-items-center tw-justify-center">
-            <div className="tw-w-4/5 md:tw-w-3/4 lg:tw-w-2/3 tw-h-64 md:tw-h-80 lg:tw-h-96 tw-relative">
+            <div className="tw-w-full md:tw-w-11/12 lg:tw-w-4/5">
+              {/* use natural image aspect ratio, no absolute cropping */}
               <img
                 src="/assets/landing.png"
                 alt="Driving lesson illustration"
-                className="tw-absolute tw-inset-0 tw-w-full tw-h-full tw-object-cover"
+                className="tw-w-full tw-h-auto tw-block"
                 loading="lazy"
                 decoding="async"
               />
