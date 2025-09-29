@@ -4,6 +4,7 @@ import { Chip } from '@mui/material';
 import * as React from 'react';
 import { BulkDeleteWithConfirmButton, List, SearchInput, SimpleList, TextInput, EditButton, ShowButton, DateField, TextField, EmailField, Datagrid, NumberField, FunctionField, useTranslate, useListContext } from 'react-admin';
 import InstructorListAside from './InstructorListAside.jsx';
+import InstructorListEmpty from './InstructorListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 
 export const InstructorIcon = PeopleIcon;
@@ -89,6 +90,7 @@ export default function InstructorList() {
       sort={{ field: 'first_name', order: 'ASC' }}
       aside={<InstructorListAside />}
       actions={<ListImportActions endpoint="instructors" />}
+      empty={<InstructorListEmpty />}
     >
       {isSmall ? (
         <SimpleList

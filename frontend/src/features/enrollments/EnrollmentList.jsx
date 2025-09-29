@@ -3,6 +3,7 @@ import { List, Datagrid, NumberField, TextField, DateField, FunctionField, useLi
 import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import EnrollmentListAside from './EnrollmentListAside.jsx';
+import EnrollmentListEmpty from './EnrollmentListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 
 // Function to get enrollment status with color coding
@@ -66,7 +67,7 @@ const EnrollmentStatusField = (recordOrProps) => {
 
 export default function EnrollmentList(props) {
   return (
-    <List {...props} aside={<EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />}>
+    <List {...props} aside={<EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />} empty={<EnrollmentListEmpty />}>
       <FilteredEnrollmentDatagrid />
     </List>
   );
