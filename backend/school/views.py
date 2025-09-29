@@ -162,6 +162,41 @@ class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'hire_date', 'license_categories']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id, obj.first_name, obj.last_name, obj.email, obj.phone_number,
+                obj.hire_date.isoformat() if obj.hire_date else '', obj.license_categories
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=instructors.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'first_name', 'last_name', 'email', 'phone_number', 'hire_date', 'license_categories'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {k: (row.get(k) or '').strip() for k in required}
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
 
 class InstructorAvailabilityViewSet(FullCrudViewSet):
     queryset = InstructorAvailability.objects.select_related('instructor').all()
@@ -179,25 +214,222 @@ class VehicleViewSet(FullCrudViewSet):
     queryset = Vehicle.objects.all().order_by('-year')
     serializer_class = VehicleSerializer
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'make', 'model', 'license_plate', 'year', 'category', 'is_available']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([obj.id, obj.make, obj.model, obj.license_plate, obj.year, obj.category, obj.is_available])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=vehicles.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'make', 'model', 'license_plate', 'year', 'category'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {
+                'make': (row.get('make') or '').strip(),
+                'model': (row.get('model') or '').strip(),
+                'license_plate': (row.get('license_plate') or '').strip(),
+                'year': (row.get('year') or '').strip(),
+                'category': (row.get('category') or '').strip(),
+                'is_available': ((row.get('is_available') or 'true').strip().lower() in ['1','true','yes'])
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
 
 class CourseViewSet(FullCrudViewSet):
     queryset = Course.objects.all().order_by('category')
     serializer_class = CourseSerializer
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'name', 'category', 'type', 'description', 'price', 'required_lessons']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([obj.id, obj.name, obj.category, obj.type, obj.description, obj.price, obj.required_lessons])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=courses.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'name', 'category', 'type', 'description', 'price', 'required_lessons'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {k: (row.get(k) or '').strip() for k in required}
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
 
 
 class EnrollmentViewSet(FullCrudViewSet):
     queryset = Enrollment.objects.select_related('student', 'course').all().order_by('-enrollment_date')
     serializer_class = EnrollmentSerializer
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'student_id', 'course_id', 'enrollment_date', 'type', 'status']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id, obj.student_id, obj.course_id,
+                obj.enrollment_date.isoformat() if obj.enrollment_date else '',
+                obj.type, obj.status
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=enrollments.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'student_id', 'course_id', 'type', 'status'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {
+                'student': (row.get('student_id') or '').strip(),
+                'course': (row.get('course_id') or '').strip(),
+                'type': (row.get('type') or '').strip(),
+                'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
 
 class LessonViewSet(FullCrudViewSet):
     queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
     serializer_class = LessonSerializer
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status', 'notes']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id, obj.enrollment_id, obj.instructor_id, obj.vehicle_id,
+                obj.scheduled_time.isoformat() if obj.scheduled_time else '',
+                obj.duration_minutes, obj.status, (obj.notes or '').replace('\n', ' ')
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=lessons.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {
+                'enrollment': (row.get('enrollment_id') or '').strip(),
+                'instructor': (row.get('instructor_id') or '').strip(),
+                'vehicle': (row.get('vehicle_id') or '').strip() or None,
+                'scheduled_time': (row.get('scheduled_time') or '').strip(),
+                'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
+                'status': (row.get('status') or '').strip() or 'SCHEDULED',
+                'notes': (row.get('notes') or '').strip(),
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
 
 class PaymentViewSet(FullCrudViewSet):
     queryset = Payment.objects.select_related('enrollment__student').all()
     serializer_class = PaymentSerializer
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = ['id', 'enrollment_id', 'amount', 'payment_date', 'payment_method', 'description']
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id, obj.enrollment_id, obj.amount,
+                obj.payment_date.isoformat() if obj.payment_date else '',
+                obj.payment_method, obj.description
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=payments.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+        required = {'enrollment_id', 'amount', 'payment_method', 'description'}
+        missing = required - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
+        created_ids, errors = [], []
+        for idx, row in enumerate(reader, start=2):
+            data = {
+                'enrollment': (row.get('enrollment_id') or '').strip(),
+                'amount': (row.get('amount') or '').strip(),
+                'payment_method': (row.get('payment_method') or '').strip(),
+                'description': (row.get('description') or '').strip(),
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save(); created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
 
 
 class UtilityViewSet(viewsets.ViewSet):

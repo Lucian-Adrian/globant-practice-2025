@@ -1,5 +1,6 @@
 import * as React from "react";
 import PortalNavBar from "./PortalNavBar";
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { studentRawFetch } from "../../api/httpClient";
 import InstructorCalendarAvailability from "./InstructorCalendarAvailability";
@@ -59,6 +60,7 @@ type Lesson = {
 };
 
 const BookLesson: React.FC = () => {
+  const { t } = useTranslation('portal');
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -298,12 +300,12 @@ const BookLesson: React.FC = () => {
       <PortalNavBar />
       <Container className="tw-py-8 tw-space-y-8">
         <div className="tw-text-center tw-space-y-2">
-          <h1 className="tw-text-3xl tw-font-bold">Book a New Lesson</h1>
+          <h1 className="tw-text-3xl tw-font-bold">{t('lessons.cta.button')}</h1>
           <p className="tw-text-muted-foreground">Choose type, instructor, date and time, then submit your request.</p>
         </div>
 
         {loading && (
-          <div className="tw-text-center tw-text-sm tw-text-muted-foreground">Loading…</div>
+          <div className="tw-text-center tw-text-sm tw-text-muted-foreground">{t('commonUI.loading')}</div>
         )}
         {error && (
           <div className="tw-text-center tw-text-sm tw-text-destructive">{error}</div>
@@ -358,8 +360,8 @@ const BookLesson: React.FC = () => {
             </div>
 
             <div className="tw-flex tw-justify-end tw-gap-3">
-              <Button variant="outline" onClick={() => { window.history.back(); }}>Cancel</Button>
-              <Button onClick={onSubmit} disabled={!canSubmit}>Book Lesson</Button>
+              <Button variant="outline" onClick={() => { window.history.back(); }}>{t('makePayment.cancel')}</Button>
+              <Button onClick={onSubmit} disabled={!canSubmit}>{t('lessons.cta.button')}</Button>
             </div>
           </CardContent>
         </Card>

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
@@ -113,6 +114,7 @@ const Badge: React.FC<React.PropsWithChildren<{ variant?: "default" | "secondary
 
 const Lessons: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('portal');
   const [searchParams] = useSearchParams();
   const initialFilterParam = (searchParams.get('filter') || 'all').toLowerCase();
   // Map URL param to internal state values
@@ -162,12 +164,12 @@ const Lessons: React.FC = () => {
     const status = (statusRaw || '').toUpperCase();
     switch (status) {
       case "SCHEDULED":
-        return <Badge className="tw-bg-success tw-text-success-foreground">Upcoming</Badge>;
+        return <Badge className="tw-bg-success tw-text-success-foreground">{t('lessons.statusBadge.upcoming')}</Badge>;
       case "COMPLETED":
-        return <Badge className="tw-bg-primary tw-text-primary-foreground">Completed</Badge>;
+        return <Badge className="tw-bg-primary tw-text-primary-foreground">{t('lessons.statusBadge.completed')}</Badge>;
       default: {
         // Treat any cancel(led) as missed
-        if (status.includes('CANCEL')) return <Badge variant="destructive">Missed</Badge>;
+        if (status.includes('CANCEL')) return <Badge variant="destructive">{t('lessons.statusBadge.missed')}</Badge>;
         return <Badge variant="outline">{statusRaw}</Badge>;
       }
     }
@@ -201,14 +203,14 @@ const Lessons: React.FC = () => {
   const missedLessons = useMemo(() => lessons.filter((l:any) => isCanceled(l.status)), [lessons]);
 
   if (loading) {
-    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>Loading…</span></div>;
+    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>{t('commonUI.loading')}</span></div>;
   }
   if (error) {
     return (
       <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center">
         <div className="tw-text-center">
           <p className="tw-text-red-600 tw-font-medium">{error}</p>
-          <a className="tw-text-primary tw-underline" href="/login">Go to Login</a>
+          <a className="tw-text-primary tw-underline" href="/login">{t('commonUI.goToLogin')}</a>
         </div>
       </div>
     );
@@ -221,19 +223,19 @@ const Lessons: React.FC = () => {
         {/* Header */}
         <div className="tw-text-center tw-space-y-4 tw-animate-fade-in">
           <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-to-primary">
-            Your Lessons
+            {t('lessons.header.title')}
           </h1>
           <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">
-            Manage your driving and theory lessons, track your progress, and never miss a session.
+            {t('lessons.header.subtitle')}
           </p>
         </div>
 
         {/* Quick Stats (no Pending) */}
         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-animate-fade-in-up">
           {[
-            { label: "Upcoming", value: upcomingLessons.length, color: "tw-text-primary" },
-            { label: "Completed", value: completedLessons.length, color: "tw-text-success" },
-            { label: "Missed", value: missedLessons.length, color: "tw-text-destructive" },
+            { label: t('lessons.stats.upcoming'), value: upcomingLessons.length, color: "tw-text-primary" },
+            { label: t('lessons.stats.completed'), value: completedLessons.length, color: "tw-text-success" },
+            { label: t('lessons.stats.missed'), value: missedLessons.length, color: "tw-text-destructive" },
           ].map((s:any) => (
             <Card key={s.label} className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
               <CardContent className="tw-p-4 tw-text-center">
@@ -250,11 +252,11 @@ const Lessons: React.FC = () => {
             <div className="tw-grid tw-grid-cols-2 tw-w-full md:tw-w-auto tw-border tw-border-input tw-rounded-lg tw-overflow-hidden">
               <button onClick={() => setTab("list")} className={`tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 ${tab === "list" ? "tw-bg-secondary" : "tw-bg-transparent"}`}>
                 <ListIcon />
-                List View
+                {t('lessons.tabs.list')}
               </button>
               <button onClick={() => setTab("calendar")} className={`tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 ${tab === "calendar" ? "tw-bg-secondary" : "tw-bg-transparent"}`}>
                 <CalendarIcon />
-                Calendar View
+                {t('lessons.tabs.calendar')}
               </button>
             </div>
 
@@ -269,8 +271,10 @@ const Lessons: React.FC = () => {
                     onClick={() => setSelectedFilter(filter)}
                     className="tw-capitalize"
                   >
-                    {/* Human labels */}
-                    {filter === 'scheduled' ? 'upcoming' : filter === 'canceled' ? 'missed' : filter}
+                    {filter === 'all' && t('lessons.filters.all')}
+                    {filter === 'scheduled' && t('lessons.filters.scheduled')}
+                    {filter === 'completed' && t('lessons.filters.completed')}
+                    {filter === 'canceled' && t('lessons.filters.canceled')}
                   </Button>
                 ))}
               </div>
@@ -316,7 +320,7 @@ const Lessons: React.FC = () => {
                         </div>
                         <div>
                           <h3 className="tw-text-lg tw-font-semibold tw-text-foreground">{typeLabel} Lesson</h3>
-                          <p className="tw-text-sm tw-text-muted-foreground">with {instructorName}</p>
+                          <p className="tw-text-sm tw-text-muted-foreground">{t('commonUI.with')} {instructorName}</p>
                         </div>
                       </div>
                       <div className="tw-flex tw-items-center tw-gap-2">
@@ -351,7 +355,7 @@ const Lessons: React.FC = () => {
             <div className="tw-space-y-4">
               <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
                 <CardHeader>
-                  <CardTitle>Calendar</CardTitle>
+                  <CardTitle>{t('lessons.calendar.title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CalendarGrid lessons={filteredLessons} />
@@ -364,10 +368,10 @@ const Lessons: React.FC = () => {
         {/* Book New Lesson */}
         <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow">
           <CardContent className="tw-p-6 tw-text-center">
-            <h3 className="tw-text-xl tw-font-bold tw-mb-2">Ready for your next lesson?</h3>
-            <p className="tw-mb-4 tw-opacity-90">Book a new driving or theory session with your instructor.</p>
+            <h3 className="tw-text-xl tw-font-bold tw-mb-2">{t('lessons.cta.title')}</h3>
+            <p className="tw-mb-4 tw-opacity-90">{t('lessons.cta.subtitle')}</p>
             <Button variant="secondary" size="lg" className="tw-animate-bounce-gentle" onClick={() => navigate('/book-lesson')}>
-              Book New Lesson
+              {t('lessons.cta.button')}
             </Button>
           </CardContent>
         </Card>
@@ -385,6 +389,7 @@ function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 
 function sameDay(a: Date, b: Date) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 
 const CalendarGrid: React.FC<{ lessons: any[] }>= ({ lessons }) => {
+  const { t } = useTranslation('portal');
   const [refDate, setRefDate] = React.useState(new Date());
   const first = startOfMonth(refDate);
   const last = endOfMonth(refDate);
@@ -410,13 +415,13 @@ const CalendarGrid: React.FC<{ lessons: any[] }>= ({ lessons }) => {
   return (
     <div className="tw-space-y-3">
       <div className="tw-flex tw-items-center tw-justify-between">
-        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(-1)}>&larr; Prev</button>
+        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(-1)}>&larr; {t('lessons.calendar.prev')}</button>
         <div className="tw-font-semibold">{monthYear}</div>
-        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(1)}>Next &rarr;</button>
+        <button className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground" onClick={() => shiftMonth(1)}>{t('lessons.calendar.next')} &rarr;</button>
       </div>
       <div className="tw-grid tw-grid-cols-7 tw-gap-2">
-        {dayNames.map((dn) => (
-          <div key={dn} className="tw-text-xs tw-text-muted-foreground tw-text-center">{dn}</div>
+        {dayNames.map((dn, idx) => (
+          <div key={dn} className="tw-text-xs tw-text-muted-foreground tw-text-center">{t('lessons.calendar.dayNamesShort.' + idx, { defaultValue: dayNames[idx] })}</div>
         ))}
         {cells.map((cell, idx) => {
           const isToday = cell.date ? sameDay(cell.date, new Date()) : false;
@@ -435,7 +440,7 @@ const CalendarGrid: React.FC<{ lessons: any[] }>= ({ lessons }) => {
                   );
                 })}
                 {dayLessons.length>3 && (
-                  <div className="tw-text-[11px] tw-text-muted-foreground">+{dayLessons.length-3} more…</div>
+                  <div className="tw-text-[11px] tw-text-muted-foreground">{t('lessons.calendar.more', { count: dayLessons.length-3 })}</div>
                 )}
               </div>
             </div>

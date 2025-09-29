@@ -3,6 +3,7 @@ import { List, Datagrid, NumberField, TextField, BooleanField, EditButton, Funct
 import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import VehicleListAside from './VehicleListAside.jsx';
+import VehicleListEmpty from './VehicleListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import { Drawer, Box, Card, CardHeader, CardContent, CardActions, Typography } from '@mui/material';
 
@@ -60,7 +61,7 @@ export default function VehicleList(props) {
   const [selectedRecord, setSelectedRecord] = React.useState(null);
 
   return (
-    <List {...props} aside={<VehicleListAside />} actions={<ListImportActions endpoint="vehicles" />}> 
+    <List {...props} aside={<VehicleListAside />} actions={<ListImportActions endpoint="vehicles" />} empty={<VehicleListEmpty />}> 
       <FilteredVehicleDatagrid setSelectedRecord={setSelectedRecord} />
     </List>
   );

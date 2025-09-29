@@ -3,6 +3,7 @@ import { List, Datagrid, NumberField, TextField, EmailField, DateField, Function
 import { Chip } from '@mui/material';
 import StudentListAside from './StudentListAside';
 import StudentListActions from './StudentListActions';
+import StudentListEmpty from './StudentListEmpty';
 
 // Function to get student status with color coding
 // Helper to normalize and return canonical hex colors used in the aside
@@ -86,7 +87,7 @@ export default function makeStudentList() {
   return function StudentList(props) {
     const translate = useTranslate();
     return (
-      <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
+      <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />} empty={<StudentListEmpty />}> 
         <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
           <NumberField source="id" />
           <TextField source="first_name" />

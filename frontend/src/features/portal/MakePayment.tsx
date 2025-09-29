@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 
 type Enrollment = { id: number; course?: any; status?: string };
 
@@ -28,6 +29,7 @@ function mapUiToPaymentMethod(v: string): 'CASH' | 'CARD' | 'TRANSFER' {
 }
 
 export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountDefault, enrollments, description = 'Student portal payment', onSuccess }) => {
+  const { t } = useTranslation('portal');
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
   const [cardNumber, setCardNumber] = React.useState("");
   const [expiryDate, setExpiryDate] = React.useState("");
@@ -66,13 +68,13 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
         body: JSON.stringify(payload),
       });
       const body = await resp.json().catch(() => ({}));
-      if (!resp.ok) throw new Error(body?.detail || body?.message || 'Payment failed');
+  if (!resp.ok) throw new Error(body?.detail || body?.message || t('makePayment.failed'));
       onClose();
       if (onSuccess) onSuccess();
       // reset
       setPaymentMethod(""); setCardNumber(""); setExpiryDate(""); setCvv("");
     } catch (e:any) {
-      setError(e?.message || 'Payment failed');
+  setError(e?.message || t('makePayment.failed'));
     } finally {
       setSubmitting(false);
     }
@@ -83,13 +85,13 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
     <div className="tw-fixed tw-inset-0 tw-bg-black/50 tw-flex tw-items-center tw-justify-center tw-z-50">
       <div className="tw-bg-background tw-rounded-2xl tw-w-full tw-max-w-md tw-border tw-border-border tw-shadow-xl">
         <div className="tw-p-5 tw-border-b tw-border-border">
-          <h3 className="tw-text-base tw-font-semibold tw-flex tw-items-center tw-gap-2"><ShieldIcon className="tw-w-5 tw-h-5 tw-text-primary"/> Secure Payment</h3>
+          <h3 className="tw-text-base tw-font-semibold tw-flex tw-items-center tw-gap-2"><ShieldIcon className="tw-w-5 tw-h-5 tw-text-primary"/> {t('makePayment.securePayment')}</h3>
         </div>
         <div className="tw-p-6 tw-space-y-6">
           {/* Enrollment choose when multiple */}
           {enrollments?.length > 1 && (
             <div className="tw-space-y-2">
-              <label className="tw-text-sm">Enrollment</label>
+              <label className="tw-text-sm">{t('makePayment.enrollment')}</label>
               <select value={enrollmentId ?? ''} onChange={e => setEnrollmentId(Number(e.target.value))} className="tw-w-full tw-h-10 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3">
                 {enrollments.map((e:any) => (
                   <option key={e.id} value={e.id}>{e?.course?.name || `Enrollment #${e.id}`}</option>
@@ -102,10 +104,10 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
           <Card className="tw-bg-secondary/30 tw-border-border/30">
             <CardContent>
               <div className="tw-flex tw-justify-between tw-items-center">
-                <span className="tw-font-medium">Portal Payment</span>
+                <span className="tw-font-medium">{t('makePayment.portalPayment')}</span>
                 <div className="tw-flex tw-items-center tw-gap-2">
                   <input type="number" min={1} step={1} value={amount} onChange={e => setAmount(Number(e.target.value || 0))} className="tw-w-28 tw-h-9 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-2"/>
-                  <span className="tw-text-xl tw-font-bold">MDL</span>
+                  <span className="tw-text-xl tw-font-bold">{t('makePayment.currency')}</span>
                 </div>
               </div>
             </CardContent>
@@ -113,10 +115,10 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
 
           {/* Payment Method Selection */}
           <div className="tw-space-y-2">
-            <label className="tw-text-sm">Payment Method</label>
+            <label className="tw-text-sm">{t('makePayment.paymentMethod')}</label>
             <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="tw-w-full tw-h-10 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3">
-              <option value="" disabled>Select payment method</option>
-              <option value="card">Credit/Debit Card</option>
+              <option value="" disabled>{t('makePayment.selectPaymentMethod')}</option>
+              <option value="card">{t('makePayment.methodCard')}</option>
             </select>
           </div>
 
@@ -124,16 +126,16 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
           {paymentMethod === 'card' && (
             <div className="tw-space-y-4">
               <div className="tw-space-y-2">
-                <label htmlFor="card-number" className="tw-text-sm">Card Number</label>
+                <label htmlFor="card-number" className="tw-text-sm">{t('makePayment.cardNumber')}</label>
                 <input id="card-number" placeholder="1234 5678 9012 3456" value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="tw-w-full tw-h-10 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3"/>
               </div>
               <div className="tw-grid tw-grid-cols-2 tw-gap-4">
                 <div className="tw-space-y-2">
-                  <label htmlFor="expiry" className="tw-text-sm">Expiry Date</label>
+                  <label htmlFor="expiry" className="tw-text-sm">{t('makePayment.expiryDate')}</label>
                   <input id="expiry" placeholder="MM/YY" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} className="tw-w-full tw-h-10 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3"/>
                 </div>
                 <div className="tw-space-y-2">
-                  <label htmlFor="cvv" className="tw-text-sm">CVV</label>
+                  <label htmlFor="cvv" className="tw-text-sm">{t('makePayment.cvv')}</label>
                   <input id="cvv" placeholder="123" value={cvv} onChange={e => setCvv(e.target.value)} className="tw-w-full tw-h-10 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3"/>
                 </div>
               </div>
@@ -144,7 +146,7 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
           <div className="tw-bg-primary/15 tw-p-3 tw-rounded-lg">
             <div className="tw-flex tw-items-center tw-gap-2 tw-text-primary tw-text-sm">
               <LockIcon />
-              <span>Your payment is protected by 256-bit SSL encryption</span>
+              <span>{t('makePayment.securityNotice')}</span>
             </div>
           </div>
 
@@ -152,9 +154,9 @@ export const MakePayment: React.FC<MakePaymentProps> = ({ open, onClose, amountD
 
           {/* Actions */}
           <div className="tw-flex tw-justify-end tw-gap-3">
-            <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-border tw-border-input hover:tw-bg-secondary" onClick={onClose} disabled={submitting}>Cancel</button>
+            <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-border tw-border-input hover:tw-bg-secondary" onClick={onClose} disabled={submitting}>{t('makePayment.cancel')}</button>
             <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 disabled:tw-opacity-60" disabled={!paymentMethod || !amount || !enrollmentId || submitting} onClick={submitPayment}>
-              {submitting ? 'Processing…' : `Pay ${amount} MDL`}
+              {submitting ? t('makePayment.processing') : t('makePayment.payAmount', { amount })}
             </button>
           </div>
         </div>

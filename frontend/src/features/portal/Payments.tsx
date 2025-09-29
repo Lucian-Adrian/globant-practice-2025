@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 import PortalNavBar from "./PortalNavBar";
 import { useEffect, useMemo, useState } from "react";
 import { studentRawFetch } from "../../api/httpClient";
@@ -46,6 +47,7 @@ const ShieldIcon = (p: React.SVGProps<SVGSVGElement>) => (<svg viewBox="0 0 24 2
 const LockIcon = (p: React.SVGProps<SVGSVGElement>) => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
 
 const Payments: React.FC = () => {
+  const { t } = useTranslation('portal');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
@@ -156,8 +158,8 @@ const Payments: React.FC = () => {
       <Container className="tw-py-8 tw-space-y-8">
         {/* Header */}
         <div className="tw-text-center tw-space-y-4 tw-animate-fade-in">
-          <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-via-primary-glow tw-to-primary">Payment Center</h1>
-          <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">Manage your course payments securely and keep track of your financial progress. 💳</p>
+          <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-via-primary-glow tw-to-primary">{t('payments.header.title')}</h1>
+          <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">{t('payments.header.subtitle')}</p>
         </div>
 
         {/* Summary Cards */}
@@ -165,19 +167,19 @@ const Payments: React.FC = () => {
           <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow">
             <CardContent className="tw-p-6 tw-text-center">
               <CreditCardIcon className={`${iconLg} tw-mx-auto tw-mb-3`} />
-              <div className="tw-text-3xl tw-font-bold tw-mb-2">{paymentSummary.totalPaid} MDL</div>
-              <div className="tw-opacity-90">Total Paid</div>
-              <div className="tw-text-sm tw-opacity-75 tw-mt-1">{progressPct.toFixed(0)}% of course</div>
+              <div className="tw-text-3xl tw-font-bold tw-mb-2">{paymentSummary.totalPaid} {t('makePayment.currency')}</div>
+              <div className="tw-opacity-90">{t('payments.cards.totalPaid')}</div>
+              <div className="tw-text-sm tw-opacity-75 tw-mt-1">{t('payments.cards.ofCourse', { pct: progressPct.toFixed(0) })}</div>
             </CardContent>
           </Card>
 
           <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
             <CardContent className="tw-p-6 tw-text-center tw-space-y-3">
               <AlertCircleIcon className={`${iconLg} tw-text-warning tw-mx-auto`} />
-              <div className="tw-text-3xl tw-font-bold tw-text-foreground">{paymentSummary.outstanding} MDL</div>
-              <div className="tw-text-muted-foreground">Outstanding</div>
+              <div className="tw-text-3xl tw-font-bold tw-text-foreground">{paymentSummary.outstanding} {t('makePayment.currency')}</div>
+              <div className="tw-text-muted-foreground">{t('payments.cards.outstanding')}</div>
               <div>
-                <button onClick={() => openMakePayment()} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">Pay Now</button>
+                <button onClick={() => openMakePayment()} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">{t('payments.cards.payNow')}</button>
               </div>
             </CardContent>
           </Card>
@@ -186,7 +188,7 @@ const Payments: React.FC = () => {
             <CardContent className="tw-p-6 tw-text-center">
               <CalendarIcon className={`${iconLg} tw-text-primary tw-mx-auto tw-mb-3`} />
               <div className="tw-text-lg tw-font-bold tw-text-foreground tw-mb-2">{dueDateInfo?.label ?? '-'}</div>
-              <div className="tw-text-muted-foreground">Next Due Date</div>
+              <div className="tw-text-muted-foreground">{t('payments.cards.nextDueDate')}</div>
               <div className="tw-text-sm tw-text-muted-foreground tw-mt-1">{dueDateInfo?.relative ?? ''}</div>
             </CardContent>
           </Card>
@@ -199,7 +201,7 @@ const Payments: React.FC = () => {
           <CardHeader>
             <CardTitle className="tw-flex tw-items-center tw-gap-2">
               <CreditCardIcon className={`${iconSm} tw-text-primary`} />
-              Payment History
+              {t('payments.history.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -207,12 +209,12 @@ const Payments: React.FC = () => {
               <table className="tw-w-full tw-text-sm">
                 <thead>
                   <tr className="tw-text-left tw-text-muted-foreground">
-                    <th className="tw-py-2 tw-px-3">Description</th>
-                    <th className="tw-py-2 tw-px-3">Amount</th>
-                    <th className="tw-py-2 tw-px-3">Date</th>
-                    <th className="tw-py-2 tw-px-3">Status</th>
-                    <th className="tw-py-2 tw-px-3">Payment Method</th>
-                    <th className="tw-py-2 tw-px-3">Action</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.description')}</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.amount')}</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.date')}</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.status')}</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.paymentMethod')}</th>
+                    <th className="tw-py-2 tw-px-3">{t('payments.history.action')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -221,15 +223,15 @@ const Payments: React.FC = () => {
                       <td className="tw-py-2 tw-px-3">
                         <div className="tw-flex tw-items-center tw-gap-2">
                           {getStatusIcon('paid')}
-                          <span className="tw-font-medium">{p.description || 'Payment'}</span>
+                          <span className="tw-font-medium">{p.description || t('payments.history.payment')}</span>
                         </div>
                       </td>
-                      <td className="tw-py-2 tw-px-3 tw-font-semibold">{Number(p.amount)} MDL</td>
+                      <td className="tw-py-2 tw-px-3 tw-font-semibold">{Number(p.amount)} {t('makePayment.currency')}</td>
                       <td className="tw-py-2 tw-px-3 tw-text-muted-foreground">{p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '-'}</td>
                       <td className="tw-py-2 tw-px-3">{getStatusBadge('paid')}</td>
                       <td className="tw-py-2 tw-px-3 tw-text-muted-foreground">{p.payment_method || '-'}</td>
                       <td className="tw-py-2 tw-px-3">
-                        <button onClick={() => { setSelectedPayment(p); setReceiptOpen(true); }} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-9 tw-px-3 tw-text-xs tw-font-medium tw-border tw-border-input hover:tw-bg-secondary">Receipt</button>
+                        <button onClick={() => { setSelectedPayment(p); setReceiptOpen(true); }} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-9 tw-px-3 tw-text-xs tw-font-medium tw-border tw-border-input hover:tw-bg-secondary">{t('payments.history.receipt')}</button>
                       </td>
                     </tr>
                   ))}
@@ -244,14 +246,14 @@ const Payments: React.FC = () => {
           <CardHeader>
             <CardTitle className="tw-flex tw-items-center tw-gap-2">
               <ShieldIcon className={`${iconSm} tw-text-primary`} />
-              Secure Payment Methods
+              {t('payments.secure.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="tw-grid md:tw-grid-cols-3 tw-gap-6">
               {/* Column 1: Accepted Payment Methods (two inner columns if space) */}
               <div className="tw-space-y-4">
-                <h3 className="tw-font-semibold tw-text-foreground">Accepted Payment Methods</h3>
+                <h3 className="tw-font-semibold tw-text-foreground">{t('payments.secure.acceptedMethods')}</h3>
                 <div className="tw-grid grid-cols-1 sm:tw-grid-cols-2 tw-gap-4">
                   <Card className="tw-bg-secondary/30 tw-border-border/30 tw-p-4">
                     <div className="tw-flex tw-items-center tw-justify-center tw-gap-3">
@@ -272,19 +274,19 @@ const Payments: React.FC = () => {
               <div className="tw-space-y-4 tw-text-center">
                 <h3 className="tw-font-semibold tw-text-foreground tw-flex tw-items-center tw-justify-center tw-gap-2">
                   <LockIcon className={iconXs} />
-                  Security Features
+                  {t('payments.secure.securityFeatures')}
                 </h3>
           <div className="tw-space-y-3 tw-text-sm tw-text-muted-foreground">
-            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />SSL encrypted transactions</div>
-            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />PCI DSS compliant processing</div>
-            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />Fraud protection monitoring</div>
-            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />Secure payment gateway</div>
+            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />{t('payments.secure.featureSsl')}</div>
+            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />{t('payments.secure.featurePci')}</div>
+            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />{t('payments.secure.featureFraud')}</div>
+            <div className="tw-flex tw-items-center tw-justify-center tw-gap-2"><CheckCircleIcon className={`${iconXs} tw-text-primary`} />{t('payments.secure.featureGateway')}</div>
                 </div>
               </div>
 
               {/* Column 3: Pay Now */}
               <div className="tw-flex tw-items-center tw-justify-center">
-                <button onClick={() => openMakePayment()} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-6 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">Pay Now</button>
+                <button onClick={() => openMakePayment()} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-6 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">{t('payments.cards.payNow')}</button>
               </div>
             </div>
           </CardContent>
@@ -295,9 +297,9 @@ const Payments: React.FC = () => {
           <CardContent className="tw-p-8 tw-text-center">
             <div className="tw-space-y-4">
               <div className="tw-text-4xl">💳</div>
-              <h3 className="tw-text-2xl tw-font-bold">Need a Payment Plan?</h3>
-              <p className="tw-opacity-90 tw-max-w-md tw-mx-auto">We offer flexible payment options to make your driving education more affordable. Contact us to discuss installment plans.</p>
-              <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">Contact Financial Advisor</button>
+              <h3 className="tw-text-2xl tw-font-bold">{t('payments.plan.title')}</h3>
+              <p className="tw-opacity-90 tw-max-w-md tw-mx-auto">{t('payments.plan.description')}</p>
+              <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">{t('payments.plan.cta')}</button>
             </div>
           </CardContent>
         </Card>

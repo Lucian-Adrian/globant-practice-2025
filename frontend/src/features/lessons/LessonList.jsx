@@ -3,6 +3,7 @@ import { List, Datagrid, NumberField, TextField, DateField, ReferenceField, Func
 import { Chip } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import LessonListAside from './LessonListAside.jsx';
+import LessonListEmpty from './LessonListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 
 // Function to determine lesson status based on existing data
@@ -148,6 +149,7 @@ export default function LessonList(props) {
       aside={<LessonListAside />} 
       title={t('resources.lessons.name', { defaultValue: 'Lessons' })}
       actions={<ListImportActions endpoint="lessons"/>}
+      empty={<LessonListEmpty />}
       // Disable server-side sorting when using client-side filtering/display
       sort={{ field: 'id', order: 'DESC' }}
     >

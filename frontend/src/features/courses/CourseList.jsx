@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CourseListAside from './CourseListAside.jsx';
+import CourseListEmpty from './CourseListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 
 // Function to determine course status based on available data
@@ -90,7 +91,7 @@ const ViewDetailsButton = ({ record }) => {
 
 export default function CourseList(props) {
   return (
-    <List {...props} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />}>
+    <List {...props} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
       <FilteredCourseDatagrid />
     </List>
   );
