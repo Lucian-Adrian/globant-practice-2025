@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -21,6 +22,7 @@ function getStudentInitials(): string {
 
 const PortalNavBar: React.FC = () => {
   const [open, setOpen] = React.useState(false);
+  const { t, i18n } = useTranslation(['portal', 'common']);
   const toggle = () => setOpen((v) => !v);
   const logout = () => {
     try {
@@ -41,18 +43,18 @@ const PortalNavBar: React.FC = () => {
                 <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
               </div>
               <div>
-                <h1 className="tw-text-xl tw-font-bold">DriveAdmin</h1>
-                <p className="tw-text-sm tw-text-muted-foreground">Student Portal</p>
+                <h1 className="tw-text-xl tw-font-bold">{t('appName', { ns: 'portal' })}</h1>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('studentPortal', { ns: 'portal' })}</p>
               </div>
             </div>
 
             <div className="tw-flex tw-items-center tw-gap-2">
               {[
-                { path: "/dashboard", label: "Dashboard", icon: <DashboardIcon className="tw-w-4 tw-h-4" color="inherit" /> },
-                { path: "/lessons", label: "Lessons", icon: <MenuBookIcon className="tw-w-4 tw-h-4" color="inherit" /> },
-                { path: "/progress", label: "Progress", icon: <TrendingUpIcon className="tw-w-4 tw-h-4" color="inherit" /> },
-                { path: "/practice", label: "Practice", icon: <SportsMotorsportsIcon className="tw-w-4 tw-h-4" color="inherit" /> },
-                { path: "/payments", label: "Payments", icon: <PaymentIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/dashboard", label: t('nav.dashboard', { ns: 'portal' }), icon: <DashboardIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/lessons", label: t('nav.lessons', { ns: 'portal' }), icon: <MenuBookIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/progress", label: t('nav.progress', { ns: 'portal' }), icon: <TrendingUpIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/practice", label: t('nav.practice', { ns: 'portal' }), icon: <SportsMotorsportsIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/payments", label: t('nav.payments', { ns: 'portal' }), icon: <PaymentIcon className="tw-w-4 tw-h-4" color="inherit" /> },
               ].map((item) => (
                 <a key={item.path} href={item.path} className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-all tw-duration-200 hover:tw-bg-secondary hover:tw-scale-105 tw-text-muted-foreground hover:tw-text-foreground">
                   <span className="tw-flex tw-items-center tw-justify-center" aria-hidden="true">{item.icon}</span>
@@ -61,7 +63,22 @@ const PortalNavBar: React.FC = () => {
               ))}
             </div>
 
-            <div className="tw-relative">
+            <div className="tw-flex tw-items-center tw-gap-3">
+              {/* Language toggle visible when logged in */}
+              <div className="tw-relative">
+                <select
+                  aria-label={t('language.label', { ns: 'portal' })}
+                  className="tw-bg-transparent tw-border tw-border-border tw-rounded-md tw-text-sm tw-px-2 tw-py-1 tw-text-muted-foreground hover:tw-text-foreground"
+                  value={(i18n.language || 'en').split('-')[0]}
+                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                >
+                  <option value="en">{t('language.en', { ns: 'portal' })}</option>
+                  <option value="ro">{t('language.ro', { ns: 'portal' })}</option>
+                  <option value="ru">{t('language.ru', { ns: 'portal' })}</option>
+                </select>
+              </div>
+
+              <div className="tw-relative">
               <button onClick={toggle} className="tw-w-10 tw-h-10 tw-bg-gradient-card tw-rounded-full tw-flex tw-items-center tw-justify-center tw-border-2 tw-border-primary/20">
                 <div className="tw-w-8 tw-h-8 tw-bg-primary tw-rounded-full tw-flex tw-items-center tw-justify-center">
                   <span className="tw-text-xs tw-font-bold tw-text-primary-foreground">{getStudentInitials()}</span>
@@ -69,9 +86,10 @@ const PortalNavBar: React.FC = () => {
               </button>
               {open && (
                 <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-44 tw-rounded-lg tw-border tw-border-border tw-bg-background tw-shadow-lg">
-                  <button onClick={logout} className="tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm hover:tw-bg-secondary tw-text-red-600">Logout</button>
+                  <button onClick={logout} className="tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm hover:tw-bg-secondary tw-text-red-600">{t('actions.logout', { ns: 'portal', defaultValue: 'Logout' })}</button>
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>

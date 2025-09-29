@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 
 interface PaymentReceiptProps {
   open: boolean;
@@ -17,18 +18,19 @@ const CardContent: React.FC<React.PropsWithChildren<{ className?: string }>> = (
 );
 
 export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ open, onClose, payment }) => {
+  const { t } = useTranslation('portal');
   if (!open || !payment) return null;
 
   const dateStr = payment.payment_date ? new Date(payment.payment_date).toLocaleString() : "-";
-  const amountStr = `${Number(payment.amount)} MDL`;
+  const amountStr = `${Number(payment.amount)} ${t('makePayment.currency')}`;
   const methodStr = payment.payment_method || '-';
-  const description = payment.description || 'Payment';
-  const courseName = payment?.enrollment?.course?.name || payment?.enrollment?.course_name || 'Course';
+  const description = payment.description || t('payments.history.payment');
+  const courseName = payment?.enrollment?.course?.name || payment?.enrollment?.course_name || t('paymentReceipt.courseFallback');
 
   function printReceipt() {
     const win = window.open('', '_blank', 'noopener,noreferrer');
     if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Receipt #${payment.id}</title>
+  win.document.write(`<!DOCTYPE html><html><head><title>${t('paymentReceipt.title')} #${payment.id}</title>
       <meta charset=\"utf-8\" />
       <style>
         body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 24px; color: #111827; }
@@ -41,13 +43,13 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ open, onClose, p
       </style>
     </head><body>
       <div class="card">
-        <h1>Payment Receipt</h1>
-        <div class="row"><span class="label">Receipt #</span><span class="value">${payment.id}</span></div>
-        <div class="row"><span class="label">Description</span><span class="value">${description}</span></div>
-        <div class="row"><span class="label">Course</span><span class="value">${courseName}</span></div>
-        <div class="row"><span class="label">Amount</span><span class="value">${amountStr}</span></div>
-        <div class="row"><span class="label">Date</span><span class="value">${dateStr}</span></div>
-        <div class="row"><span class="label">Method</span><span class="value">${methodStr}</span></div>
+        <h1>${t('paymentReceipt.title')}</h1>
+        <div class="row"><span class="label">${t('paymentReceipt.receiptNumber')}</span><span class="value">${payment.id}</span></div>
+        <div class="row"><span class="label">${t('paymentReceipt.description')}</span><span class="value">${description}</span></div>
+        <div class="row"><span class="label">${t('paymentReceipt.course')}</span><span class="value">${courseName}</span></div>
+        <div class="row"><span class="label">${t('paymentReceipt.amount')}</span><span class="value">${amountStr}</span></div>
+        <div class="row"><span class="label">${t('paymentReceipt.date')}</span><span class="value">${dateStr}</span></div>
+        <div class="row"><span class="label">${t('paymentReceipt.method')}</span><span class="value">${methodStr}</span></div>
       </div>
       <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 300); };</script>
     </body></html>`);
@@ -60,21 +62,21 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ open, onClose, p
         <Card>
           <CardHeader>
             <div className="tw-flex tw-items-center tw-justify-between">
-              <h3 className="tw-text-base tw-font-semibold">Receipt #{payment.id}</h3>
-              <button onClick={onClose} className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground">Close</button>
+              <h3 className="tw-text-base tw-font-semibold">{t('paymentReceipt.title')} #{payment.id}</h3>
+              <button onClick={onClose} className="tw-text-sm tw-text-muted-foreground hover:tw-text-foreground">{t('paymentReceipt.close')}</button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="tw-space-y-2">
-              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">Description</span><span className="tw-font-semibold">{description}</span></div>
-              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">Course</span><span className="tw-font-semibold">{courseName}</span></div>
-              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">Amount</span><span className="tw-font-semibold">{amountStr}</span></div>
-              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">Date</span><span className="tw-font-semibold">{dateStr}</span></div>
-              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">Method</span><span className="tw-font-semibold">{methodStr}</span></div>
+              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">{t('paymentReceipt.description')}</span><span className="tw-font-semibold">{description}</span></div>
+              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">{t('paymentReceipt.course')}</span><span className="tw-font-semibold">{courseName}</span></div>
+              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">{t('paymentReceipt.amount')}</span><span className="tw-font-semibold">{amountStr}</span></div>
+              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">{t('paymentReceipt.date')}</span><span className="tw-font-semibold">{dateStr}</span></div>
+              <div className="tw-flex tw-justify-between"><span className="tw-text-muted-foreground">{t('paymentReceipt.method')}</span><span className="tw-font-semibold">{methodStr}</span></div>
             </div>
             <div className="tw-flex tw-justify-end tw-gap-3 tw-mt-6">
-              <button onClick={onClose} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-border tw-border-input hover:tw-bg-secondary">Close</button>
-              <button onClick={printReceipt} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">Print</button>
+              <button onClick={onClose} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-border tw-border-input hover:tw-bg-secondary">{t('paymentReceipt.close')}</button>
+              <button onClick={printReceipt} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90">{t('paymentReceipt.print')}</button>
             </div>
           </CardContent>
         </Card>

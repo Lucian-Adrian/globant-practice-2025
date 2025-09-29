@@ -1,6 +1,11 @@
 // Unified comprehensive i18n configuration (merged richer resources + RA namespaces)
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import portalEn from './locales/en.json';
+// Auto-pickup of additional portal locales if present (Vite only)
+const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
+  ? import.meta.glob('./locales/*.json', { eager: true })
+  : {};
 
 // To avoid runtime failures inside Docker if extra language packages are missing,
 // we inline minimal RA translation objects instead of importing optional packages.
@@ -392,7 +397,18 @@ const resources = Object.fromEntries(
     const { common = {}, resources: resourceBlock, ...rest } = data;
     // Avoid overwriting if already nested
     const mergedCommon = { ...common, resources: resourceBlock };
-    return [lng, { ...rest, common: mergedCommon }];
+    // Add portal namespace: use English placeholders by default; if ro/ru files exist, they will be used automatically
+    let portalNS = portalEn;
+    try {
+      const key = `./locales/${lng}.json`;
+      const mod = portalLocales[key];
+      if (mod && (mod.default || mod)) {
+        portalNS = mod.default || mod;
+      }
+    } catch (_) {
+      portalNS = portalEn;
+    }
+    return [lng, { ...rest, common: mergedCommon, portal: portalNS }];
   })
 );
 
@@ -403,7 +419,7 @@ export function initI18n(lang = storedLang || 'en') {
       resources,
       lng: lang,
       fallbackLng: 'en',
-      ns: ['ra', 'common', 'validation', 'admin'],
+      ns: ['ra', 'common', 'validation', 'admin', 'portal'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
     });

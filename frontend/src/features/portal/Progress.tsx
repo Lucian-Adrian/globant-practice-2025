@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
@@ -78,6 +79,7 @@ const ProgressBar: React.FC<{ value: number; className?: string }> = ({ value, c
 );
 
 const Progress: React.FC = () => {
+  const { t } = useTranslation('portal');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -185,7 +187,7 @@ const Progress: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>Loading…</span></div>;
+    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>{t('commonUI.loading')}</span></div>;
   }
   if (error) {
     return (
@@ -204,10 +206,10 @@ const Progress: React.FC = () => {
         {/* Header */}
         <div className="tw-text-center tw-space-y-4 tw-animate-fade-in">
           <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-to-primary">
-            Your Progress
+            {t('progress.header.title')}
           </h1>
           <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">
-            Track your journey to becoming a licensed driver. Every lesson brings you closer to success! 🚗
+            {t('progress.header.subtitle')}
           </p>
         </div>
 
@@ -219,11 +221,11 @@ const Progress: React.FC = () => {
                 <span className="tw-text-3xl tw-font-bold">{percentAll}%</span>
               </div>
               <div>
-                <h2 className="tw-text-2xl tw-font-bold tw-mb-2">Course Completion</h2>
-                <p className="tw-opacity-90">You're doing great! Keep up the excellent work.</p>
+                <h2 className="tw-text-2xl tw-font-bold tw-mb-2">{t('progress.courseCompletion.title')}</h2>
+                <p className="tw-opacity-90">{t('progress.courseCompletion.encouraging')}</p>
               </div>
               <ProgressBar value={percentAll} className="tw-h-3" />
-              <p className="tw-text-sm tw-opacity-75">{completedAll} of {requiredAll || 0} total lessons completed</p>
+              <p className="tw-text-sm tw-opacity-75">{t('progress.courseCompletion.completedOf', { completed: completedAll, required: requiredAll || 0 })}</p>
             </div>
           </CardContent>
         </Card>
@@ -234,18 +236,18 @@ const Progress: React.FC = () => {
             <CardHeader>
               <CardTitle className="tw-flex tw-items-center tw-gap-2">
                 <BookOpenIcon className={`${iconSm} tw-text-primary`} />
-                Theory Progress
+                {t('progress.theory.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="tw-space-y-4">
               <div className="tw-text-center">
                 <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentTheory)}`}>{percentTheory}%</div>
-                <p className="tw-text-sm tw-text-muted-foreground">Theory knowledge</p>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('progress.theory.knowledge')}</p>
               </div>
               <ProgressBar value={percentTheory} className="tw-h-2" />
               <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
                 <div>
-                  <p className="tw-text-muted-foreground">Lessons</p>
+                  <p className="tw-text-muted-foreground">{t('progress.theory.lessons')}</p>
                   <p className="tw-font-semibold">{completedTheory}/{requiredTheory || 0}</p>
                 </div>
               </div>
@@ -256,18 +258,18 @@ const Progress: React.FC = () => {
             <CardHeader>
               <CardTitle className="tw-flex tw-items-center tw-gap-2">
                 <CarIcon className={`${iconSm} tw-text-primary`} />
-                Practical Progress
+                {t('progress.practical.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="tw-space-y-4">
               <div className="tw-text-center">
                 <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentPractice)}`}>{percentPractice}%</div>
-                <p className="tw-text-sm tw-text-muted-foreground">Driving skills</p>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('type.driving')}</p>
               </div>
               <ProgressBar value={percentPractice} className="tw-h-2" />
               <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
                 <div>
-                  <p className="tw-text-muted-foreground">Lessons</p>
+                  <p className="tw-text-muted-foreground">{t('progress.theory.lessons')}</p>
                   <p className="tw-font-semibold">{completedPractice}/{requiredPractice || 0}</p>
                 </div>
               </div>
@@ -347,7 +349,7 @@ const Progress: React.FC = () => {
                 With {Math.max(0, 100 - (percentAll || 0))}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!
               </p>
               <button onClick={() => navigate('/book-lesson')} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 tw-animate-bounce-gentle">
-                Book Next Lesson
+                {t('dashboard.bookLesson')}
               </button>
             </div>
           </CardContent>

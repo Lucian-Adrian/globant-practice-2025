@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
@@ -94,6 +95,7 @@ const StatCard: React.FC<{
 
 const DashboardStudent: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('portal');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -217,14 +219,14 @@ const DashboardStudent: React.FC = () => {
   const [showAllUpcoming, setShowAllUpcoming] = useState(false);
 
   if (loading) {
-    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>Loading…</span></div>;
+    return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>{t('commonUI.loading')}</span></div>;
   }
   if (error) {
     return (
       <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center">
         <div className="tw-text-center">
           <p className="tw-text-red-600 tw-font-medium">{error}</p>
-          <a className="tw-text-primary tw-underline" href="/login">Go to Login</a>
+          <a className="tw-text-primary tw-underline" href="/login">{t('commonUI.goToLogin')}</a>
         </div>
       </div>
     );
@@ -240,28 +242,28 @@ const DashboardStudent: React.FC = () => {
             <div className="tw-space-y-6">
               <div className="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-white/20 tw-rounded-full tw-text-sm tw-font-medium">
                 <div className="tw-w-2 tw-h-2 tw-bg-white tw-rounded-full tw-animate-pulse" />
-                Student Portal Active
+                {t('dashboard.badge')}
               </div>
-              <h1 className="tw-text-4xl md:tw-text-6xl tw-font-bold">Welcome back, {studentFirstName}! 🚗</h1>
+              <h1 className="tw-text-4xl md:tw-text-6xl tw-font-bold">{t('dashboard.welcome', { name: studentFirstName })}</h1>
               <p className="tw-text-xl md:tw-text-2xl tw-opacity-90 tw-max-w-3xl tw-mx-auto">
-                Ready to accelerate your driving journey? Check your progress and upcoming lessons below.
+                {t('dashboard.subline')}
               </p>
               {/* Next upcoming lesson details replace the buttons */}
               <div className="tw-max-w-xl tw-mx-auto tw-w-full">
                 <div className="tw-bg-white/15 tw-rounded-xl tw-backdrop-blur-sm tw-border tw-border-white/20 tw-p-4 tw-text-left">
-                  <div className="tw-text-sm tw-opacity-80 tw-mb-1">Next upcoming lesson</div>
+                  <div className="tw-text-sm tw-opacity-80 tw-mb-1">{t('dashboard.nextLesson')}</div>
                   {nextUpcomingLesson ? (
                     <div className="tw-flex tw-items-center tw-justify-between tw-gap-4">
                       <div>
-                        <div className="tw-text-lg tw-font-semibold">{nextUpcomingLesson.type} with {nextUpcomingLesson.instructor}</div>
+                        <div className="tw-text-lg tw-font-semibold">{nextUpcomingLesson.type} {t('commonUI.with')} {nextUpcomingLesson.instructor}</div>
                         <div className="tw-text-sm tw-opacity-90">{nextUpcomingLesson.date} at {nextUpcomingLesson.time}</div>
                       </div>
-                      <a href="/lessons" className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">View all</a>
+                      <a href="/lessons" className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">{t('dashboard.viewAll')}</a>
                     </div>
                   ) : (
                     <div className="tw-flex tw-items-center tw-justify-between tw-gap-4">
-                      <div className="tw-text-sm">No upcoming lessons scheduled.</div>
-                      <a href="/book-lesson" className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">Book a lesson</a>
+                      <div className="tw-text-sm">{t('dashboard.noUpcoming')}</div>
+                      <a href="/book-lesson" className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">{t('dashboard.bookLesson')}</a>
                     </div>
                   )}
                 </div>
@@ -276,33 +278,33 @@ const DashboardStudent: React.FC = () => {
           {/* 1. Book a Lesson action */}
           <CardRoot>
             <CardContent className="tw-flex tw-flex-col tw-items-start tw-justify-center tw-h-full">
-              <div className="tw-text-sm tw-text-muted-foreground">Actions</div>
-              <div className="tw-mt-1 tw-text-2xl tw-font-semibold">Book a Lesson</div>
-              <div className="tw-text-xs tw-text-muted-foreground tw-mt-1">Go to the lessons page to schedule.</div>
-              <Button className="tw-mt-3" variant="primary" onClick={() => navigate('/book-lesson')}>Book a Lesson</Button>
+              <div className="tw-text-sm tw-text-muted-foreground">{t('dashboard.actions')}</div>
+              <div className="tw-mt-1 tw-text-2xl tw-font-semibold">{t('dashboard.bookLessonCard')}</div>
+              <div className="tw-text-xs tw-text-muted-foreground tw-mt-1">{t('dashboard.bookLessonHint')}</div>
+              <Button className="tw-mt-3" variant="primary" onClick={() => navigate('/book-lesson')}>{t('dashboard.bookLessonCard')}</Button>
             </CardContent>
           </CardRoot>
           {/* 2. Course Progress */}
           <StatCard
-            title="Course Progress"
+            title={t('dashboard.courseProgress')}
             value={`${percentAll}%`}
-            description={`Completed across all courses (${completedAll}/${requiredAll || 0})`}
+            description={t('progress.courseCompletion.completedOf', { completed: completedAll, required: requiredAll || 0 })}
             trend={{ value: "", isPositive: true }}
           />
           {/* 3. Lessons Completed (practice) */}
           <StatCard
-            title="Lessons Completed"
+            title={t('dashboard.lessonsCompleted')}
             value={`${completedPractice}/${requiredPractice || 0}`}
-            description={`${Math.max((requiredPractice - completedPractice), 0)} left`}
+            description={t('dashboard.left', { count: Math.max((requiredPractice - completedPractice), 0) })}
             trend={{ value: "", isPositive: true }}
           />
           {/* 4. Theory Practice card */}
           <CardRoot>
             <CardContent className="tw-flex tw-flex-col tw-items-start tw-justify-center tw-h-full">
-              <div className="tw-text-sm tw-text-muted-foreground">Actions</div>
-              <div className="tw-mt-1 tw-text-2xl tw-font-semibold">Theory Practice</div>
-              <div className="tw-text-xs tw-text-muted-foreground tw-mt-1">Open the practice page for theory tests.</div>
-              <Button className="tw-mt-3" variant="primary" onClick={() => navigate('/practice')}>Go to Practice</Button>
+              <div className="tw-text-sm tw-text-muted-foreground">{t('dashboard.actions')}</div>
+              <div className="tw-mt-1 tw-text-2xl tw-font-semibold">{t('dashboard.theoryPractice')}</div>
+              <div className="tw-text-xs tw-text-muted-foreground tw-mt-1">{t('dashboard.openPracticeHint')}</div>
+              <Button className="tw-mt-3" variant="primary" onClick={() => navigate('/practice')}>{t('dashboard.goToPractice')}</Button>
             </CardContent>
           </CardRoot>
         </div>
@@ -313,12 +315,12 @@ const DashboardStudent: React.FC = () => {
               <CardHeader>
                 <CardTitle className="tw-flex tw-items-center tw-gap-2">
                   <span className="tw-w-5 tw-h-5 tw-rounded-sm tw-bg-primary"></span>
-                  Upcoming Lessons
+                  {t('dashboard.upcomingLessons')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="tw-space-y-4">
                 {allUpcomingLessons.length === 0 && (
-                  <div className="tw-text-sm tw-text-muted-foreground">No upcoming lessons scheduled.</div>
+                  <div className="tw-text-sm tw-text-muted-foreground">{t('dashboard.noUpcoming')}</div>
                 )}
                 {(showAllUpcoming ? allUpcomingLessons : allUpcomingLessons.slice(0, 1)).map((lesson: any) => (
                   <div key={lesson.id} className="tw-flex tw-items-center tw-justify-between tw-p-4 tw-bg-secondary/50 tw-rounded-lg tw-border tw-border-border/30 hover:tw-bg-secondary/70 tw-transition-colors tw-group">
@@ -331,7 +333,7 @@ const DashboardStudent: React.FC = () => {
                           <h3 className="tw-font-semibold">{lesson.type} Lesson</h3>
                           <Badge variant="outline" className="tw-text-xs">{lesson.type}</Badge>
                         </div>
-                        <p className="tw-text-sm tw-text-muted-foreground">with {lesson.instructor}</p>
+                        <p className="tw-text-sm tw-text-muted-foreground">{t('commonUI.with')} {lesson.instructor}</p>
                         <p className="tw-text-xs tw-text-muted-foreground tw-mt-1">{lesson.vehicle}</p>
                       </div>
                     </div>
@@ -347,7 +349,7 @@ const DashboardStudent: React.FC = () => {
                 {allUpcomingLessons.length > 1 && (
                   <div className="tw-flex tw-justify-center">
                     <Button variant="outline" size="sm" onClick={() => setShowAllUpcoming((v) => !v)}>
-                      {showAllUpcoming ? 'Show less' : 'View all'}
+                      {showAllUpcoming ? t('commonUI.showLess') : t('dashboard.viewAll')}
                     </Button>
                   </div>
                 )}
@@ -362,12 +364,12 @@ const DashboardStudent: React.FC = () => {
               <CardHeader>
                 <CardTitle className="tw-flex tw-items-center tw-gap-2">
                   <span className="tw-w-5 tw-h-5 tw-rounded-sm tw-bg-primary"></span>
-                  Notifications
+                  {t('dashboard.notifications')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="tw-space-y-4">
-                <div className="tw-text-sm tw-text-muted-foreground">No new notifications.</div>
-                <Button variant="ghost" className="tw-w-full tw-text-sm">View All Notifications</Button>
+                <div className="tw-text-sm tw-text-muted-foreground">{t('dashboard.noNotifications')}</div>
+                <Button variant="ghost" className="tw-w-full tw-text-sm">{t('dashboard.viewAllNotifications')}</Button>
               </CardContent>
             </CardRoot>
           </div>
