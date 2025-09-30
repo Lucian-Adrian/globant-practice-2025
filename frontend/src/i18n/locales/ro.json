@@ -19,6 +19,33 @@
     "showLess": "Arată mai puțin",
     "noItems": "Fără elemente"
   },
+  "signupTitle": "Înregistrare Student",
+  "signupIntro": "Creează un cont pentru a începe",
+  "passwordPlaceholder": "Parolă",
+  "confirmPassword": "Confirmă parola",
+  "agreeTo": "Sunt de acord cu",
+  "terms": "Termenii de utilizare",
+  "privacy": "Politica de confidențialitate",
+  "and": "și",
+  "legalCenter": "Centru legal",
+  "termsOfUse": "Termeni de utilizare",
+  "privacyPolicy": "Politica de confidențialitate",
+  "haveAccount": "Ai deja un cont?",
+  "noAccount": "Nu ai cont?",
+  "createAccount": "Creează unul",
+  "loginIntroPhone": "Autentifică-te cu numărul de telefon sau email și parola",
+  "phoneOrEmail": "Telefon sau Email",
+  "phoneNumber": "Număr de telefon",
+  "forgotPassword": "Ai uitat parola?",
+  "guestMotto": "Învață cu încredere. Condu în siguranță. Suntem cu tine la fiecare pas.",
+  "signUp": "Înregistrează-te",
+  "submitting": "Se trimite...",
+  "loggingIn": "Se autentifică...",
+  "login": "Autentificare",
+  "welcome": "Bine ai revenit",
+  "firstName": "Prenume",
+  "lastName": "Nume",
+  "email": "Email",
   "type": { "theory": "Teorie", "driving": "Practică" },
   "lessons": {
     "header": {
@@ -200,7 +227,7 @@
     "landing": {
       "public": {
         "hero": { "kicker": "Învață • Condu • Strălucește", "title": "Accelerează parcursul spre permis", "subtitle": "Platformă modernă pentru teorie și practică.", "ctaPrimary": "Începe", "ctaSecondary": "Autentificare" },
-        "nav": { "dashboard": "Tablou", "lessons": "Lecții", "progress": "Progres", "practice": "Practică", "payments": "Plăți" },
+  "nav": { "dashboard": "Tablou", "lessons": "Lecții", "progress": "Progres", "practice": "Practică", "payments": "Plăți", "features": "Funcționalități", "cases": "Cazuri", "pricing": "Prețuri", "reviews": "Recenzii" },
         "img": { "alt": { "hero": "Student care învață să conducă", "logo": "Sigla școlii" } }
       },
       "student": {

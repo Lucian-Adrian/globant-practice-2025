@@ -26,6 +26,24 @@
     "showLess": "Show less",
     "noItems": "No items"
   },
+  "signupIntro": "Create an account to start",
+  "passwordPlaceholder": "Password",
+  "confirmPassword": "Confirm Password",
+  "agreeTo": "I agree to the",
+  "terms": "Terms of Use",
+  "privacy": "Privacy Policy",
+  "and": "and",
+  "legalCenter": "Legal Center",
+  "termsOfUse": "Terms of Use",
+  "privacyPolicy": "Privacy Policy",
+  "haveAccount": "Already have an account?",
+  "noAccount": "Don't have an account?",
+  "createAccount": "Create one",
+  "loginIntroPhone": "Log in with your phone number or email and password",
+  "phoneOrEmail": "Phone Number or Email",
+  "phoneNumber": "Phone Number",
+  "forgotPassword": "Forgot password?",
+  "guestMotto": "Learn confidently. Drive safely. We're with you every mile.",
   "type": {
     "theory": "Theory",
     "driving": "Driving"
@@ -264,12 +282,12 @@
     "landing": {
       "public": {
         "hero": { "kicker": "Learn • Drive • Shine", "title": "Accelerate Your Driving Journey", "subtitle": "Modern driving school platform to master theory and practice.", "ctaPrimary": "Get Started", "ctaSecondary": "Student Login" },
-        "nav": { "dashboard": "Dashboard", "lessons": "Lessons", "progress": "Progress", "practice": "Practice", "payments": "Payments" },
+        "nav": { "dashboard": "Dashboard", "lessons": "Lessons", "progress": "Progress", "practice": "Practice", "payments": "Payments", "features": "Features", "cases": "Cases", "pricing": "Pricing", "reviews": "Reviews" },
         "img": { "alt": { "hero": "Student learning to drive", "logo": "School logo" } }
       },
       "student": {
         "hero": { "kicker": "Welcome back", "title": "Your Learning Hub", "subtitle": "Access lessons, progress, payments, and more.", "ctaBook": "Book Lesson", "ctaPractice": "Open Practice" },
-        "img": { "alt": { "avatar": "Student avatar" } }
+        "img": { "alt": { "avatar": "Student avatar" }, "placeholder": "Image Placeholder" }
       }
     }
   }

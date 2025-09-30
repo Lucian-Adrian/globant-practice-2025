@@ -2,6 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
+import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -69,15 +70,15 @@ const NavBar: React.FC = () => {
           {loggedIn ? (
             <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
               <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-                <span>Features</span>
+                <span>{t('portal.landing.public.nav.features', { defaultValue: 'Features' })}</span>
                 <ChevronDown className="tw-w-4 tw-h-4" />
               </div>
               <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-                <span>Cases</span>
+                <span>{t('portal.landing.public.nav.cases', { defaultValue: 'Cases' })}</span>
                 <ChevronDown className="tw-w-4 tw-h-4" />
               </div>
-              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Pricing</span>
-              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">Reviews</span>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">{t('portal.landing.public.nav.pricing', { defaultValue: 'Pricing' })}</span>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">{t('portal.landing.public.nav.reviews', { defaultValue: 'Reviews' })}</span>
             </div>
           ) : (
             <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
@@ -112,6 +113,10 @@ const LandingPublic: React.FC = () => {
   const { t } = useTranslation('portal');
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
+      {/* Language selector top-right (portal specific) */}
+      <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50">
+        <PortalLanguageSelect />
+      </div>
       <NavBar />
       {/* Spacer for fixed rounded navbar (height ~ 56 + top margin) */}
       <div className="tw-h-28" />
