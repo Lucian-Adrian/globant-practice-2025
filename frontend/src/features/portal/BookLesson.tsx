@@ -1,6 +1,7 @@
 import * as React from "react";
 import PortalNavBar from "./PortalNavBar";
 import { useTranslation } from 'react-i18next';
+import { useI18nForceUpdate } from '../../i18n/index.js';
 import { useNavigate } from "react-router-dom";
 import { studentRawFetch } from "../../api/httpClient";
 import InstructorCalendarAvailability from "./InstructorCalendarAvailability";
@@ -61,6 +62,7 @@ type Lesson = {
 
 const BookLesson: React.FC = () => {
   const { t } = useTranslation('portal');
+  useI18nForceUpdate();
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);

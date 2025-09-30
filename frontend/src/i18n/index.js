@@ -1,6 +1,7 @@
 // Unified comprehensive i18n configuration (merged richer resources + RA namespaces)
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import React from 'react';
 import portalEn from './locales/en.json';
 // Auto-pickup of additional portal locales if present (Vite only)
 const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
