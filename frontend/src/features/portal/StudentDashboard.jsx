@@ -6,7 +6,7 @@ const StudentDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { t, i18n } = useTranslation('common');
+  const { t, i18n } = useTranslation('portal');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,12 +75,12 @@ const StudentDashboard = () => {
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', minHeight: '100vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>{t('common:studentDashboard', 'Student Dashboard')}</h1>
+  <h1>{t('portal.dashboard.welcome', 'Student Dashboard')}</h1>
         <div style={{ position: 'absolute', top: 20, right: 20 }}>
           <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
-            <option value="en">English</option>
-            <option value="ro">Română</option>
-            <option value="ru">Русский</option>
+            <option value="en">EN</option>
+            <option value="ro">RO</option>
+            <option value="ru">RU</option>
           </select>
           <button
             onClick={handleLogout}

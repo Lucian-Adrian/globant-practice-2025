@@ -205,4 +205,72 @@
     "noNotifications": "No new notifications.",
     "viewAllNotifications": "View All Notifications"
   }
+  ,
+  "portal": {
+    "booking": {
+      "header": { "title": "Book a Lesson", "subtitle": "Choose your course, instructor and schedule your next session." },
+      "details": { "title": "Lesson details" },
+      "form": {
+        "course": "Course",
+        "type": "Type",
+        "instructor": "Instructor",
+        "vehicleOrRoom": "Vehicle / Room",
+        "datetime": "Date & Time",
+        "duration": "Duration (minutes)",
+        "notes": "Notes",
+        "submit": "Confirm Booking",
+        "submitting": "Booking…",
+        "cancel": "Cancel",
+        "placeholders": { "notes": "Optional notes for your instructor" }
+      },
+      "errors": {
+        "loadFailed": "Failed to load booking data",
+        "submitFailed": "Failed to book lesson",
+        "slotConflict": "You already have a lesson at this time. Please choose another slot.",
+        "vehicleUnavailable": "No vehicle available for this time. Please choose another slot.",
+        "noSlots": "No free slots for this day."
+      },
+      "toast": { "success": "Lesson booked successfully", "failed": "Booking failed" }
+    },
+    "instructorAvailability": {
+      "header": { "title": "Instructor Availability", "subtitle": "Review and select times based on your instructor's schedule." },
+      "legend": { "available": "Available", "unavailable": "Unavailable", "selected": "Selected" },
+      "table": { "day": "Day", "time": "Time" },
+      "loading": "Loading availability…",
+      "empty": "No availability slots.",
+      "nav": { "prev": "Previous week", "next": "Next week" },
+      "tooltip": { "slotAvailable": "Click to select", "slotUnavailable": "Not available" }
+    },
+    "lesson": { "label": "Lesson", "at": "at" },
+    "paymentsPortal": {
+      "status": { "paid": "Paid", "dueSoon": "Due Soon", "upcoming": "Upcoming", "overdue": "Overdue" },
+      "due": { "today": "today", "inDays": "in {{count}} days", "daysAgo": "{{count}} days ago" }
+    },
+    "progress": {
+      "sections": { "milestones": "Course Milestones", "recentAchievements": "Recent Achievements" },
+      "milestones": {
+        "theory": { "title": "Theory Classes", "desc": "Complete all theory lessons" },
+        "practice": { "title": "Driving Hours", "desc": "Complete required driving practice" },
+        "theoryExam": { "title": "Theory Exam", "desc": "Pass the theoretical examination" },
+        "practicalExam": { "title": "Practical Exam", "desc": "Pass the practical driving test" }
+      },
+      "achievements": {
+        "firstHighway": { "title": "First Highway Drive", "desc": "Successfully completed your first highway driving lesson" },
+        "parallelParking": { "title": "Parallel Parking Master", "desc": "Mastered parallel parking technique" },
+        "nightDriving": { "title": "Night Driving", "desc": "Completed your first night driving session" }
+      },
+      "motivational": { "title": "You're Almost There!", "body": "With {{remaining}}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!" }
+    },
+    "landing": {
+      "public": {
+        "hero": { "kicker": "Learn • Drive • Shine", "title": "Accelerate Your Driving Journey", "subtitle": "Modern driving school platform to master theory and practice.", "ctaPrimary": "Get Started", "ctaSecondary": "Student Login" },
+        "nav": { "dashboard": "Dashboard", "lessons": "Lessons", "progress": "Progress", "practice": "Practice", "payments": "Payments" },
+        "img": { "alt": { "hero": "Student learning to drive", "logo": "School logo" } }
+      },
+      "student": {
+        "hero": { "kicker": "Welcome back", "title": "Your Learning Hub", "subtitle": "Access lessons, progress, payments, and more.", "ctaBook": "Book Lesson", "ctaPractice": "Open Practice" },
+        "img": { "alt": { "avatar": "Student avatar" } }
+      }
+    }
+  }
 }

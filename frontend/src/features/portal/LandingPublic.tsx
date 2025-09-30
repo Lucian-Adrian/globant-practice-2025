@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -51,14 +52,15 @@ const ArrowRight: React.FC<{ className?: string }> = ({ className = "" }) => (
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const loggedIn = useIsLoggedIn();
+  const { t } = useTranslation('portal');
   return (
     <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4">
       <div className="tw-bg-white tw-rounded-full tw-px-6 tw-py-3 tw-shadow-lg">
         <div className="tw-flex tw-items-center tw-justify-between">
           {/* Logo / Brand */}
           <div className="tw-flex tw-items-center tw-space-x-2">
-            <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain" />
-            <span className="tw-text-xl tw-font-bold tw-text-gray-900">DriveAdmin</span>
+            <img src="/assets/logo.png" alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
+            <span className="tw-text-xl tw-font-bold tw-text-gray-900">{t('appName', { defaultValue: 'DriveAdmin' })}</span>
           </div>
 
             {/* Navigation Menu */}
@@ -79,7 +81,7 @@ const NavBar: React.FC = () => {
             </div>
           ) : (
             <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
-              <span className="tw-text-sm tw-text-muted-foreground">Learn, practice, and pass with confidence</span>
+              <span className="tw-text-sm tw-text-muted-foreground">{t('portal.landing.public.hero.subtitle')}</span>
             </div>
           )}
 
@@ -89,13 +91,13 @@ const NavBar: React.FC = () => {
               onClick={() => navigate('/login')}
               className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors"
             >
-              Log in
+              {t('portal.landing.public.hero.ctaSecondary')}
             </button>
             <Button
               className="tw-bg-primary hover:tw-bg-primary/90 tw-text-white tw-rounded-full tw-px-6 tw-py-2 tw-flex tw-items-center tw-space-x-2"
               onClick={() => navigate('/signup')}
             >
-              <span>Get started</span>
+              <span>{t('portal.landing.public.hero.ctaPrimary')}</span>
               <ArrowRight className="tw-w-4 tw-h-4" />
             </Button>
           </div>
@@ -107,6 +109,7 @@ const NavBar: React.FC = () => {
 
 const LandingPublic: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('portal');
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
       <NavBar />
@@ -116,17 +119,10 @@ const LandingPublic: React.FC = () => {
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-10">
           {/* Left: copy like LandingStudent */}
           <div className="tw-space-y-4">
-            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground tw-mt-6">
-              Your path to driving success
-            </div>
+            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground tw-mt-6">{t('portal.landing.public.hero.kicker')}</div>
             {/* If guest, show a short motto; otherwise show the main heading */}
-            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">
-              Master driving with expert lessons and real practice
-              <br className="tw-hidden sm:tw-inline" /> 
-            </h1>
-            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">
-              Build confidence behind the wheel with structured learning, personalized guidance, and a dashboard that shows your progress every step of the way.
-            </p>
+            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">{t('portal.landing.public.hero.title')}</h1>
+            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">{t('portal.landing.public.hero.subtitle')}</p>
             {/* Left side single CTA (wider) */}
             <div className="tw-pt-4">
               <Button
@@ -134,7 +130,7 @@ const LandingPublic: React.FC = () => {
                 className="tw-w-full sm:tw-w-auto tw-min-w-[220px] tw-px-12 tw-h-12 tw-text-base"
                 onClick={() => navigate('/signup')}
               >
-                Get started
+                {t('portal.landing.public.hero.ctaPrimary')}
               </Button>
             </div>
           </div>
@@ -145,7 +141,7 @@ const LandingPublic: React.FC = () => {
               {/* use natural image aspect ratio, no absolute cropping */}
               <img
                 src="/assets/landing.png"
-                alt="Driving lesson illustration"
+                alt={t('portal.landing.public.img.alt.hero')}
                 className="tw-w-full tw-h-auto tw-block"
                 loading="lazy"
                 decoding="async"
