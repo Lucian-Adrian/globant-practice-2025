@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -133,6 +134,10 @@ const LandingStudent: React.FC = () => {
   const { t } = useTranslation('portal');
   return (
   <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
+      {/* Language selector top-right (portal specific) */}
+      <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50">
+        <PortalLanguageSelect />
+      </div>
       <NavBar />
       <Container className="tw-pb-10">
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-2">
@@ -146,7 +151,7 @@ const LandingStudent: React.FC = () => {
           {/* Right: image + CTA */}
           <div className="tw-flex tw-flex-col tw-gap-4 tw-items-center">
             <div className="tw-w-full tw-aspect-[16/10] tw-rounded-xl tw-border tw-border-dashed tw-border-border tw-bg-muted tw-flex tw-items-center tw-justify-center">
-              <span className="tw-text-sm tw-text-muted-foreground">Image Placeholder</span>
+              <span className="tw-text-sm tw-text-muted-foreground">{t('portal.landing.student.img.placeholder', { defaultValue: 'Image Placeholder' })}</span>
             </div>
             <Button
               variant="primary"

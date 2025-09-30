@@ -19,6 +19,33 @@
     "showLess": "Показать меньше",
     "noItems": "Нет элементов"
   },
+  "signupTitle": "Регистрация студента",
+  "signupIntro": "Создайте аккаунт, чтобы начать",
+  "passwordPlaceholder": "Пароль",
+  "confirmPassword": "Подтвердите пароль",
+  "agreeTo": "Я согласен с",
+  "terms": "Условиями использования",
+  "privacy": "Политикой конфиденциальности",
+  "and": "и",
+  "legalCenter": "Правовой центр",
+  "termsOfUse": "Условия использования",
+  "privacyPolicy": "Политика конфиденциальности",
+  "haveAccount": "Уже есть аккаунт?",
+  "noAccount": "Нет аккаунта?",
+  "createAccount": "Создать",
+  "loginIntroPhone": "Войдите по телефону или email и паролю",
+  "phoneOrEmail": "Телефон или Email",
+  "phoneNumber": "Номер телефона",
+  "forgotPassword": "Забыли пароль?",
+  "guestMotto": "Учитесь уверенно. Водите безопасно. Мы с вами на каждом шагу.",
+  "signUp": "Зарегистрироваться",
+  "submitting": "Отправка...",
+  "loggingIn": "Вход...",
+  "login": "Вход",
+  "welcome": "С возвращением",
+  "firstName": "Имя",
+  "lastName": "Фамилия",
+  "email": "Email",
   "type": { "theory": "Теория", "driving": "Практика" },
   "lessons": {
     "header": {
@@ -200,7 +227,7 @@
     "landing": {
       "public": {
         "hero": { "kicker": "Учись • Веди • Сияй", "title": "Ускорь свой путь к вождению", "subtitle": "Современная платформа для теории и практики.", "ctaPrimary": "Начать", "ctaSecondary": "Вход" },
-        "nav": { "dashboard": "Панель", "lessons": "Уроки", "progress": "Прогресс", "practice": "Практика", "payments": "Платежи" },
+  "nav": { "dashboard": "Панель", "lessons": "Уроки", "progress": "Прогресс", "practice": "Практика", "payments": "Платежи", "features": "Возможности", "cases": "Кейсы", "pricing": "Цены", "reviews": "Отзывы" },
         "img": { "alt": { "hero": "Студент учится водить", "logo": "Логотип школы" } }
       },
       "student": {
