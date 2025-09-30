@@ -412,6 +412,28 @@ const resources = Object.fromEntries(
   })
 );
 
+// Runtime safeguard: if at startup ro/ru portal JSON was missing (so we fell back to English),
+// ensure on first language change (or immediate call) we try loading the real file dynamically.
+async function ensurePortalBundle(lng) {
+  try {
+    if (!i18n || !lng) return;
+    // If bundle exists and is clearly localized (different from English), skip
+    if (i18n.hasResourceBundle(lng, 'portal')) {
+      const enValue = i18n.getResource('en', 'portal', 'lessons.header.title');
+      const currentValue = i18n.getResource(lng, 'portal', 'lessons.header.title');
+      if (currentValue && enValue && currentValue !== enValue) return; // already localized
+    }
+    // Attempt dynamic import (works with Vite) – falls back silently if file absent
+    const mod = await import(`./locales/${lng}.json`).catch(() => null);
+    const data = mod && (mod.default || mod);
+    if (data && Object.keys(data).length) {
+      i18n.addResourceBundle(lng, 'portal', data, true, true);
+    }
+  } catch (err) {
+    // Ignore – fallback to English already present
+  }
+}
+
 // Initialize only once; keep a helper for legacy calls (initI18n) used in main.jsx
 export function initI18n(lang = storedLang || 'en') {
   if (!i18n.isInitialized) {
@@ -423,13 +445,31 @@ export function initI18n(lang = storedLang || 'en') {
       defaultNS: 'common',
       interpolation: { escapeValue: false },
     });
-    i18n.on('languageChanged', (lng) => { try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {} });
+    // Initial hydration attempt for starting language
+    ensurePortalBundle(lang);
+    i18n.on('languageChanged', (lng) => {
+      try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {}
+      ensurePortalBundle(lng);
+    });
   }
   return i18n;
 }
 
 // Ensure default initialization (so components using hooks without manual init still work)
 initI18n();
+
+// Small helper React hook (kept here to avoid a new file) to force a re-render on language changes when
+// a component needs to display newly hydrated async portal bundles immediately. In most cases
+// useTranslation already re-renders, but if a key was missing at first render (showing raw) and later
+// gets added via ensurePortalBundle, this hook guarantees a flush.
+export function useI18nForceUpdate() {
+  const [, setTick] = React.useState(0);
+  React.useEffect(() => {
+    const handler = () => setTick(t => t + 1);
+    i18n.on('languageChanged', handler);
+    return () => { i18n.off('languageChanged', handler); };
+  }, []);
+}
 
 // Expose globally for console debugging (e.g., window.i18n.changeLanguage('ro'))
 if (typeof window !== 'undefined') {

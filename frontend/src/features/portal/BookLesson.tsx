@@ -99,7 +99,7 @@ const BookLesson: React.FC = () => {
           return;
         }
         const body = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(body?.detail || body?.message || 'Failed to load');
+  if (!resp.ok) throw new Error(body?.detail || body?.message || t('portal.booking.errors.loadFailed'));
         if (!mounted) return;
   const ins: Instructor[] = Array.isArray(body?.instructors) ? body.instructors : [];
   const ens: Enrollment[] = Array.isArray(body?.enrollments) ? body.enrollments : [];
@@ -109,7 +109,7 @@ const BookLesson: React.FC = () => {
   setStudentLessons(stuLessons);
         if (ins.length) setSelectedInstructor(String(ins[0].id));
       } catch (e: any) {
-        if (mounted) setError(e?.message || 'Network error');
+  if (mounted) setError(e?.message || t('commonUI.networkError'));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -249,7 +249,7 @@ const BookLesson: React.FC = () => {
   const onSubmit = async () => {
     if (!canSubmit) return;
     const enrollmentId = findPracticeEnrollmentId();
-    if (!enrollmentId) { setError('No active enrollment found'); return; }
+  if (!enrollmentId) { setError(t('portal.booking.errors.loadFailed')); return; }
     const instructorId = Number(selectedInstructor);
     const iso = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
     const start = new Date(`${selectedDate}T${selectedTime}:00`);
@@ -262,13 +262,13 @@ const BookLesson: React.FC = () => {
       return lStart < end && start < lEnd; // adjacency allowed
     });
     if (hasStudentConflict) {
-      setError('You already have a lesson at this time. Please choose another slot.');
+  setError(t('portal.booking.errors.slotConflict'));
       return;
     }
 
     const vehicleId = pickVehicleId(start, end, enrollmentId);
     if (vehicleId == null) {
-      setError('No vehicle available for this time. Please choose another slot.');
+  setError(t('portal.booking.errors.vehicleUnavailable'));
       return;
     }
     try {
@@ -287,11 +287,11 @@ const BookLesson: React.FC = () => {
       });
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({} as any));
-        throw new Error(body?.detail || body?.message || 'Failed to book lesson');
+  throw new Error(body?.detail || body?.message || t('portal.booking.errors.submitFailed'));
       }
       navigate('/lessons?filter=upcoming');
     } catch (e: any) {
-      setError(e?.message || 'Failed to book lesson');
+  setError(e?.message || t('portal.booking.errors.submitFailed'));
     }
   };
 
@@ -300,8 +300,8 @@ const BookLesson: React.FC = () => {
       <PortalNavBar />
       <Container className="tw-py-8 tw-space-y-8">
         <div className="tw-text-center tw-space-y-2">
-          <h1 className="tw-text-3xl tw-font-bold">{t('lessons.cta.button')}</h1>
-          <p className="tw-text-muted-foreground">Choose type, instructor, date and time, then submit your request.</p>
+          <h1 className="tw-text-3xl tw-font-bold">{t('portal.booking.header.title')}</h1>
+          <p className="tw-text-muted-foreground">{t('portal.booking.header.subtitle')}</p>
         </div>
 
         {loading && (
@@ -313,14 +313,14 @@ const BookLesson: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Lesson details</CardTitle>
+            <CardTitle>{t('portal.booking.details.title')}</CardTitle>
           </CardHeader>
           <CardContent className="tw-space-y-6">
             <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
               <div className="tw-space-y-2">
-                <Label htmlFor="instructor">Instructor</Label>
+                <Label htmlFor="instructor">{t('portal.booking.form.instructor')}</Label>
                 <Select id="instructor" value={selectedInstructor} onChange={(e) => setSelectedInstructor(e.target.value)}>
-                  <option value="" disabled>Select instructor</option>
+                  <option value="" disabled>{t('portal.booking.form.instructor')}</option>
                   {instructors.map(i => (
                     <option key={i.id} value={i.id}>{i.first_name} {i.last_name}</option>
                   ))}
@@ -330,19 +330,19 @@ const BookLesson: React.FC = () => {
 
             <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
               <div className="tw-space-y-2">
-                <Label htmlFor="date">Select Date</Label>
+                <Label htmlFor="date">{t('portal.booking.form.datetime')}</Label>
                 <Input id="date" type="date" min={new Date().toISOString().split('T')[0]} value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setSelectedTime(''); }} />
               </div>
               <div className="tw-space-y-2">
-                <Label htmlFor="time">Time</Label>
+                <Label htmlFor="time">{t('portal.booking.form.datetime')}</Label>
                 <Select id="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} disabled={!selectedInstructor || !selectedDate}>
-                  <option value="" disabled>Select time</option>
+                  <option value="" disabled>{t('portal.booking.form.datetime')}</option>
                   {getTimeOptions().map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </Select>
                 {selectedInstructor && selectedDate && getTimeOptions().length === 0 && (
-                  <div className="tw-text-[11px] tw-text-muted-foreground">No free slots for this day.</div>
+                  <div className="tw-text-[11px] tw-text-muted-foreground">{t('portal.booking.errors.noSlots')}</div>
                 )}
               </div>
             </div>
@@ -360,8 +360,8 @@ const BookLesson: React.FC = () => {
             </div>
 
             <div className="tw-flex tw-justify-end tw-gap-3">
-              <Button variant="outline" onClick={() => { window.history.back(); }}>{t('makePayment.cancel')}</Button>
-              <Button onClick={onSubmit} disabled={!canSubmit}>{t('lessons.cta.button')}</Button>
+              <Button variant="outline" onClick={() => { window.history.back(); }}>{t('portal.booking.form.cancel')}</Button>
+              <Button onClick={onSubmit} disabled={!canSubmit}>{t('portal.booking.form.submit')}</Button>
             </div>
           </CardContent>
         </Card>

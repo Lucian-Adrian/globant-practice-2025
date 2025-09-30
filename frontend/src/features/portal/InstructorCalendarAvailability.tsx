@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Lesson {
   id: number;
@@ -35,16 +36,23 @@ function buildWeek(start: Date): Date[] {
   return days;
 }
 
-const Legend: React.FC = () => (
-  <div className="tw-flex tw-flex-wrap tw-gap-4 tw-text-xs tw-mb-2">
-    <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-green-600"/>Available</div>
-    <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-red-500 tw-opacity-70"/>Booked</div>
-    <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-gray-300"/>Unavailable</div>
-  </div>
-);
+const Legend: React.FC = () => {
+  const { t } = useTranslation('portal');
+  return (
+    <div className="tw-flex tw-flex-wrap tw-gap-4 tw-text-xs tw-mb-2">
+      <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-green-600"/>{t('portal.instructorAvailability.legend.available')}</div>
+      <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-red-500 tw-opacity-70"/>{t('portal.instructorAvailability.legend.unavailable')}</div>
+      <div className="tw-flex tw-items-center tw-gap-1"><span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-gray-300"/>{t('portal.instructorAvailability.legend.selected')}</div>
+    </div>
+  );
+};
 
 const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons, availability, onSelect, durationMinutes=60, loading, weekStart, onWeekChange }) => {
-  if (!instructorId) return <div className="tw-text-xs tw-text-muted-foreground">Select an instructor to view availability.</div>;
+  const { t } = useTranslation('portal');
+  // IMPORTANT: Do not return early before declaring hooks; otherwise when instructorId becomes truthy
+  // React will see a different hook order (causing the runtime error we observed). We compute hooks
+  // unconditionally and branch only in render output.
+  const noInstructor = !instructorId;
 
   const baseStart = React.useMemo(() => {
     if (weekStart) return new Date(weekStart);
@@ -104,11 +112,17 @@ const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons
     onWeekChange?.(d);
   }
 
+  if (noInstructor) {
+    return (
+      <div className="tw-text-xs tw-text-muted-foreground">{t('portal.booking.form.instructor')}</div>
+    );
+  }
+
   return (
     <div className="tw-space-y-2">
       <div className="tw-flex tw-items-center tw-justify-between">
         <div className="tw-flex tw-items-center tw-gap-3">
-          <h4 className="tw-text-sm tw-font-semibold">Weekly Availability</h4>
+          <h4 className="tw-text-sm tw-font-semibold">{t('portal.instructorAvailability.header.title')}</h4>
           <span className="tw-text-[11px] tw-text-muted-foreground tw-font-medium">{rangeLabel}</span>
         </div>
         <div className="tw-flex tw-gap-1">
@@ -116,24 +130,24 @@ const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons
             type="button"
             onClick={() => shiftWeek(-1)}
             className="tw-text-xs tw-border tw-border-border tw-rounded-sm tw-px-2 tw-py-1 hover:tw-bg-muted"
-            title="Previous week"
+            title={t('portal.instructorAvailability.nav.prev')}
           >&lt;</button>
           <button
             type="button"
             onClick={() => shiftWeek(1)}
             className="tw-text-xs tw-border tw-border-border tw-rounded-sm tw-px-2 tw-py-1 hover:tw-bg-muted"
-            title="Next week"
+            title={t('portal.instructorAvailability.nav.next')}
           >&gt;</button>
         </div>
       </div>
       <Legend />
-      {loading && <div className="tw-text-xs tw-text-muted-foreground">Loading availability…</div>}
-      {!loading && unionHours.length === 0 && <div className="tw-text-xs tw-text-muted-foreground">No availability defined.</div>}
+  {loading && <div className="tw-text-xs tw-text-muted-foreground">{t('portal.instructorAvailability.loading')}</div>}
+  {!loading && unionHours.length === 0 && <div className="tw-text-xs tw-text-muted-foreground">{t('portal.instructorAvailability.empty')}</div>}
       <div className="tw-overflow-auto tw-border tw-rounded-md tw-border-border">
         <table className="tw-min-w-full tw-text-xs tw-border-collapse">
           <thead>
             <tr>
-              <th className="tw-bg-muted tw-text-left tw-px-2 tw-py-1 tw-font-medium tw-w-20">Time</th>
+              <th className="tw-bg-muted tw-text-left tw-px-2 tw-py-1 tw-font-medium tw-w-20">{t('portal.instructorAvailability.table.time')}</th>
               {weekDays.map(d => {
                 const dateStr = fmtLocalDate(d);
                 const label = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric'});
@@ -159,7 +173,7 @@ const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons
                         disabled={state!=='available'}
                         className={base+' '+cls}
                         onClick={() => state==='available' && onSelect(dateStr, h)}
-                        title={state==='available' ? 'Select this slot' : undefined}
+                        title={state==='available' ? t('portal.instructorAvailability.tooltip.slotAvailable') : undefined}
                       >
                         {state==='available' ? '✓' : state==='booked' ? '•' : ''}
                       </button>

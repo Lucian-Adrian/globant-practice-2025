@@ -121,7 +121,11 @@ const Payments: React.FC = () => {
       const today = new Date();
       const diffDays = Math.round((due.getTime() - today.getTime()) / (1000*60*60*24));
       const label = due.toLocaleDateString();
-      const relative = diffDays > 0 ? `In ${diffDays} day${diffDays===1?'':'s'}` : diffDays === 0 ? 'Today' : `${Math.abs(diffDays)} day${Math.abs(diffDays)===1?'':'s'} ago`;
+      const relative = diffDays > 0
+        ? t('portal.paymentsPortal.due.inDays', { count: diffDays })
+        : diffDays === 0
+          ? t('portal.paymentsPortal.due.today')
+          : t('portal.paymentsPortal.due.daysAgo', { count: Math.abs(diffDays) });
       return { label, relative };
     } catch {
       return null;
@@ -130,10 +134,10 @@ const Payments: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'paid': return <Badge variant="success">Paid</Badge>;
-      case 'pending': return <Badge variant="warning">Due Soon</Badge>;
-      case 'upcoming': return <Badge variant="secondary">Upcoming</Badge>;
-      case 'overdue': return <Badge variant="destructive">Overdue</Badge>;
+      case 'paid': return <Badge variant="success">{t('portal.paymentsPortal.status.paid')}</Badge>;
+      case 'pending': return <Badge variant="warning">{t('portal.paymentsPortal.status.dueSoon')}</Badge>;
+      case 'upcoming': return <Badge variant="secondary">{t('portal.paymentsPortal.status.upcoming')}</Badge>;
+      case 'overdue': return <Badge variant="destructive">{t('portal.paymentsPortal.status.overdue')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };

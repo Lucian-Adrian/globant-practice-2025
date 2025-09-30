@@ -151,16 +151,16 @@ const Progress: React.FC = () => {
 
   // Build milestones using real data for theory/practice lessons
   const milestones = [
-    { id: 1, title: "Theory Classes", description: "Complete all theory lessons", progress: completedTheory, total: requiredTheory || 0, completed: (requiredTheory || 0) > 0 && completedTheory >= (requiredTheory || 0), icon: BookOpenIcon, color: "success" },
-    { id: 2, title: "Driving Hours", description: "Complete required driving practice", progress: completedPractice, total: requiredPractice || 0, completed: (requiredPractice || 0) > 0 && completedPractice >= (requiredPractice || 0), icon: CarIcon, color: "primary" },
-    { id: 3, title: "Theory Exam", description: "Pass the theoretical examination", progress: 0, total: 1, completed: false, icon: AwardIcon, color: "warning" },
-    { id: 4, title: "Practical Exam", description: "Pass the practical driving test", progress: 0, total: 1, completed: false, icon: TargetIcon, color: "warning" },
+    { id: 1, title: t('portal.progress.milestones.theory.title'), description: t('portal.progress.milestones.theory.desc'), progress: completedTheory, total: requiredTheory || 0, completed: (requiredTheory || 0) > 0 && completedTheory >= (requiredTheory || 0), icon: BookOpenIcon, color: "success" },
+    { id: 2, title: t('portal.progress.milestones.practice.title'), description: t('portal.progress.milestones.practice.desc'), progress: completedPractice, total: requiredPractice || 0, completed: (requiredPractice || 0) > 0 && completedPractice >= (requiredPractice || 0), icon: CarIcon, color: "primary" },
+    { id: 3, title: t('portal.progress.milestones.theoryExam.title'), description: t('portal.progress.milestones.theoryExam.desc'), progress: 0, total: 1, completed: false, icon: AwardIcon, color: "warning" },
+    { id: 4, title: t('portal.progress.milestones.practicalExam.title'), description: t('portal.progress.milestones.practicalExam.desc'), progress: 0, total: 1, completed: false, icon: TargetIcon, color: "warning" },
   ];
 
   const recentAchievements = [
-    { id: 1, title: "First Highway Drive", date: "2 days ago", description: "Successfully completed your first highway driving lesson", icon: "🛣️" },
-    { id: 2, title: "Parallel Parking Master", date: "1 week ago", description: "Mastered parallel parking technique", icon: "🅿️" },
-    { id: 3, title: "Night Driving", date: "2 weeks ago", description: "Completed your first night driving session", icon: "🌙" },
+    { id: 1, title: t('portal.progress.achievements.firstHighway.title'), date: "2 days ago", description: t('portal.progress.achievements.firstHighway.desc'), icon: "🛣️" },
+    { id: 2, title: t('portal.progress.achievements.parallelParking.title'), date: "1 week ago", description: t('portal.progress.achievements.parallelParking.desc'), icon: "🅿️" },
+    { id: 3, title: t('portal.progress.achievements.nightDriving.title'), date: "2 weeks ago", description: t('portal.progress.achievements.nightDriving.desc'), icon: "🌙" },
   ];
 
   const skillsProgress = [
@@ -282,7 +282,7 @@ const Progress: React.FC = () => {
           <CardHeader>
               <CardTitle className="tw-flex tw-items-center tw-gap-2">
               <TargetIcon className={`${iconSm} tw-text-primary`} />
-              Course Milestones
+              {t('portal.progress.sections.milestones')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -320,7 +320,7 @@ const Progress: React.FC = () => {
           <CardHeader>
             <CardTitle className="tw-flex tw-items-center tw-gap-2">
               <AwardIcon className={`${iconSm} tw-text-primary`} />
-              Recent Achievements
+              {t('portal.progress.sections.recentAchievements')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -344,9 +344,9 @@ const Progress: React.FC = () => {
           <CardContent className="tw-p-8 tw-text-center">
             <div className="tw-space-y-4">
               <div className="tw-text-4xl">🎯</div>
-              <h3 className="tw-text-2xl tw-font-bold">You're Almost There!</h3>
+              <h3 className="tw-text-2xl tw-font-bold">{t('portal.progress.motivational.title')}</h3>
               <p className="tw-opacity-90 tw-max-w-md tw-mx-auto">
-                With {Math.max(0, 100 - (percentAll || 0))}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!
+                {t('portal.progress.motivational.body', { remaining: Math.max(0, 100 - (percentAll || 0)) })}
               </p>
               <button onClick={() => navigate('/book-lesson')} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 tw-animate-bounce-gentle">
                 {t('dashboard.bookLesson')}

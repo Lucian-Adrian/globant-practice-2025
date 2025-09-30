@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -88,6 +89,7 @@ const StatCard: React.FC<{
 );
 
 const NavBar: React.FC = () => {
+  const { t } = useTranslation('portal');
   return (
     <>
       <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4 tw-hidden md:tw-block">
@@ -95,17 +97,17 @@ const NavBar: React.FC = () => {
           <div className="tw-flex tw-items-center tw-justify-between">
             {/* Brand */}
             <div className="tw-flex tw-items-center tw-space-x-2">
-              <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain" />
-              <span className="tw-text-xl tw-font-bold tw-text-gray-900">DriveAdmin</span>
+              <img src="/assets/logo.png" alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
+              <span className="tw-text-xl tw-font-bold tw-text-gray-900">{t('appName', { ns: 'portal', defaultValue: 'DriveAdmin' })}</span>
             </div>
             {/* Nav Links */}
             <div className="tw-flex tw-items-center tw-space-x-6">
               {[
-                { path: "/dashboard", label: "Dashboard" },
-                { path: "/lessons", label: "Lessons" },
-                { path: "/progress", label: "Progress" },
-                { path: "/practice", label: "Practice" },
-                { path: "/payments", label: "Payments" },
+                { path: "/dashboard", label: t('portal.landing.public.nav.dashboard') },
+                { path: "/lessons", label: t('portal.landing.public.nav.lessons') },
+                { path: "/progress", label: t('portal.landing.public.nav.progress') },
+                { path: "/practice", label: t('portal.landing.public.nav.practice') },
+                { path: "/payments", label: t('portal.landing.public.nav.payments') },
               ].map(item => (
                 <a key={item.path} href={item.path} className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors">
                   {item.label}
@@ -128,6 +130,7 @@ const NavBar: React.FC = () => {
 
 const LandingStudent: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('portal');
   return (
   <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
       <NavBar />
@@ -135,16 +138,9 @@ const LandingStudent: React.FC = () => {
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-2">
           {/* Left: copy like LandingPublic hero */}
           <div className="tw-space-y-4">
-            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground">
-              Your path to driving success
-            </div>
-            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">
-              Master driving with expert lessons, real practice, and clear
-              <br className="tw-hidden sm:tw-inline" /> progress tracking.
-            </h1>
-            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">
-              Build confidence behind the wheel with structured learning, personalized guidance, and a dashboard that shows your progress every step of the way.
-            </p>
+            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground">{t('portal.landing.student.hero.kicker')}</div>
+            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">{t('portal.landing.student.hero.title')}</h1>
+            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">{t('portal.landing.student.hero.subtitle')}</p>
           </div>
 
           {/* Right: image + CTA */}
@@ -157,7 +153,7 @@ const LandingStudent: React.FC = () => {
               className="tw-w-full sm:tw-w-auto tw-rounded-full"
               onClick={() => navigate('/signup')}
             >
-              Get started
+              {t('portal.landing.student.hero.ctaBook')}
             </Button>
           </div>
         </div>
