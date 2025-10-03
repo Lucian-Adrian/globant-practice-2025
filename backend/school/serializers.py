@@ -82,7 +82,11 @@ class StudentSerializer(serializers.ModelSerializer):
         try:
             with transaction.atomic():
                 student = super().create(validated_data)
-                student.set_password(password)
+                if password.startswith(("pbkdf2_", "argon2$", "bcrypt$", "bcrypt_sha256$")):
+                    student.password = password       # keep provided Django-style hash
+                else:
+                    student.set_password(password)    # hash plain text
+
                 student.save()
                 return student
         except IntegrityError as e:  # race condition uniqueness fallback
