@@ -331,8 +331,8 @@ class EnrollmentViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'student': (row.get('student_id') or '').strip(),
-                'course': (row.get('course_id') or '').strip(),
+                'student_id': (row.get('student_id') or '').strip(),
+                'course_id': (row.get('course_id') or '').strip(),
                 'type': (row.get('type') or '').strip(),
                 'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
             }
@@ -377,12 +377,12 @@ class LessonViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'enrollment': (row.get('enrollment_id') or '').strip(),
-                'instructor': (row.get('instructor_id') or '').strip(),
-                'vehicle': (row.get('vehicle_id') or '').strip() or None,
+                'enrollment_id': (row.get('enrollment_id') or '').strip(),
+                'instructor_id': (row.get('instructor_id') or '').strip(),
+                'vehicle_id': (row.get('vehicle_id') or '').strip() or None,
                 'scheduled_time': (row.get('scheduled_time') or '').strip(),
                 'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
-                'status': (row.get('status') or '').strip() or 'SCHEDULED',
+                'status': (row.get('status') or '').strip(),
                 'notes': (row.get('notes') or '').strip(),
             }
             serializer = self.get_serializer(data=data)
@@ -426,7 +426,7 @@ class PaymentViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'enrollment': (row.get('enrollment_id') or '').strip(),
+                'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'amount': (row.get('amount') or '').strip(),
                 'payment_method': (row.get('payment_method') or '').strip(),
                 'description': (row.get('description') or '').strip(),
