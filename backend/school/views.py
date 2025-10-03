@@ -147,9 +147,9 @@ class StudentViewSet(FullCrudViewSet):
             }
 
             # Password handling
-        pwd = (row.get("password") or "").strip()
-        if pwd:
-            data["password"] = pwd
+            pwd = (row.get("password") or "").strip()
+            if pwd:
+                data["password"] = pwd
 
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
