@@ -85,7 +85,7 @@ class StudentViewSet(FullCrudViewSet):
         qs = self.filter_queryset(self.get_queryset())
         fields = [
             'id', 'first_name', 'last_name', 'email', 'phone_number',
-            'date_of_birth', 'enrollment_date', 'status'
+            'date_of_birth', 'enrollment_date', 'status', 'password'
         ]
         buffer = StringIO()
         writer = csv.writer(buffer)
@@ -100,6 +100,7 @@ class StudentViewSet(FullCrudViewSet):
                 obj.date_of_birth.isoformat() if obj.date_of_birth else '',
                 obj.enrollment_date.isoformat() if obj.enrollment_date else '',
                 obj.status,
+                obj.password,
             ]
             writer.writerow(row)
 
@@ -144,6 +145,12 @@ class StudentViewSet(FullCrudViewSet):
                 'date_of_birth': (row.get('date_of_birth') or '').strip(),
                 'status': (row.get('status') or 'ACTIVE').strip() or 'ACTIVE',
             }
+
+            # Password handling
+        pwd = (row.get("password") or "").strip()
+        if pwd:
+            data["password"] = pwd
+
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
                 obj = serializer.save()
