@@ -1,4 +1,6 @@
 from rest_framework import viewsets, mixins, decorators, response, status
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from django.http import HttpResponse
 import csv
@@ -41,25 +43,6 @@ class StudentJWTAuthentication(JWTAuthentication):
         return student
 
 
-class StudentJWTAuthentication(JWTAuthentication):
-    def get_user(self, validated_token):
-        student_id = validated_token.get('student_id')
-        if not student_id:
-            raise InvalidToken('Token contained no recognizable user identification')
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            raise InvalidToken('Student not found')
-        return student
-from .serializers import (
-    StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer
-)
-from .enums import all_enums_for_meta, StudentStatus
-import hashlib, json
-from .validators import normalize_phone
-
-
 class FullCrudViewSet(mixins.ListModelMixin,
                       mixins.RetrieveModelMixin,
                       mixins.CreateModelMixin,
@@ -74,6 +57,7 @@ class StudentViewSet(FullCrudViewSet):
     queryset = Student.objects.all().order_by('-enrollment_date')
     serializer_class = StudentSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
 
     filterset_fields = {
         'status': ['exact'],
@@ -208,6 +192,7 @@ class InstructorViewSet(FullCrudViewSet):
 class InstructorAvailabilityViewSet(FullCrudViewSet):
     queryset = InstructorAvailability.objects.select_related('instructor').all()
     serializer_class = InstructorAvailabilitySerializer
+    filter_backends = [DjangoFilterBackend]
     # Allow filtering by instructor_id and day from the frontend (e.g. ?instructor_id=3)
     # This mirrors the pattern used on other viewsets (students, instructors) and
     # allows the dataProvider getList calls to request per-instructor availabilities.
@@ -220,6 +205,11 @@ class InstructorAvailabilityViewSet(FullCrudViewSet):
 class VehicleViewSet(FullCrudViewSet):
     queryset = Vehicle.objects.all().order_by('-year')
     serializer_class = VehicleSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'is_available': ['exact'],
+        'category': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -264,6 +254,11 @@ class VehicleViewSet(FullCrudViewSet):
 class CourseViewSet(FullCrudViewSet):
     queryset = Course.objects.all().order_by('category')
     serializer_class = CourseSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'category': ['exact'],
+        'type': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -301,6 +296,14 @@ class CourseViewSet(FullCrudViewSet):
 class EnrollmentViewSet(FullCrudViewSet):
     queryset = Enrollment.objects.select_related('student', 'course').all().order_by('-enrollment_date')
     serializer_class = EnrollmentSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'status': ['exact'],
+        'enrollment_date': ['gte', 'lte', 'gt', 'lt'],
+        'student': ['exact'],
+        'course': ['exact'],
+        'course__category': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -347,6 +350,28 @@ class EnrollmentViewSet(FullCrudViewSet):
 class LessonViewSet(FullCrudViewSet):
     queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
     serializer_class = LessonSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'status': ['exact'],
+        'scheduled_time': ['gte', 'lte', 'gt', 'lt'],
+        'instructor': ['exact'],
+        'vehicle__license_plate': ['exact'],
+        'enrollment__student': ['exact'],
+        'enrollment__course': ['exact'],
+    }
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Accept both instructor and instructor_id as aliases
+        if getattr(self, 'request', None):
+            instr = self.request.query_params.get('instructor') or self.request.query_params.get('instructor_id')
+            if instr:
+                qs = qs.filter(instructor_id=instr)
+            # Accept 'vehicle' as a license plate string alias for vehicle__license_plate
+            vehicle_lp = self.request.query_params.get('vehicle')
+            if vehicle_lp:
+                qs = qs.filter(vehicle__license_plate=vehicle_lp)
+        return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -396,6 +421,12 @@ class LessonViewSet(FullCrudViewSet):
 class PaymentViewSet(FullCrudViewSet):
     queryset = Payment.objects.select_related('enrollment__student').all()
     serializer_class = PaymentSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'payment_date': ['gte', 'lte', 'gt', 'lt'],
+        'payment_method': ['exact'],
+        'enrollment': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
