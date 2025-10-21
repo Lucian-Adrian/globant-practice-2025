@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { List, Datagrid, NumberField, TextField, EditButton, FunctionField, useListContext, useTranslate } from 'react-admin';
+import { List, Datagrid, NumberField, TextField, EditButton, FunctionField, useListContext, useTranslate, SelectInput } from 'react-admin';
 import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CourseListAside from './CourseListAside.jsx';
 import CourseListEmpty from './CourseListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import { fetchEnums, mapToChoices } from '../../api/enumsClient';
 
 // Function to determine course status based on available data
 // Status -> color map. Keep in sync with CourseListAside statusItems
@@ -90,8 +91,44 @@ const ViewDetailsButton = ({ record }) => {
 };
 
 export default function CourseList(props) {
+  const t = useTranslate();
+  const [categoryChoices, setCategoryChoices] = React.useState([]);
+  const [typeChoices, setTypeChoices] = React.useState([
+    { id: 'THEORY', name: 'THEORY' },
+    { id: 'PRACTICE', name: 'PRACTICE' },
+  ]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    fetchEnums().then((enums) => {
+      if (!mounted || !enums) return;
+      const cat = mapToChoices(enums.vehicle_category);
+      const typ = mapToChoices(enums.course_type);
+      if (Array.isArray(cat) && cat.length) setCategoryChoices(cat);
+      if (Array.isArray(typ) && typ.length) setTypeChoices(typ);
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  const filters = [
+    <SelectInput
+      key="category"
+      source="category"
+      alwaysOn
+      choices={categoryChoices}
+      label={t('resources.courses.fields.category', 'Category')}
+    />,
+    <SelectInput
+      key="type"
+      source="type"
+      alwaysOn
+      choices={typeChoices}
+      label={t('resources.courses.fields.type', 'Type')}
+    />,
+  ];
+
   return (
-    <List {...props} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
+    <List {...props} filters={filters} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
       <FilteredCourseDatagrid />
     </List>
   );

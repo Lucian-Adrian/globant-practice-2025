@@ -7,6 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BookIcon from '@mui/icons-material/Book';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
+import { startOfDay, addDays, startOfWeek, subWeeks, addWeeks, startOfMonth, addMonths, subMonths } from 'date-fns';
 
 // Component to render status badge in filter
 const StatusFilterLabel = ({ text, color, statusKey }) => (
@@ -111,10 +112,37 @@ export default function LessonListAside() {
 
   return (
     <ListAsideFilters
-      dateField="scheduled_time"
+      hideDate
       statusLabelKey={t('resources.vehicles.name', 'Vehicle')}
       statusItems={vehicleItems}
     >
+      {/* Date range filters specific to lessons (use both gte and lte) */}
+      <FilterList label={t('filters.last_activity', 'Last activity')} icon={<CalendarTodayIcon />}>
+        {(() => {
+          const now = new Date();
+          const todayStart = startOfDay(now);
+          const tomorrowStart = addDays(todayStart, 1);
+          const sow = startOfWeek(now);
+          const nextWeekStart = addWeeks(sow, 1);
+          const lastWeekStart = subWeeks(sow, 1);
+          const som = startOfMonth(now);
+          const nextMonthStart = addMonths(som, 1);
+          const prevMonthStart = subMonths(som, 1);
+          const items = [
+            { k: 'filters.today', v: { scheduled_time_gte: todayStart.toISOString(), scheduled_time_lte: tomorrowStart.toISOString() } },
+            { k: 'filters.this_week', v: { scheduled_time_gte: sow.toISOString(), scheduled_time_lte: nextWeekStart.toISOString() } },
+            { k: 'filters.last_week', v: { scheduled_time_gte: lastWeekStart.toISOString(), scheduled_time_lte: sow.toISOString() } },
+            { k: 'filters.this_month', v: { scheduled_time_gte: som.toISOString(), scheduled_time_lte: nextMonthStart.toISOString() } },
+            { k: 'filters.last_month', v: { scheduled_time_gte: prevMonthStart.toISOString(), scheduled_time_lte: som.toISOString() } },
+            { k: 'filters.earlier', v: { scheduled_time_gte: undefined, scheduled_time_lte: prevMonthStart.toISOString() } },
+          ];
+          return items.map(df => (
+            <FilterListItem key={df.k} label={t(df.k, df.k)} value={df.v} />
+          ));
+        })()}
+      </FilterList>
+
+
       {/* Lesson Status Filter Section */}
       <FilterList label={t('filters.status', 'Status')} icon={<SchoolIcon />}>
         {lessonStatusFilters.map((filter) => (
@@ -132,7 +160,7 @@ export default function LessonListAside() {
         ))}
       </FilterList>
 
-      {/* Lesson Type Filter Section */}
+  {/* Lesson Type Filter Section */}
       <FilterList label={t('filters.type', 'Type')} icon={<BookIcon />}>
         {lessonTypeFilters.map((filter, index) => (
           <FilterListItem 
