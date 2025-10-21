@@ -53,6 +53,11 @@ class FullCrudViewSet(mixins.ListModelMixin,
     pass
 
 
+class QSearchFilter(SearchFilter):
+    """Use 'q' as the search query parameter to align with frontend SearchInput."""
+    search_param = 'q'
+
+
 class StudentViewSet(FullCrudViewSet):
     queryset = Student.objects.all().order_by('-enrollment_date')
     serializer_class = StudentSerializer
@@ -152,6 +157,9 @@ class StudentViewSet(FullCrudViewSet):
 class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
+    # Enable filtering/sorting/searching; RA uses 'q' for free-text search
+    filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
+    search_fields = ['first_name', 'last_name', 'email']
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
