@@ -75,14 +75,11 @@ export default function LessonListAside() {
   const t = useTranslate();
   // Fetch registered vehicles from the vehicles resource
   const { data: vehicles = {}, total, loaded } = useGetList('vehicles', { pagination: { page: 1, perPage: 1000 }, sort: { field: 'id', order: 'ASC' }, filter: {} });
-  // Define lesson status filters (use translation keys)
+  // Define lesson status filters (backend statuses only)
   const lessonStatusFilters = [
-    { value: { status_filter: 'COMPLETED' }, labelKey: 'filters.completed', color: 'success', statusKey: 'COMPLETED' },
-    { value: { status_filter: 'SCHEDULED' }, labelKey: 'filters.scheduled', color: 'primary', statusKey: 'SCHEDULED' },
-    { value: { status_filter: 'TODAY' }, labelKey: 'filters.today', color: 'info', statusKey: 'TODAY' },
-  { value: { status_filter: 'IMMINENT' }, labelKey: 'filters_extra_local.imminent', color: 'warning', statusKey: 'IMMINENT' },
-    { value: { status_filter: 'CANCELED' }, labelKey: 'filters.canceled', color: 'error', statusKey: 'CANCELED' },
-  { value: { status_filter: 'PLANNED' }, labelKey: 'filters_extra_local.planned', color: 'secondary', statusKey: 'PLANNED' }
+    { value: { status: 'SCHEDULED' }, labelKey: 'filters.scheduled', color: 'primary', statusKey: 'SCHEDULED' },
+    { value: { status: 'COMPLETED' }, labelKey: 'filters.completed', color: 'success', statusKey: 'COMPLETED' },
+    { value: { status: 'CANCELED' }, labelKey: 'filters.canceled', color: 'error', statusKey: 'CANCELED' },
   ];
 
   // Define lesson type filters (use translation keys)
@@ -94,7 +91,7 @@ export default function LessonListAside() {
   // Fetch instructors dynamically so only registered instructors appear
   const { data: instructors = {}, total: instructorsTotal } = useGetList('instructors', { pagination: { page: 1, perPage: 1000 }, sort: { field: 'id', order: 'ASC' }, filter: {} });
   const instructorFilters = Object.values(instructors || {}).map((ins, i) => ({
-    value: { instructor: ins.id },
+    value: { instructor_id: ins.id },
     name: `${ins.first_name || ''} ${ins.last_name || ''}`.trim(),
     experience: ins.years_experience ? `${ins.years_experience} ani exp.` : (ins.experience || '' )
   }));

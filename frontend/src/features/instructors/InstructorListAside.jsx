@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { Card, CardContent, Box, Stack, Typography, Button } from '@mui/material';
 import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { FilterList, FilterListItem, useTranslate } from 'react-admin';
 import { endOfYesterday, startOfWeek, subWeeks } from 'date-fns';
 import { startOfMonth, subMonths } from 'date-fns';
@@ -13,12 +12,7 @@ export default function InstructorListAside() {
     <Card sx={{ display: { xs: 'none', md: 'block' }, order: -1, flex: '0 0 22em', maxWidth: '22em', mr: 2, mt: 6, alignSelf: 'flex-start' }}>
       <CardContent sx={{ pt: 1 }}>
         <ListAsideFilters
-          dateField="hire_date"
-          statusItems={[
-            { value: { experience_level: 'NEW' }, labelKey: 'filters_extra.new', color: '#60a5fa' },
-            { value: { experience_level: 'EXPERIENCED' }, labelKey: 'filters_extra.experienced', color: '#10b981' },
-            { value: { experience_level: 'SENIOR' }, labelKey: 'filters_extra.senior', color: '#ef4444' },
-          ]}
+          hideDate
         >
           {/* Keep calendar and gearbox below - moved inside children */}
           <Box sx={{ mt: 2, mb: 2, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>

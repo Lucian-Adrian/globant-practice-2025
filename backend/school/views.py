@@ -159,7 +159,7 @@ class InstructorViewSet(FullCrudViewSet):
     serializer_class = InstructorSerializer
     # Enable filtering/sorting/searching; RA uses 'q' for free-text search
     filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
-    search_fields = ['first_name', 'last_name', 'email']
+    search_fields = ['first_name', 'last_name']
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
