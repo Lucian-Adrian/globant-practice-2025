@@ -110,7 +110,7 @@ export default function makePaymentCreate(paymentChoices) {
           <SelectInput
             source="status"
             label={t('resources.payments.fields.status', 'Status')}
-            choices={STATUS_CHOICES}
+            choices={buildStatusChoices(t)}
             validate={[required(), validatePaymentStatus]}
             defaultValue="PENDING"
           />

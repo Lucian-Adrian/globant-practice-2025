@@ -18,7 +18,8 @@ const englishMessages = {
     // Merged auth keys
     auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
     // Merged page keys
-    page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show' },
+    page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show', error: 'Error' },
+    message: { error: 'Error', invalid_form: 'Invalid form' },
     validation: { required: 'Required' },
     custom: { import_csv: 'Import CSV', export_csv: 'Export CSV' },
     notification: { updated: 'Element updated', created: 'Element created', deleted: 'Element deleted' },
@@ -32,7 +33,8 @@ const romanianMessages = {
     // Merged auth keys
     auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare', logout: 'Deconectare', user_menu: 'Utilizator' },
     // Merged page keys
-    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi' },
+    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi', error: 'Eroare' },
+    message: { error: 'Eroare', invalid_form: 'Formular invalid' },
     validation: { required: 'Obligatoriu' },
     custom: { import_csv: 'Importă CSV', export_csv: 'Exportă CSV' },
     notification: { updated: 'Element actualizat', created: 'Element creat', deleted: 'Element șters' },
@@ -40,13 +42,14 @@ const romanianMessages = {
 };
 const russianMessages = {
   ra: {
-    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню' },
+    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', back: 'Назад' },
     navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница %{offsetBegin}-%{offsetEnd} из %{total}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
     sort: { sort_by: 'Сортировать по %{field} %{order}', ASC: 'по возрастанию', DESC: 'по убыванию' },
     // Merged auth keys
     auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти', logout: 'Выйти', user_menu: 'Пользователь' },
     // Merged page keys
-    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр' },
+    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр', error: 'Ошибка' },
+    message: { error: 'Ошибка', invalid_form: 'Неверная форма' },
     validation: { required: 'Обязательно' },
     custom: { import_csv: 'Импорт CSV', export_csv: 'Экспорт CSV' },
     notification: { updated: 'Элемент обновлен', created: 'Элемент создан', deleted: 'Элемент удален' },
