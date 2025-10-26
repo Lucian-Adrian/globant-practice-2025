@@ -11,7 +11,6 @@ export default function GoogleCalendarEmbed({
   title = 'Google Calendar',
 }) {
   if (!calendarId) {
-    // Render nothing if no calendarId provided
     return null;
   }
   const lang = (i18n?.language || 'en').split('-')[0];

@@ -47,16 +47,7 @@ export async function fetchEnums(force = false) {
 
 export function mapToChoices(list) { return Array.isArray(list) ? list.map(v => ({ id: v, name: v })) : []; }
 
-/**
- * Map a list of enum strings to RA choices with translatable name keys.
- * This keeps choices reactive to language changes (RA will translate labels at render time).
- *
- * Known kinds -> namespace mapping:
- * - student_status -> common.filters.{key}
- * - payment_method -> common.filters.{key}
- * - course_type    -> common.filters.{key}
- * Other kinds fall back to plain mapToChoices (e.g. vehicle_category like A, B, C shouldn't be translated).
- */
+
 export function mapToLocalizedChoices(kind, list) {
   if (!Array.isArray(list)) return [];
   const translatableKinds = new Set(['student_status', 'payment_method', 'course_type']);
