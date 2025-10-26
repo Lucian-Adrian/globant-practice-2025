@@ -5,6 +5,9 @@ import { useLocation } from 'react-router-dom';
 import LessonListAside from './LessonListAside.jsx';
 import LessonListEmpty from './LessonListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
+import VehicleFilterInput from '../../shared/components/VehicleFilterInput.jsx';
+import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
 
 // Function to determine lesson status based solely on backend status
 const getLessonStatus = (record) => {
@@ -52,6 +55,17 @@ const FilteredDatagrid = (props) => {
       const { status: derivedStatus } = getLessonStatus(record);
       if (filterValues.status && derivedStatus !== filterValues.status) return false;
       if (filterValues.instructor_id && String(record.instructor.id) !== String(filterValues.instructor_id)) return false;
+      if (filterValues.vehicle) {
+        const plate = record?.vehicle?.license_plate || '';
+        if (String(plate) !== String(filterValues.vehicle)) return false;
+      }
+      // Lesson type filter (client-side): supports 'Theory' and 'Driving' values
+      if (filterValues.lesson_type) {
+        const raw = String(filterValues.lesson_type).toUpperCase();
+        const expected = raw === 'DRIVING' ? 'PRACTICE' : (raw === 'THEORY' ? 'THEORY' : raw);
+        const lessonType = (record?.enrollment?.type || record?.enrollment?.course?.type || '').toUpperCase();
+        if (lessonType !== expected) return false;
+      }
       // Additional filters can be added here
       return true;
     });
@@ -106,9 +120,15 @@ const FilteredDatagrid = (props) => {
 
 export default function LessonList(props) {
   const t = useTranslate();
+  const filters = [
+    <InstructorFilterInput key="instructor" alwaysOn />,
+    <VehicleFilterInput key="vehicle" alwaysOn />,
+    <TypeFilterInput key="lesson_type" source="lesson_type" alwaysOn />,
+  ];
   return (
     <List 
       {...props} 
+      filters={filters}
       aside={<LessonListAside />} 
       title={t('resources.lessons.name', { defaultValue: 'Lessons' })}
       actions={<ListImportActions endpoint="lessons"/>}

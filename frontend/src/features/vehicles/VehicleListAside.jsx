@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { useTranslate } from 'react-admin';
 import { Card, CardContent } from '@mui/material';
 import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
 
 export default function VehicleListAside() {
-  const t = useTranslate();
   return (
     <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 16em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>

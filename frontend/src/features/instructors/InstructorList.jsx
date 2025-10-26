@@ -2,10 +2,12 @@ import PeopleIcon from '@mui/icons-material/People';
 import { useMediaQuery, Drawer, Box, Card, CardHeader, CardContent, CardActions, Avatar, Typography } from '@mui/material';
 import { Chip } from '@mui/material';
 import * as React from 'react';
-import { BulkDeleteWithConfirmButton, List, SearchInput, SimpleList, TextInput, EditButton, ShowButton, DateField, TextField, EmailField, Datagrid, NumberField, FunctionField, useTranslate, useListContext } from 'react-admin';
+import { BulkDeleteWithConfirmButton, List, SimpleList, EditButton, ShowButton, DateField, TextField, EmailField, Datagrid, NumberField, FunctionField, useTranslate, useListContext } from 'react-admin';
 import InstructorListAside from './InstructorListAside.jsx';
 import InstructorListEmpty from './InstructorListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
+import SearchInput from '../../shared/components/SearchInput.jsx';
 
 export const InstructorIcon = PeopleIcon;
 
@@ -71,10 +73,8 @@ const InstructorStatusField = (recordOrProps) => {
 };
 
 const getInstructorFilters = () => [
-  <SearchInput source="q" alwaysOn />,
-  <TextInput source="first_name" />,
-  <TextInput source="last_name" />,
-  <TextInput source="license_categories" />,
+  <SearchInput key="search" alwaysOn />,
+  <CategoryFilterInput key="category" source="category" alwaysOn />,
 ];
 
 const InstructorBulkActionButtons = props => (

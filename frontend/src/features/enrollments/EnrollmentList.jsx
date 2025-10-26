@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { List, Datagrid, NumberField, TextField, DateField, FunctionField, useListContext, useTranslate } from 'react-admin';
+import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
+import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
 import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import EnrollmentListAside from './EnrollmentListAside.jsx';
@@ -66,8 +68,12 @@ const EnrollmentStatusField = (recordOrProps) => {
 };
 
 export default function EnrollmentList(props) {
+  const filters = [
+    <CategoryFilterInput key="category" source="course__category" alwaysOn />,
+    <TypeFilterInput key="type" source="type" alwaysOn />,
+  ];
   return (
-    <List {...props} aside={<EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />} empty={<EnrollmentListEmpty />}>
+    <List {...props} filters={filters} aside={<EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />} empty={<EnrollmentListEmpty />}>
       <FilteredEnrollmentDatagrid />
     </List>
   );

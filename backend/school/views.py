@@ -62,12 +62,13 @@ class StudentViewSet(FullCrudViewSet):
     queryset = Student.objects.all().order_by('-enrollment_date')
     serializer_class = StudentSerializer
     permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
 
     filterset_fields = {
         'status': ['exact'],
         'enrollment_date': ['gte', 'lte', 'gt', 'lt'],
     }
+    search_fields = ['first_name', 'last_name']
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -160,6 +161,14 @@ class InstructorViewSet(FullCrudViewSet):
     # Enable filtering/sorting/searching; RA uses 'q' for free-text search
     filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
     search_fields = ['first_name', 'last_name']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if getattr(self, 'request', None):
+            category = (self.request.query_params.get('category') or '').strip()
+            if category:
+                qs = qs.filter(license_categories__icontains=category)
+        return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -311,6 +320,7 @@ class EnrollmentViewSet(FullCrudViewSet):
         'student': ['exact'],
         'course': ['exact'],
         'course__category': ['exact'],
+        'type': ['exact'],
     }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
