@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from .enums import (
     StudentStatus, EnrollmentStatus, LessonStatus,
-    PaymentMethod, VehicleCategory, CourseType, DayOfWeek,
+    PaymentMethod, PaymentStatus, VehicleCategory, CourseType, DayOfWeek,
 )
 
 
@@ -135,6 +135,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     payment_date = models.DateTimeField(auto_now_add=True)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices())
+    status = models.CharField(max_length=20, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING.value)
     description = models.CharField(max_length=255)
 
     class Meta:

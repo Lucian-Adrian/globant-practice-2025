@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Create, SimpleForm, NumberInput, SelectInput, ReferenceInput, TextInput, required, useTranslate } from 'react-admin';
+import { Create, SimpleForm, NumberInput, SelectInput, ReferenceInput, TextInput, required, useTranslate, AutocompleteInput } from 'react-admin';
 
 // Build translated payment status choices
 const buildStatusChoices = (t) => ([
@@ -76,7 +76,7 @@ export default function makePaymentCreate(paymentChoices) {
       <Create {...props}>
         <SimpleForm mode="onChange" reValidateMode="onChange">
           <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
-            <SelectInput 
+            <AutocompleteInput 
               label={t('resources.payments.fields.enrollment', 'Enrollment')}
               optionText={(r) => r.label || `#${r.id}`} 
               validate={[required()]} 

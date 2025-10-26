@@ -28,9 +28,10 @@ export default function PaymentListAside() {
   const t = useTranslate();
   // Define payment status filters (use translation keys)
   const paymentStatusFilters = [
-    { value: { status_filter: 'COMPLETED' }, labelKey: 'filters.completed', color: 'success', statusKey: 'COMPLETED' },
-    { value: { status_filter: 'PENDING' }, labelKey: 'filters.pending', color: 'warning', statusKey: 'PENDING' },
-    { value: { status_filter: 'FAILED' }, labelKey: 'filters.failed', color: 'error', statusKey: 'FAILED' },
+    { value: { status: 'COMPLETED' }, labelKey: 'filters.completed', color: 'success', statusKey: 'COMPLETED' },
+    { value: { status: 'PENDING' }, labelKey: 'filters.pending', color: 'warning', statusKey: 'PENDING' },
+    { value: { status: 'REFUNDED' }, labelKey: 'filters.refunded', color: 'info', statusKey: 'REFUNDED' },
+    { value: { status: 'FAILED' }, labelKey: 'filters.failed', color: 'error', statusKey: 'FAILED' },
   ];
 
   return (

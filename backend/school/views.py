@@ -443,19 +443,20 @@ class PaymentViewSet(FullCrudViewSet):
     filterset_fields = {
         'payment_date': ['gte', 'lte', 'gt', 'lt'],
         'payment_method': ['exact'],
+        'status': ['exact'],
         'enrollment': ['exact'],
     }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
-        fields = ['id', 'enrollment_id', 'amount', 'payment_date', 'payment_method', 'description']
+        fields = ['id', 'enrollment_id', 'amount', 'payment_date', 'payment_method', 'status', 'description']
         qs = self.filter_queryset(self.get_queryset())
         buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
         for obj in qs:
             writer.writerow([
                 obj.id, obj.enrollment_id, obj.amount,
                 obj.payment_date.isoformat() if obj.payment_date else '',
-                obj.payment_method, obj.description
+                obj.payment_method, obj.status, obj.description
             ])
         resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
         resp['Content-Disposition'] = 'attachment; filename=payments.csv'
@@ -478,6 +479,7 @@ class PaymentViewSet(FullCrudViewSet):
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'amount': (row.get('amount') or '').strip(),
                 'payment_method': (row.get('payment_method') or '').strip(),
+                'status': (row.get('status') or 'PENDING').strip() or 'PENDING',
                 'description': (row.get('description') or '').strip(),
             }
             serializer = self.get_serializer(data=data)
