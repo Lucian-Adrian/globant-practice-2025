@@ -23,8 +23,13 @@
     "goToLogin": "Go to Login",
     "with": "with",
     "viewAll": "View all",
-    "showLess": "Show less",
-    "noItems": "No items"
+  "showLess": "Show less",
+  "noItems": "No items",
+  "today": "Today",
+  "inDays_one": "In {{count}} day",
+  "inDays_other": "In {{count}} days",
+  "daysAgo_one": "{{count}} day ago",
+  "daysAgo_other": "{{count}} days ago"
   },
   "type": {
     "theory": "Theory",
@@ -91,6 +96,13 @@
       "receipt": "Receipt",
       "payment": "Payment"
     },
+    "status": {
+      "paid": "Paid",
+      "pending": "Due Soon",
+      "upcoming": "Upcoming",
+      "overdue": "Overdue"
+    },
+    "customPayment": "Custom Payment",
     "secure": {
       "title": "Secure Payment Methods",
       "acceptedMethods": "Accepted Payment Methods",
@@ -105,6 +117,9 @@
       "description": "We offer flexible payment options to make your driving education more affordable. Contact us to discuss installment plans.",
       "cta": "Contact Financial Advisor"
     }
+  },
+  "calendar": {
+    "title": "Calendar"
   },
   "makePayment": {
     "securePayment": "Secure Payment",

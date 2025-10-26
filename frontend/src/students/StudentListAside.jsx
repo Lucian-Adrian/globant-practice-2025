@@ -2,6 +2,7 @@ import * as React from 'react';
 import { CalendarPicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useTranslate } from 'react-admin';
+import { useTranslation } from 'react-i18next';
 import { useGetLocale } from 'react-admin';
 import roLocale from 'date-fns/locale/ro';
 import ruLocale from 'date-fns/locale/ru';
@@ -37,6 +38,7 @@ const StatusLabel = ({ text, colorKey }) => (
 
 export default function StudentListAside() {
   const t = useTranslate();
+  const { t: tPortal } = useTranslation('portal');
   const getLocale = useGetLocale();
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   // Use react-admin's i18n language for calendar
@@ -74,7 +76,7 @@ export default function StudentListAside() {
         </FilterList>
         {/* CALENDAR SECTION */}
         <Box sx={{ mt: 4 }}>
-          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 400, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('calendar.title', raLang === 'ro' ? 'Calendar lecții practice' : raLang === 'ru' ? 'Календарь практических занятий' : 'Calendar')}</Typography>
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 400, textTransform: 'uppercase', letterSpacing: 0.5 }}>{tPortal('calendar.title')}</Typography>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={locale}>
             <CalendarPicker
               date={selectedDate}

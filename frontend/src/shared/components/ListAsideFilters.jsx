@@ -4,6 +4,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { FilterList, FilterListItem, useTranslate } from 'react-admin';
 import { endOfYesterday, startOfWeek, subWeeks, startOfMonth, subMonths } from 'date-fns';
+import GoogleCalendarEmbed from './GoogleCalendarEmbed';
 
 /**
  * Generic reusable aside filter panel for React-Admin List pages.
@@ -13,12 +14,16 @@ import { endOfYesterday, startOfWeek, subWeeks, startOfMonth, subMonths } from '
  *  - hideDate: skip rendering the date filter section even if dateField provided.
  *  - dateLabelKey / statusLabelKey: translation keys for section headers.
  *  - dateIcon / statusIcon: override icons.
+ *  - hideCalendar: don't render the built-in Google Calendar block.
+ *  - calendarPosition: 'top' | 'bottom' (default 'bottom').
  *  - children: optional extra <FilterList> sections appended after defaults.
  */
 export default function ListAsideFilters({
   dateField,
   statusItems = [],
   hideDate = false,
+  hideCalendar = false,
+  calendarPosition = 'bottom',
   dateLabelKey = 'filters.last_activity',
   statusLabelKey = 'filters.status',
   dateIcon = <AccessTimeIcon />,
@@ -53,6 +58,16 @@ export default function ListAsideFilters({
   return (
     <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 22em', maxWidth:'22em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
+        {/* Calendar on top if requested */}
+        {!hideCalendar && calendarPosition === 'top' && (
+          <Box sx={{ mb: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+              <AccessTimeIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
+              <Typography variant="subtitle1" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('filters.calendar', 'Calendar')}</Typography>
+            </Stack>
+            <GoogleCalendarEmbed calendarId={(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CALENDAR_ID) || 'your_calendar_id'} timeZone={'Europe/Bucharest'} height={320} title={t('filters.calendar', 'Calendar')} />
+          </Box>
+        )}
         {!hideDate && dateField && (
           <FilterList label={t(dateLabelKey, dateLabelKey)} icon={dateIcon}>
             {dateFilters.map(df => (
@@ -71,20 +86,16 @@ export default function ListAsideFilters({
           </FilterList>
         )}
         {children}
-        {/* CALENDAR SECTION for instructors */}
-        <Box sx={{ mt: 4, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            <AccessTimeIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
-            <Typography variant="subtitle1" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>CALENDAR</Typography>
-          </Stack>
-          <iframe
-            title="Calendar lecții practice"
-            src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Europe%2FBucharest"
-            style={{ border: 0, width: '100%', height: 320, minHeight: 320, minWidth: '100%', zoom: 0.85, background: 'transparent' }}
-            frameBorder="0"
-            scrolling="no"
-          />
-        </Box>
+  {/* Calendar bottom by default */}
+  {!hideCalendar && calendarPosition === 'bottom' && (
+          <Box sx={{ mt: 4, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+              <AccessTimeIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
+              <Typography variant="subtitle1" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('filters.calendar', 'Calendar')}</Typography>
+            </Stack>
+            <GoogleCalendarEmbed calendarId={(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CALENDAR_ID) || 'your_calendar_id'} timeZone={'Europe/Bucharest'} height={320} title={t('filters.calendar', 'Calendar')} />
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

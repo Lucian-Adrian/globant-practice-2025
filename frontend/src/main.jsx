@@ -17,18 +17,6 @@ import { initI18n } from './i18n/index.js';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 
-// Component to protect admin routes from student tokens
-const ProtectedAdminRoute = ({ children }) => {
-  const studentToken = localStorage.getItem('student_access_token');
-  
-  // If student token exists, redirect to dashboard
-  if (studentToken) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  // Otherwise, allow access to admin (it will handle its own auth)
-  return children;
-};
 
 initI18n();
 
@@ -37,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/signup" element={<SignupForm />} />
-        <Route path="/admin/*" element={<ProtectedAdminRoute><App /></ProtectedAdminRoute>} />
+  <Route path="/admin/*" element={<App />} />
   <Route path="/lessons" element={<Lessons />} />
   <Route path="/book-lesson" element={<BookLesson />} />
         <Route path="/progress" element={<Progress />} />

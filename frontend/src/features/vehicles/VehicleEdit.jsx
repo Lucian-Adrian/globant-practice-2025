@@ -12,7 +12,7 @@ export default function makeVehicleEdit(vehicleChoices) {
           <TextInput source="model" validate={[required()]} />
           <LicensePlateInput source="license_plate" validate={[required(), (v) => (!/^[A-Z0-9]+$/.test(v || '') ? 'Only letters & digits' : undefined)]} />
           <NumberInput source="year" validate={[required()]} />
-          <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
+          <SelectInput source="category" choices={vehicleChoices} translateChoice={false} validate={[required()]} />
           <BooleanInput source="is_available" />
         </SimpleForm>
       </Edit>

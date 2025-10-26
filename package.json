@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "libphonenumber-js": "^1.12.15"
+    "libphonenumber-js": "^1.12.15",
+    "lucide-react": "^0.548.0"
   }
 }

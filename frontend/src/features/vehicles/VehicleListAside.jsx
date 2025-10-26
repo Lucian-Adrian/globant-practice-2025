@@ -6,10 +6,11 @@ import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
 export default function VehicleListAside() {
   const t = useTranslate();
   return (
-    <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 16em', mr:2, mt:6, alignSelf:'flex-start' }}>
+  <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 20em', maxWidth:'20em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
         <ListAsideFilters
-          dateField="last_maintenance"
+          hideDate
+      calendarPosition="top"
           statusLabelKey="filters.availability"
           statusItems={[
             { value: { is_available: true }, labelKey: 'filters.available', color: '#10b981' },

@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from '../../shared/components/ui/Card';
+} from '../../shared/components/Card';
 import ClassCalendar from './ClassCalendar';
 import EnrollmentModal from './EnrollmentModal';
 

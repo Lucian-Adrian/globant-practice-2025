@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from '../../shared/components/ui/Card';
+} from '../../shared/components/Card';
 
 const ClassCalendar = ({ classId, className = '' }) => {
   const [currentDate, setCurrentDate] = useState(new Date());

@@ -90,8 +90,10 @@ const languageData = {
       // Merged keys from both versions
       helpers: { license_categories: 'Comma separated e.g. B,BE,C' },
       car: { manual: 'Manual', automatic: 'Automatic', both: 'Both' },
-      filters: { last_activity:'Last activity', today:'Today', this_week:'This week', last_week:'Last week', this_month:'This month', last_month:'Last month', earlier:'Earlier', status:'Status', active:'Active', inactive:'Inactive', graduated:'Graduated', pending:'Pending', in_progress:'In progress', completed:'Completed', refunded:'Refunded', canceled:'Canceled', scheduled:'Scheduled', payment_method:'Payment method', cash:'Cash', card:'Card', transfer:'Transfer', processing:'Processing', verification:'Verification', failed:'Failed', type:'Type', theory:'Theory', practice:'Practice', availability:'Availability', available:'Available', unavailable:'Unavailable', category:'Category' },
-      filters_extra_local: { imminent: 'Imminent', planned: 'Planned' },
+  filters: { last_activity:'Last activity', today:'Today', this_week:'This week', last_week:'Last week', this_month:'This month', last_month:'Last month', earlier:'Earlier', status:'Status', active:'Active', inactive:'Inactive', graduated:'Graduated', pending:'Pending', in_progress:'In progress', completed:'Completed', refunded:'Refunded', canceled:'Canceled', scheduled:'Scheduled', payment_method:'Payment method', cash:'Cash', card:'Card', transfer:'Transfer', processing:'Processing', verification:'Verification', failed:'Failed', type:'Type', theory:'Theory', practice:'Practice', availability:'Availability', available:'Available', unavailable:'Unavailable', category:'Category', calendar:'Calendar' },
+  // extra label for aside calendar
+  filters_extra_local: { calendar: 'Calendar' },
+  filters_extra_local: { imminent: 'Imminent', planned: 'Planned', calendar: 'Calendar' },
       unknown: 'Unknown',
       instructors: { free_instructors: 'Free instructors', gearbox: { manual: 'Manual', automatic: 'Automatic', both: 'Both' } },
       filters_extra: { new: 'New', experienced: 'Experienced', senior: 'Senior' },
@@ -197,8 +199,8 @@ const languageData = {
       // Merged keys from both versions
       helpers: { license_categories: 'Separate prin virgula ex. B,BE,C' },
       car: { manual: 'Manual', automatic: 'Automat', both: 'Ambele' },
-      filters: { last_activity:'Ultima activitate', today:'Astăzi', this_week:'Săptămâna aceasta', last_week:'Săptămâna trecută', this_month:'Luna aceasta', last_month:'Luna trecută', earlier:'Anterior', status:'Statut', active:'Activ', inactive:'Inactiv', graduated:'Absolvit', pending:'În așteptare', in_progress:'În derulare', completed:'Finalizat', refunded:'Rambursat', canceled:'Anulat', scheduled:'Programat', payment_method:'Metodă plată', cash:'Numerar', card:'Card', transfer:'Transfer', processing:'În procesare', verification:'Verificare', failed:'Eșuat', type:'Tip', theory:'Teorie', practice:'Practică', availability:'Disponibilitate', available:'Disponibil', unavailable:'Indisponibil', category:'Categorie' },
-      filters_extra_local: { imminent: 'Imediat', planned: 'Planificat' },
+  filters: { last_activity:'Ultima activitate', today:'Astăzi', this_week:'Săptămâna aceasta', last_week:'Săptămâna trecută', this_month:'Luna aceasta', last_month:'Luna trecută', earlier:'Anterior', status:'Statut', active:'Activ', inactive:'Inactiv', graduated:'Absolvit', pending:'În așteptare', in_progress:'În derulare', completed:'Finalizat', refunded:'Rambursat', canceled:'Anulat', scheduled:'Programat', payment_method:'Metodă plată', cash:'Numerar', card:'Card', transfer:'Transfer', processing:'În procesare', verification:'Verificare', failed:'Eșuat', type:'Tip', theory:'Teorie', practice:'Practică', availability:'Disponibilitate', available:'Disponibil', unavailable:'Indisponibil', category:'Categorie', calendar:'Calendar' },
+  filters_extra_local: { imminent: 'Imediat', planned: 'Planificat', calendar: 'Calendar' },
       unknown: 'Necunoscut',
       instructors: { free_instructors: 'Instructori disponibili', gearbox: { manual: 'Manual', automatic: 'Automat', both: 'Ambele' } },
       filters_extra: { new: 'Nou', experienced: 'Cu experiență', senior: 'Senior' },
@@ -305,8 +307,8 @@ const languageData = {
       // Merged keys from both versions
       helpers: { license_categories: 'Через запятую, напр. B,BE,C' },
       car: { manual: 'Механика', automatic: 'Автомат', both: 'Оба' },
-      filters: { last_activity:'Последняя активность', today:'Сегодня', this_week:'Эта неделя', last_week:'Прошлая неделя', this_month:'Этот месяц', last_month:'Прошлый месяц', earlier:'Ранее', status:'Статус', active:'Активный', inactive:'Неактивный', graduated:'Выпустился', pending:'В ожидании', in_progress:'В процессе', completed:'Завершено', refunded:'Возврат', canceled:'Отменено', scheduled:'Запланировано', payment_method:'Метод оплаты', cash:'Наличные', card:'Карта', transfer:'Перевод', processing:'Обработка', verification:'Проверка', failed:'Неудачно', type:'Тип', theory:'Теория', practice:'Практика', availability:'Доступность', available:'Доступен', unavailable:'Недоступен', category:'Категория' },
-      filters_extra_local: { imminent: 'Скоро', planned: 'Запланировано' },
+  filters: { last_activity:'Последняя активность', today:'Сегодня', this_week:'Эта неделя', last_week:'Прошлая неделя', this_month:'Этот месяц', last_month:'Прошлый месяц', earlier:'Ранее', status:'Статус', active:'Активный', inactive:'Неактивный', graduated:'Выпустился', pending:'В ожидании', in_progress:'В процессе', completed:'Завершено', refunded:'Возврат', canceled:'Отменено', scheduled:'Запланировано', payment_method:'Метод оплаты', cash:'Наличные', card:'Карта', transfer:'Перевод', processing:'Обработка', verification:'Проверка', failed:'Неудачно', type:'Тип', theory:'Теория', practice:'Практика', availability:'Доступность', available:'Доступен', unavailable:'Недоступен', category:'Категория', calendar:'Календарь' },
+  filters_extra_local: { imminent: 'Скоро', planned: 'Запланировано', calendar: 'Календарь' },
       unknown: 'Неизвестно',
       instructors: { free_instructors: 'Свободные инструкторы', gearbox: { manual: 'Ручная', automatic: 'Автоматическая', both: 'Обе' } },
       filters_extra: { new: 'Новый', experienced: 'Опытный', senior: 'Старший' },

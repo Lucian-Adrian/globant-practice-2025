@@ -1,0 +1,223 @@
+{
+  "appName": "DriveAdmin",
+  "studentPortal": "Portal Student",
+  "nav": {
+    "dashboard": "Tablou de bord",
+    "lessons": "Lecții",
+    "progress": "Progres",
+    "practice": "Practica",
+    "payments": "Plăți"
+  },
+  "actions": {
+    "logout": "Deconectare"
+  },
+  "language": {
+    "label": "Limbă",
+    "en": "EN",
+    "ro": "RO",
+    "ru": "RU"
+  },
+  "commonUI": {
+    "loading": "Se încarcă…",
+    "networkError": "Eroare de rețea",
+    "goToLogin": "Mergi la autentificare",
+    "with": "cu",
+    "viewAll": "Vezi toate",
+    "showLess": "Arată mai puțin",
+    "noItems": "Nu există elemente",
+    "today": "Astăzi",
+    "inDays_one": "În {{count}} zi",
+    "inDays_other": "În {{count}} zile",
+    "daysAgo_one": "acum {{count}} zi",
+    "daysAgo_other": "acum {{count}} zile"
+  },
+  "type": {
+    "theory": "Teorie",
+    "driving": "Conducere"
+  },
+  "lessons": {
+    "header": {
+      "title": "Lecțiile tale",
+      "subtitle": "Gestionează-ți lecțiile de conducere și teorie, urmărește progresul și nu rata nicio sesiune."
+    },
+    "stats": {
+      "upcoming": "Urmează",
+      "completed": "Finalizate",
+      "missed": "Pierdute"
+    },
+    "tabs": {
+      "list": "Listă",
+      "calendar": "Calendar"
+    },
+    "filters": {
+      "all": "toate",
+      "scheduled": "urmează",
+      "completed": "finalizate",
+      "canceled": "pierdute"
+    },
+    "statusBadge": {
+      "upcoming": "Urmează",
+      "completed": "Finalizat",
+      "missed": "Pierdut"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "prev": "Înapoi",
+      "next": "Înainte",
+      "dayNamesShort": ["Du","Lu","Ma","Mi","Jo","Vi","Sâ"],
+      "more": "+{{count}} altele…"
+    },
+    "cta": {
+      "title": "Gata pentru următoarea lecție?",
+      "subtitle": "Programează o nouă sesiune de conducere sau teorie cu instructorul tău.",
+      "button": "Programează o lecție"
+    }
+  },
+  "payments": {
+    "header": {
+      "title": "Centrul de plăți",
+      "subtitle": "Gestionează plățile cursului în siguranță și urmărește-ți progresul financiar. 💳"
+    },
+    "cards": {
+      "totalPaid": "Plătit total",
+      "outstanding": "Restant",
+      "payNow": "Plătește acum",
+      "nextDueDate": "Următoarea scadență",
+      "ofCourse": "{{pct}}% din curs"
+    },
+    "history": {
+      "title": "Istoric plăți",
+      "description": "Descriere",
+      "amount": "Sumă",
+      "date": "Dată",
+      "status": "Stare",
+      "paymentMethod": "Metodă de plată",
+      "action": "Acțiune",
+      "receipt": "Chitanță",
+      "payment": "Plată"
+    },
+    "status": {
+      "paid": "Plătit",
+      "pending": "În curând",
+      "upcoming": "Urmează",
+      "overdue": "Restant"
+    },
+    "customPayment": "Plată personalizată",
+    "secure": {
+      "title": "Metode de plată sigure",
+      "acceptedMethods": "Metode acceptate",
+      "securityFeatures": "Funcții de securitate",
+      "featureSsl": "Tranzacții criptate SSL",
+      "featurePci": "Procesare compatibilă PCI DSS",
+      "featureFraud": "Monitorizare anti-fraudă",
+      "featureGateway": "Gateway de plată securizat"
+    },
+    "plan": {
+      "title": "Ai nevoie de un plan de plată?",
+      "description": "Oferim opțiuni flexibile de plată pentru a face educația de conducere mai accesibilă. Contactează-ne pentru rate.",
+      "cta": "Contactează consilierul financiar"
+    }
+  },
+  "calendar": {
+    "title": "Calendar"
+  },
+  "makePayment": {
+    "securePayment": "Plată sigură",
+    "enrollment": "Înscriere",
+    "portalPayment": "Plată prin portal",
+    "currency": "MDL",
+    "paymentMethod": "Metodă de plată",
+    "selectPaymentMethod": "Selectează metoda de plată",
+    "methodCard": "Card bancar",
+    "cardNumber": "Număr card",
+    "expiryDate": "Data expirării",
+    "cvv": "CVV",
+    "securityNotice": "Plata ta este protejată de criptare SSL pe 256 biți",
+    "cancel": "Anulează",
+    "processing": "Se procesează…",
+    "payAmount": "Plătește {{amount}} MDL",
+    "failed": "Plata a eșuat"
+  },
+  "paymentReceipt": {
+    "title": "Chitanță de plată",
+    "receiptNumber": "Chitanța #",
+    "description": "Descriere",
+    "course": "Curs",
+    "amount": "Sumă",
+    "date": "Dată",
+    "method": "Metodă",
+    "close": "Închide",
+    "print": "Printează",
+    "courseFallback": "Curs"
+  },
+  "practice": {
+    "header": {
+      "title": "Practica",
+      "subtitle": "Exersează teoria sau pregătește-te pentru sesiunile de condus."
+    },
+    "tabs": {
+      "theory": "Teorie",
+      "driving": "Conducere"
+    },
+    "theory": {
+      "title": "Practica teoriei online",
+      "description": "Configurează preferințele și începe să exersezi teste de teorie similare celor oficiale.",
+      "country": "Țara",
+      "language": "Limba",
+      "start": "Începe practica teoriei"
+    },
+    "driving": {
+      "title": "Sesiuni de practică la volan",
+      "description": "Practica de condus este gestionată prin lecțiile programate.",
+      "viewSchedule": "Vezi programul lecțiilor"
+    },
+    "quickActions": {
+      "title": "Acțiuni rapide",
+      "bookLesson": "Programează o lecție",
+      "makePayment": "Efectuează o plată",
+      "showProgress": "Afișează progresul",
+      "upcomingLessons": "Lecții viitoare"
+    }
+  },
+  "progress": {
+    "header": {
+      "title": "Progresul tău",
+      "subtitle": "Urmărește drumul către permisul de conducere. Fiecare lecție te aduce mai aproape de succes! 🚗"
+    },
+    "courseCompletion": {
+      "title": "Finalizarea cursului",
+      "encouraging": "Te descurci grozav! Ține-o tot așa.",
+      "completedOf": "{{completed}} din {{required}} lecții finalizate"
+    },
+    "theory": {
+      "title": "Progres teoretic",
+      "knowledge": "Cunoștințe teoretice",
+      "lessons": "Lecții"
+    },
+    "practical": {
+      "title": "Progres practic"
+    }
+  },
+  "dashboard": {
+    "badge": "Portal Student Activ",
+    "welcome": "Bine ai revenit, {{name}}! 🚗",
+    "subline": "Ești gata să accelerezi drumul spre permis? Verifică progresul și lecțiile viitoare mai jos.",
+    "nextLesson": "Următoarea lecție",
+    "viewAll": "Vezi toate",
+    "noUpcoming": "Nu există lecții viitoare programate.",
+    "bookLesson": "Programează o lecție",
+    "actions": "Acțiuni",
+    "bookLessonCard": "Programează o lecție",
+    "bookLessonHint": "Mergi la pagina de lecții pentru programare.",
+    "courseProgress": "Progres curs",
+    "lessonsCompleted": "Lecții finalizate",
+    "left": "{{count}} rămase",
+    "theoryPractice": "Practica teoriei",
+    "openPracticeHint": "Deschide pagina de practică pentru teste de teorie.",
+    "goToPractice": "Mergi la Practică",
+    "upcomingLessons": "Lecții viitoare",
+    "notifications": "Notificări",
+    "noNotifications": "Nu există notificări noi.",
+    "viewAllNotifications": "Vezi toate notificările"
+  }
+}

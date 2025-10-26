@@ -8,8 +8,8 @@ export default function makeCourseEdit(vehicleChoices, courseTypeChoices) {
       <Edit {...props} title={translate('ra.page.edit', { defaultValue: 'Edit' })}>
         <SimpleForm>
           <TextInput source="name" validate={[required()]} />
-          <SelectInput source="category" choices={vehicleChoices} validate={[required()]} />
-          <SelectInput source="type" choices={courseTypeChoices} validate={[required()]} />
+          <SelectInput source="category" choices={vehicleChoices} translateChoice={false} validate={[required()]} />
+          <SelectInput source="type" choices={courseTypeChoices} /* translatable keys */ validate={[required()]} />
           <TextInput source="description" multiline rows={3} />
           <NumberInput source="price" validate={[required()]} />
           <NumberInput source="required_lessons" validate={[required()]} />

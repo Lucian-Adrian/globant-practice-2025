@@ -119,22 +119,26 @@ const Payments: React.FC = () => {
       if (!ed || isNaN(ed.getTime())) return null;
       const due = addMonths(ed, 3);
       const today = new Date();
-      const diffDays = Math.round((due.getTime() - today.getTime()) / (1000*60*60*24));
+      const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       const label = due.toLocaleDateString();
-      const relative = diffDays > 0 ? `In ${diffDays} day${diffDays===1?'':'s'}` : diffDays === 0 ? 'Today' : `${Math.abs(diffDays)} day${Math.abs(diffDays)===1?'':'s'} ago`;
+      const relative = diffDays > 0
+        ? t('commonUI.inDays', { count: diffDays, defaultValue: `In ${diffDays} day${diffDays === 1 ? '' : 's'}` })
+        : diffDays === 0
+          ? t('commonUI.today', 'Today')
+          : t('commonUI.daysAgo', { count: Math.abs(diffDays), defaultValue: `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago` });
       return { label, relative };
     } catch {
       return null;
     }
-  }, [primaryEnrollment]);
+  }, [primaryEnrollment, t]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'paid': return <Badge variant="success">Paid</Badge>;
-      case 'pending': return <Badge variant="warning">Due Soon</Badge>;
-      case 'upcoming': return <Badge variant="secondary">Upcoming</Badge>;
-      case 'overdue': return <Badge variant="destructive">Overdue</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case 'paid': return <Badge variant="success">{t('payments.status.paid', 'Paid')}</Badge>;
+      case 'pending': return <Badge variant="warning">{t('payments.status.pending', 'Due Soon')}</Badge>;
+      case 'upcoming': return <Badge variant="secondary">{t('payments.status.upcoming', 'Upcoming')}</Badge>;
+      case 'overdue': return <Badge variant="destructive">{t('payments.status.overdue', 'Overdue')}</Badge>;
+      default: return <Badge variant="outline">{t(`payments.status.${status}`, status)}</Badge>;
     }
   };
   const getStatusIcon = (status: string) => {
@@ -148,10 +152,9 @@ const Payments: React.FC = () => {
 
   const progressPct = paymentSummary.totalCourse > 0 ? (paymentSummary.totalPaid / paymentSummary.totalCourse) * 100 : 0;
   const openMakePayment = (target?: any) => {
-    setSelectedPayment(target || { type: 'Custom Payment', amount: Math.max(0, outstanding) });
+    setSelectedPayment(target || { type: t('payments.customPayment', 'Custom Payment'), amount: Math.max(0, outstanding) });
     setIsPaymentModalOpen(true);
   };
-
   return (
     <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
       <PortalNavBar />
@@ -218,17 +221,17 @@ const Payments: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((p: any) => (
+          {payments.map((p: any) => (
                     <tr key={p.id} className="hover:tw-bg-secondary/30">
                       <td className="tw-py-2 tw-px-3">
                         <div className="tw-flex tw-items-center tw-gap-2">
-                          {getStatusIcon('paid')}
+              {getStatusIcon((p?.status && typeof p.status === 'string' ? p.status.toLowerCase() : 'paid'))}
                           <span className="tw-font-medium">{p.description || t('payments.history.payment')}</span>
                         </div>
                       </td>
                       <td className="tw-py-2 tw-px-3 tw-font-semibold">{Number(p.amount)} {t('makePayment.currency')}</td>
                       <td className="tw-py-2 tw-px-3 tw-text-muted-foreground">{p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '-'}</td>
-                      <td className="tw-py-2 tw-px-3">{getStatusBadge('paid')}</td>
+            <td className="tw-py-2 tw-px-3">{getStatusBadge((p?.status && typeof p.status === 'string' ? p.status.toLowerCase() : 'paid'))}</td>
                       <td className="tw-py-2 tw-px-3 tw-text-muted-foreground">{p.payment_method || '-'}</td>
                       <td className="tw-py-2 tw-px-3">
                         <button onClick={() => { setSelectedPayment(p); setReceiptOpen(true); }} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-h-9 tw-px-3 tw-text-xs tw-font-medium tw-border tw-border-input hover:tw-bg-secondary">{t('payments.history.receipt')}</button>

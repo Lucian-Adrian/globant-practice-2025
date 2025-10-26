@@ -87,7 +87,10 @@ const StatCard: React.FC<{
   </CardRoot>
 );
 
+import { useTranslation } from 'react-i18next';
+
 const NavBar: React.FC = () => {
+  const { t } = useTranslation('portal');
   return (
     <>
       <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4 tw-hidden md:tw-block">
@@ -101,11 +104,11 @@ const NavBar: React.FC = () => {
             {/* Nav Links */}
             <div className="tw-flex tw-items-center tw-space-x-6">
               {[
-                { path: "/dashboard", label: "Dashboard" },
-                { path: "/lessons", label: "Lessons" },
-                { path: "/progress", label: "Progress" },
-                { path: "/practice", label: "Practice" },
-                { path: "/payments", label: "Payments" },
+                { path: "/dashboard", label: t('nav.dashboard') },
+                { path: "/lessons", label: t('nav.lessons') },
+                { path: "/progress", label: t('nav.progress') },
+                { path: "/practice", label: t('nav.practice') },
+                { path: "/payments", label: t('nav.payments') },
               ].map(item => (
                 <a key={item.path} href={item.path} className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors">
                   {item.label}

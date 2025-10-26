@@ -6,14 +6,18 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { FilterList, FilterListItem, useTranslate } from 'react-admin';
 import { endOfYesterday, startOfWeek, subWeeks } from 'date-fns';
 import { startOfMonth, subMonths } from 'date-fns';
+import GoogleCalendarEmbed from '../../shared/components/GoogleCalendarEmbed';
+import { useTranslation } from 'react-i18next';
 
 export default function InstructorListAside() {
   const t = useTranslate();
+  const { t: tPortal } = useTranslation('portal');
   return (
     <Card sx={{ display: { xs: 'none', md: 'block' }, order: -1, flex: '0 0 22em', maxWidth: '22em', mr: 2, mt: 6, alignSelf: 'flex-start' }}>
       <CardContent sx={{ pt: 1 }}>
         <ListAsideFilters
           dateField="hire_date"
+          hideCalendar
           statusItems={[
             { value: { experience_level: 'NEW' }, labelKey: 'filters_extra.new', color: '#60a5fa' },
             { value: { experience_level: 'EXPERIENCED' }, labelKey: 'filters_extra.experienced', color: '#10b981' },
@@ -22,13 +26,7 @@ export default function InstructorListAside() {
         >
           {/* Keep calendar and gearbox below - moved inside children */}
           <Box sx={{ mt: 2, mb: 2, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, px: 2, py: 2 }}>
-            <iframe
-              title="Calendar lecții practice"
-              src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Europe%2FBucharest"
-              style={{ border: '1px solid #e0e0e0', borderRadius: '12px', width: '100%', height: 320, minHeight: 320, minWidth: '100%', background: 'transparent', marginBottom: 0 }}
-              frameBorder="0"
-              scrolling="no"
-            />
+            <GoogleCalendarEmbed calendarId={(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CALENDAR_ID) || 'your_calendar_id'} timeZone={'Europe/Bucharest'} height={320} rounded bordered title={tPortal('calendar.title')} />
           </Box>
           <Box sx={{ mb: 2, textAlign: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

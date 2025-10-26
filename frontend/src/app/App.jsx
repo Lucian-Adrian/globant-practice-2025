@@ -4,7 +4,7 @@ import { raI18nProvider } from '../i18n/index.js';
 import Layout from './Layout.jsx';
 import dataProvider from '../api/dataProvider';
 import { authProvider } from '../auth/authProvider';
-import { fetchEnums, mapToChoices } from '../api/enumsClient';
+import { fetchEnums, mapToChoices, mapToLocalizedChoices } from '../api/enumsClient';
 import { makeStudentList, makeStudentEdit, makeStudentCreate } from '../features/students';
 import { VehicleList, makeVehicleEdit, makeVehicleCreate } from '../features/vehicles';
 import { InstructorList, InstructorEdit, InstructorCreate } from '../features/instructors';
@@ -22,9 +22,9 @@ export default function App() {
   const [enums, setEnums] = React.useState(null);
   React.useEffect(() => { fetchEnums().then(setEnums); }, []);
   const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
-  const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
-  const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
-  const paymentChoices = enums ? mapToChoices(enums.payment_method) : FALLBACK_PAYMENT;
+  const studentChoices = enums ? mapToLocalizedChoices('student_status', enums.student_status) : FALLBACK_STUDENT;
+  const courseTypeChoices = enums ? mapToLocalizedChoices('course_type', enums.course_type) : [ { id: 'THEORY', name: 'common.filters.theory' }, { id: 'PRACTICE', name: 'common.filters.practice' } ];
+  const paymentChoices = enums ? mapToLocalizedChoices('payment_method', enums.payment_method) : FALLBACK_PAYMENT;
   return (
   <Admin basename="/admin" dataProvider={dataProvider} authProvider={authProvider} i18nProvider={raI18nProvider} layout={Layout} dashboard={Dashboard}>
       <CustomRoutes>

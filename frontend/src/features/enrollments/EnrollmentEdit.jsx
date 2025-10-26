@@ -33,10 +33,11 @@ export default function EnrollmentEdit(props) {
           source="status"
           label={t('filters.status', 'Status')}
           choices={[
-            { id: 'IN_PROGRESS', name: t('filters.in_progress', 'In progress') },
-            { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
-            { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
+            { id: 'IN_PROGRESS', name: 'filters.in_progress' },
+            { id: 'COMPLETED', name: 'filters.completed' },
+            { id: 'CANCELED', name: 'filters.canceled' },
 {/* 
+          // names are i18n keys, RA provider will translate
             { id: 'IN_PROGRESS', name: translate('filters.in_progress', { defaultValue: 'IN_PROGRESS' }) },
             { id: 'COMPLETED', name: translate('filters.completed', { defaultValue: 'COMPLETED' }) },
             { id: 'CANCELED', name: translate('filters.canceled', { defaultValue: 'CANCELED' }) },
