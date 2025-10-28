@@ -290,5 +290,16 @@
         "img": { "alt": { "avatar": "Student avatar" }, "placeholder": "Image Placeholder" }
       }
     }
+  },
+  "ra": {
+    "page": {
+      "error": "Error"
+    },
+    "message": {
+      "error": "Error"
+    },
+    "action": {
+      "back": "Back"
+    }
   }
 }

@@ -4,7 +4,6 @@ import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
 export default function EnrollmentListAside() {
   return (
     <ListAsideFilters
-      dateField="enrollment_date"
       statusItems={[
         { value: { status: 'IN_PROGRESS' }, labelKey: 'filters.in_progress', color: '#60a5fa' },
         { value: { status: 'COMPLETED' }, labelKey: 'filters.completed', color: '#10b981' },

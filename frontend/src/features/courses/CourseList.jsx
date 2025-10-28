@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import CourseListAside from './CourseListAside.jsx';
 import CourseListEmpty from './CourseListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
+import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
 
 // Function to determine course status based on available data
 // Status -> color map. Keep in sync with CourseListAside statusItems
@@ -90,8 +92,15 @@ const ViewDetailsButton = ({ record }) => {
 };
 
 export default function CourseList(props) {
+  const t = useTranslate();
+
+  const filters = [
+    <CategoryFilterInput key="category" alwaysOn />,
+    <TypeFilterInput key="type" alwaysOn />,
+  ];
+
   return (
-    <List {...props} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
+    <List {...props} filters={filters} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
       <FilteredCourseDatagrid />
     </List>
   );

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { List, Datagrid, NumberField, TextField, EmailField, DateField, FunctionField, useTranslate } from 'react-admin';
+import SearchInput from '../../shared/components/SearchInput.jsx';
 import { Chip } from '@mui/material';
 import StudentListAside from './StudentListAside';
 import StudentListActions from './StudentListActions';
@@ -86,8 +87,11 @@ const studentRowStyle = (record) => {
 export default function makeStudentList() {
   return function StudentList(props) {
     const translate = useTranslate();
+    const filters = [
+      <SearchInput key="search" alwaysOn />,
+    ];
     return (
-      <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />} empty={<StudentListEmpty />}> 
+      <List {...props} aside={<StudentListAside />} filters={filters} actions={<StudentListActions />} empty={<StudentListEmpty />}> 
         <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
           <NumberField source="id" />
           <TextField source="first_name" />

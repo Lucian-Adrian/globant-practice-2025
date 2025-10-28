@@ -235,5 +235,16 @@
         "img": { "alt": { "avatar": "Avatar student" } }
       }
     }
+  },
+  "ra": {
+    "page": {
+      "error": "Eroare"
+    },
+    "message": {
+      "error": "Eroare"
+    },
+    "action": {
+      "back": "Înapoi"
+    }
   }
 }
