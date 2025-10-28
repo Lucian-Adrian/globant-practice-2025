@@ -1,4 +1,6 @@
 from rest_framework import viewsets, mixins, decorators, response, status
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from django.http import HttpResponse
 import csv
@@ -41,25 +43,6 @@ class StudentJWTAuthentication(JWTAuthentication):
         return student
 
 
-class StudentJWTAuthentication(JWTAuthentication):
-    def get_user(self, validated_token):
-        student_id = validated_token.get('student_id')
-        if not student_id:
-            raise InvalidToken('Token contained no recognizable user identification')
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            raise InvalidToken('Student not found')
-        return student
-from .serializers import (
-    StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer
-)
-from .enums import all_enums_for_meta, StudentStatus
-import hashlib, json
-from .validators import normalize_phone
-
-
 class FullCrudViewSet(mixins.ListModelMixin,
                       mixins.RetrieveModelMixin,
                       mixins.CreateModelMixin,
@@ -70,22 +53,29 @@ class FullCrudViewSet(mixins.ListModelMixin,
     pass
 
 
+class QSearchFilter(SearchFilter):
+    """Use 'q' as the search query parameter to align with frontend SearchInput."""
+    search_param = 'q'
+
+
 class StudentViewSet(FullCrudViewSet):
     queryset = Student.objects.all().order_by('-enrollment_date')
     serializer_class = StudentSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
 
     filterset_fields = {
         'status': ['exact'],
         'enrollment_date': ['gte', 'lte', 'gt', 'lt'],
     }
+    search_fields = ['first_name', 'last_name']
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
         qs = self.filter_queryset(self.get_queryset())
         fields = [
             'id', 'first_name', 'last_name', 'email', 'phone_number',
-            'date_of_birth', 'enrollment_date', 'status'
+            'date_of_birth', 'enrollment_date', 'status', 'password'
         ]
         buffer = StringIO()
         writer = csv.writer(buffer)
@@ -100,6 +90,7 @@ class StudentViewSet(FullCrudViewSet):
                 obj.date_of_birth.isoformat() if obj.date_of_birth else '',
                 obj.enrollment_date.isoformat() if obj.enrollment_date else '',
                 obj.status,
+                obj.password,
             ]
             writer.writerow(row)
 
@@ -144,6 +135,12 @@ class StudentViewSet(FullCrudViewSet):
                 'date_of_birth': (row.get('date_of_birth') or '').strip(),
                 'status': (row.get('status') or 'ACTIVE').strip() or 'ACTIVE',
             }
+
+            # Password handling
+            pwd = (row.get("password") or "").strip()
+            if pwd:
+                data["password"] = pwd
+
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
                 obj = serializer.save()
@@ -161,6 +158,17 @@ class StudentViewSet(FullCrudViewSet):
 class InstructorViewSet(FullCrudViewSet):
     queryset = Instructor.objects.all().order_by('-hire_date')
     serializer_class = InstructorSerializer
+    # Enable filtering/sorting/searching; RA uses 'q' for free-text search
+    filter_backends = [DjangoFilterBackend, QSearchFilter, OrderingFilter]
+    search_fields = ['first_name', 'last_name']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if getattr(self, 'request', None):
+            category = (self.request.query_params.get('category') or '').strip()
+            if category:
+                qs = qs.filter(license_categories__icontains=category)
+        return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -201,6 +209,7 @@ class InstructorViewSet(FullCrudViewSet):
 class InstructorAvailabilityViewSet(FullCrudViewSet):
     queryset = InstructorAvailability.objects.select_related('instructor').all()
     serializer_class = InstructorAvailabilitySerializer
+    filter_backends = [DjangoFilterBackend]
     # Allow filtering by instructor_id and day from the frontend (e.g. ?instructor_id=3)
     # This mirrors the pattern used on other viewsets (students, instructors) and
     # allows the dataProvider getList calls to request per-instructor availabilities.
@@ -213,6 +222,11 @@ class InstructorAvailabilityViewSet(FullCrudViewSet):
 class VehicleViewSet(FullCrudViewSet):
     queryset = Vehicle.objects.all().order_by('-year')
     serializer_class = VehicleSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'is_available': ['exact'],
+        'category': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -257,6 +271,11 @@ class VehicleViewSet(FullCrudViewSet):
 class CourseViewSet(FullCrudViewSet):
     queryset = Course.objects.all().order_by('category')
     serializer_class = CourseSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'category': ['exact'],
+        'type': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -294,6 +313,15 @@ class CourseViewSet(FullCrudViewSet):
 class EnrollmentViewSet(FullCrudViewSet):
     queryset = Enrollment.objects.select_related('student', 'course').all().order_by('-enrollment_date')
     serializer_class = EnrollmentSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'status': ['exact'],
+        'enrollment_date': ['gte', 'lte', 'gt', 'lt'],
+        'student': ['exact'],
+        'course': ['exact'],
+        'course__category': ['exact'],
+        'type': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -324,8 +352,8 @@ class EnrollmentViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'student': (row.get('student_id') or '').strip(),
-                'course': (row.get('course_id') or '').strip(),
+                'student_id': (row.get('student_id') or '').strip(),
+                'course_id': (row.get('course_id') or '').strip(),
                 'type': (row.get('type') or '').strip(),
                 'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
             }
@@ -340,6 +368,28 @@ class EnrollmentViewSet(FullCrudViewSet):
 class LessonViewSet(FullCrudViewSet):
     queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
     serializer_class = LessonSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'status': ['exact'],
+        'scheduled_time': ['gte', 'lte', 'gt', 'lt'],
+        'instructor': ['exact'],
+        'vehicle__license_plate': ['exact'],
+        'enrollment__student': ['exact'],
+        'enrollment__course': ['exact'],
+    }
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Accept both instructor and instructor_id as aliases
+        if getattr(self, 'request', None):
+            instr = self.request.query_params.get('instructor') or self.request.query_params.get('instructor_id')
+            if instr:
+                qs = qs.filter(instructor_id=instr)
+            # Accept 'vehicle' as a license plate string alias for vehicle__license_plate
+            vehicle_lp = self.request.query_params.get('vehicle')
+            if vehicle_lp:
+                qs = qs.filter(vehicle__license_plate=vehicle_lp)
+        return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -370,12 +420,12 @@ class LessonViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'enrollment': (row.get('enrollment_id') or '').strip(),
-                'instructor': (row.get('instructor_id') or '').strip(),
-                'vehicle': (row.get('vehicle_id') or '').strip() or None,
+                'enrollment_id': (row.get('enrollment_id') or '').strip(),
+                'instructor_id': (row.get('instructor_id') or '').strip(),
+                'vehicle_id': (row.get('vehicle_id') or '').strip() or None,
                 'scheduled_time': (row.get('scheduled_time') or '').strip(),
                 'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
-                'status': (row.get('status') or '').strip() or 'SCHEDULED',
+                'status': (row.get('status') or '').strip(),
                 'notes': (row.get('notes') or '').strip(),
             }
             serializer = self.get_serializer(data=data)
@@ -389,17 +439,24 @@ class LessonViewSet(FullCrudViewSet):
 class PaymentViewSet(FullCrudViewSet):
     queryset = Payment.objects.select_related('enrollment__student').all()
     serializer_class = PaymentSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'payment_date': ['gte', 'lte', 'gt', 'lt'],
+        'payment_method': ['exact'],
+        'status': ['exact'],
+        'enrollment': ['exact'],
+    }
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
-        fields = ['id', 'enrollment_id', 'amount', 'payment_date', 'payment_method', 'description']
+        fields = ['id', 'enrollment_id', 'amount', 'payment_date', 'payment_method', 'status', 'description']
         qs = self.filter_queryset(self.get_queryset())
         buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
         for obj in qs:
             writer.writerow([
                 obj.id, obj.enrollment_id, obj.amount,
                 obj.payment_date.isoformat() if obj.payment_date else '',
-                obj.payment_method, obj.description
+                obj.payment_method, obj.status, obj.description
             ])
         resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
         resp['Content-Disposition'] = 'attachment; filename=payments.csv'
@@ -419,9 +476,10 @@ class PaymentViewSet(FullCrudViewSet):
         created_ids, errors = [], []
         for idx, row in enumerate(reader, start=2):
             data = {
-                'enrollment': (row.get('enrollment_id') or '').strip(),
+                'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'amount': (row.get('amount') or '').strip(),
                 'payment_method': (row.get('payment_method') or '').strip(),
+                'status': (row.get('status') or 'PENDING').strip() or 'PENDING',
                 'description': (row.get('description') or '').strip(),
             }
             serializer = self.get_serializer(data=data)

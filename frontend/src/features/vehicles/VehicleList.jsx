@@ -6,6 +6,7 @@ import VehicleListAside from './VehicleListAside.jsx';
 import VehicleListEmpty from './VehicleListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import { Drawer, Box, Card, CardHeader, CardContent, CardActions, Typography } from '@mui/material';
+import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
 
 // Function to get vehicle availability status with color coding
 const getVehicleStatus = (record) => {
@@ -59,9 +60,12 @@ const VehicleStatusField = (recordOrProps) => {
 
 export default function VehicleList(props) {
   const [selectedRecord, setSelectedRecord] = React.useState(null);
+  const filters = [
+    <CategoryFilterInput key="category" alwaysOn />,
+  ];
 
   return (
-    <List {...props} aside={<VehicleListAside />} actions={<ListImportActions endpoint="vehicles" />} empty={<VehicleListEmpty />}> 
+    <List {...props} filters={filters} aside={<VehicleListAside />} actions={<ListImportActions endpoint="vehicles" />} empty={<VehicleListEmpty />}> 
       <FilteredVehicleDatagrid setSelectedRecord={setSelectedRecord} />
     </List>
   );

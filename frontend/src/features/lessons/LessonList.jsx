@@ -5,44 +5,16 @@ import { useLocation } from 'react-router-dom';
 import LessonListAside from './LessonListAside.jsx';
 import LessonListEmpty from './LessonListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
+import VehicleFilterInput from '../../shared/components/VehicleFilterInput.jsx';
+import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
 
-// Function to determine lesson status based on existing data
+// Function to determine lesson status based solely on backend status
 const getLessonStatus = (record) => {
-  if (!record || !record.scheduled_time) {
-    return { status: 'UNKNOWN', color: 'default' };
-  }
-  
-  const scheduledTime = new Date(record.scheduled_time);
-  const now = new Date();
-  const hoursUntilLesson = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-  const daysUntilLesson = hoursUntilLesson / 24;
-  
-  // If lesson has an explicit status from backend, it takes precedence
-  if (record.status === 'COMPLETED') {
-    return { status: 'COMPLETED', color: 'success' };
-  }
-  if (record.status === 'CANCELED') {
-    return { status: 'CANCELED', color: 'error' };
-  }
-  
-  // Business rules for derived status based on time for 'SCHEDULED' lessons
-  if (hoursUntilLesson < 0) {
-    return { status: 'COMPLETED', color: 'success' }; // Assume past lessons are completed if not canceled
-  }
-  if (hoursUntilLesson < 2) {
-    return { status: 'IMMINENT', color: 'warning' };
-  }
-  if (scheduledTime.toDateString() === now.toDateString()) {
-      return { status: 'TODAY', color: 'info' };
-  }
-  if (daysUntilLesson <= 7) {
-    return { status: 'SCHEDULED', color: 'primary' };
-  }
-  if (daysUntilLesson > 7) {
-    return { status: 'PLANNED', color: 'secondary' };
-  }
-  
-  // Fallback
+  if (!record) return { status: 'SCHEDULED', color: 'primary' };
+  if (record.status === 'COMPLETED') return { status: 'COMPLETED', color: 'success' };
+  if (record.status === 'CANCELED') return { status: 'CANCELED', color: 'error' };
+  // Default and any other value treated as SCHEDULED
   return { status: 'SCHEDULED', color: 'primary' };
 };
 
@@ -50,11 +22,7 @@ const getLessonStatus = (record) => {
 const statusToTranslationKey = {
   COMPLETED: 'filters.completed',
   CANCELED: 'filters.canceled',
-  IMMINENT: 'filters_extra_local.imminent',
-  TODAY: 'filters.today',
   SCHEDULED: 'filters.scheduled',
-  PLANNED: 'filters_extra_local.planned',
-  UNKNOWN: 'unknown',
 };
 
 const LessonStatusField = ({ record }) => {
@@ -87,6 +55,17 @@ const FilteredDatagrid = (props) => {
       const { status: derivedStatus } = getLessonStatus(record);
       if (filterValues.status && derivedStatus !== filterValues.status) return false;
       if (filterValues.instructor_id && String(record.instructor.id) !== String(filterValues.instructor_id)) return false;
+      if (filterValues.vehicle) {
+        const plate = record?.vehicle?.license_plate || '';
+        if (String(plate) !== String(filterValues.vehicle)) return false;
+      }
+      // Lesson type filter (client-side): supports 'Theory' and 'Driving' values
+      if (filterValues.lesson_type) {
+        const raw = String(filterValues.lesson_type).toUpperCase();
+        const expected = raw === 'DRIVING' ? 'PRACTICE' : (raw === 'THEORY' ? 'THEORY' : raw);
+        const lessonType = (record?.enrollment?.type || record?.enrollment?.course?.type || '').toUpperCase();
+        if (lessonType !== expected) return false;
+      }
       // Additional filters can be added here
       return true;
     });
@@ -100,8 +79,6 @@ const FilteredDatagrid = (props) => {
       sx={{
         '& .RaDatagrid-row': {
           '&[data-lesson-status="COMPLETED"]': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
-          '&[data-lesson-status="TODAY"]': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#e1f5fe' } },
-          '&[data-lesson-status="IMMINENT"]': { backgroundColor: '#fff3e0', '&:hover': { backgroundColor: '#ffe0b2' } },
           '&[data-lesson-status="CANCELED"]': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
         }
       }}
@@ -143,9 +120,15 @@ const FilteredDatagrid = (props) => {
 
 export default function LessonList(props) {
   const t = useTranslate();
+  const filters = [
+    <InstructorFilterInput key="instructor" alwaysOn />,
+    <VehicleFilterInput key="vehicle" alwaysOn />,
+    <TypeFilterInput key="lesson_type" source="lesson_type" alwaysOn />,
+  ];
   return (
     <List 
       {...props} 
+      filters={filters}
       aside={<LessonListAside />} 
       title={t('resources.lessons.name', { defaultValue: 'Lessons' })}
       actions={<ListImportActions endpoint="lessons"/>}

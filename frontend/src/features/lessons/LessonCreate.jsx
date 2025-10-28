@@ -13,6 +13,11 @@ import {
 
 export default function LessonCreate(props) {
   const t = useTranslate();
+  const statusChoices = React.useMemo(() => [
+    { id: 'SCHEDULED', name: t('filters.scheduled', 'Scheduled') },
+    { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
+    { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
+  ], [t]);
 
   return (
     
@@ -55,11 +60,8 @@ export default function LessonCreate(props) {
         <SelectInput
           source="status"
           label={t('filters.status', 'Status')}
-          choices={[
-            { id: 'SCHEDULED', name: t('filters.scheduled', 'Scheduled') },
-            { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
-            { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
-          ]}
+          choices={statusChoices}
+          defaultValue="SCHEDULED"
         />
         <TextInput 
           source="notes" 
