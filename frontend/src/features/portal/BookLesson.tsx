@@ -101,7 +101,7 @@ const BookLesson: React.FC = () => {
           return;
         }
         const body = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(body?.detail || body?.message || t('portal.booking.errors.loadFailed'));
+  if (!resp.ok) throw new Error(body?.detail || body?.message || t('booking.errors.loadFailed'));
         if (!mounted) return;
   const ins: Instructor[] = Array.isArray(body?.instructors) ? body.instructors : [];
   const ens: Enrollment[] = Array.isArray(body?.enrollments) ? body.enrollments : [];
