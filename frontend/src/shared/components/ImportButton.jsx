@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, useNotify, useRefresh } from 'react-admin';
 
-export default function ImportButton({ label = 'Import CSV', accept = '.csv,text/csv', onImport }) {
+export default function ImportButton({ label = 'ra.custom.import_csv', accept = '.csv,text/csv', onImport }) {
   const notify = useNotify();
   const refresh = useRefresh();
   const fileRef = React.useRef(null);

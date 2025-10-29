@@ -3,7 +3,7 @@ import { TopToolbar, CreateButton, Button, useListContext, useNotify, useRefresh
 import ImportButton from './ImportButton';
 import { rawFetch, API_PREFIX } from '../../api/httpClient';
 
-export default function ListImportActions({ endpoint, label = 'Import CSV', accept = '.csv,text/csv' }) {
+export default function ListImportActions({ endpoint, label = 'ra.custom.import_csv', accept = '.csv,text/csv' }) {
   const { filterValues, sort } = useListContext();
   const notify = useNotify();
   const refresh = useRefresh();
@@ -69,8 +69,8 @@ export default function ListImportActions({ endpoint, label = 'Import CSV', acce
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportButton label={label} accept={accept} onImport={onImport} />
-      <Button label="Export CSV" onClick={onExport} />
+  <ImportButton label={label} accept={accept} onImport={onImport} />
+  <Button label="ra.custom.export_csv" onClick={onExport} />
     </TopToolbar>
   );
 }

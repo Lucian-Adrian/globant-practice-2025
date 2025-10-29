@@ -93,7 +93,7 @@ export default function makeStudentList() {
     return (
       <List {...props} aside={<StudentListAside />} filters={filters} actions={<StudentListActions />} empty={<StudentListEmpty />}> 
         <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
-          <NumberField source="id" />
+          <NumberField source="id" label={translate('resources.students.fields.id', { defaultValue: 'ID' })} />
           <TextField source="first_name" />
           <TextField source="last_name" />
           <EmailField source="email" />
@@ -101,8 +101,10 @@ export default function makeStudentList() {
           <DateField source="date_of_birth" />
           <DateField source="enrollment_date" />
           <FunctionField 
-            label={translate('resources.students.fields.status', { _: 'Status' })} 
+            label={translate('resources.students.fields.status', { _: 'Status' })}
             render={(record) => <StudentStatusField record={record} />}
+            source="status"
+            sortBy="status"
           />
         </Datagrid>
       </List>
