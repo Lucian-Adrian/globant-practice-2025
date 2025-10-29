@@ -67,6 +67,10 @@ export default function VehicleList(props) {
   return (
     <List {...props} filters={filters} aside={<VehicleListAside />} actions={<ListImportActions endpoint="vehicles" />} empty={<VehicleListEmpty />}> 
       <FilteredVehicleDatagrid setSelectedRecord={setSelectedRecord} />
+      <VehicleDetailPanel
+       record={selectedRecord}
+       onClose={() => setSelectedRecord(null)}
+     />
     </List>
   );
 }
@@ -91,7 +95,7 @@ function FilteredVehicleDatagrid({ setSelectedRecord }) {
   const alpha = 0.15;
   const handleRowClick = (id, basePath, record) => {
     setSelectedRecord(record);
-    return undefined;
+    return false;
   };
 
   return (
@@ -128,7 +132,6 @@ function FilteredVehicleDatagrid({ setSelectedRecord }) {
           render={(record) => <VehicleStatusField record={record} />}
         />
       </Datagrid>
-  <VehicleDetailPanel record={null} onClose={() => setSelectedRecord(null)} />
     </>
   );
 }
