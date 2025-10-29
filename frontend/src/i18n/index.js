@@ -1,6 +1,7 @@
 // Unified comprehensive i18n configuration (merged richer resources + RA namespaces)
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import React from 'react';
 import portalEn from './locales/en.json';
 // Auto-pickup of additional portal locales if present (Vite only)
 const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
@@ -11,36 +12,45 @@ const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
 // we inline minimal RA translation objects instead of importing optional packages.
 const englishMessages = {
   ra: {
-    action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER' },
-    navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page %{offsetBegin}-%{offsetEnd} of %{total}', page_rows_per_page: 'Rows per page:' },
+    action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', back: 'Back' },
+    navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page %{offsetBegin}-%{offsetEnd} of %{total}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
+    sort: { sort_by: 'Sort by %{field} %{order}',  ASC: 'ascending', DESC: 'descending' },
     // Merged auth keys
     auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
     // Merged page keys
-    page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show' },
+    page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show', error: 'Error' },
+    message: { error: 'Error', invalid_form: 'Invalid form' },
+    validation: { required: 'Required' },
     custom: { import_csv: 'Import CSV', export_csv: 'Export CSV' },
     notification: { updated: 'Element updated', created: 'Element created', deleted: 'Element deleted' },
   }
 };
 const romanianMessages = {
   ra: {
-    action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU' },
-    navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina %{offsetBegin}-%{offsetEnd} din %{total}', page_rows_per_page: 'Rânduri pe pagină:' },
+    action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', back: 'Înapoi' },
+    navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina %{offsetBegin}-%{offsetEnd} din %{total}', page_rows_per_page: 'Rânduri pe pagină:', no_results: 'Fără rezultate' },
+    sort: { sort_by: 'Sortează după %{field} %{order}', ASC: 'crescător', DESC: 'descrescător' },
     // Merged auth keys
     auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare', logout: 'Deconectare', user_menu: 'Utilizator' },
     // Merged page keys
-    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi' },
+    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi', error: 'Eroare' },
+    message: { error: 'Eroare', invalid_form: 'Formular invalid' },
+    validation: { required: 'Obligatoriu' },
     custom: { import_csv: 'Importă CSV', export_csv: 'Exportă CSV' },
     notification: { updated: 'Element actualizat', created: 'Element creat', deleted: 'Element șters' },
   }
 };
 const russianMessages = {
   ra: {
-    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР' },
-    navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница %{offsetBegin}-%{offsetEnd} из %{total}', page_rows_per_page: 'Строк на странице:' },
+    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', back: 'Назад' },
+    navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница %{offsetBegin}-%{offsetEnd} из %{total}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
+    sort: { sort_by: 'Сортировать по %{field} %{order}', ASC: 'по возрастанию', DESC: 'по убыванию' },
     // Merged auth keys
     auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти', logout: 'Выйти', user_menu: 'Пользователь' },
     // Merged page keys
-    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр' },
+    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр', error: 'Ошибка' },
+    message: { error: 'Ошибка', invalid_form: 'Неверная форма' },
+    validation: { required: 'Обязательно' },
     custom: { import_csv: 'Импорт CSV', export_csv: 'Экспорт CSV' },
     notification: { updated: 'Элемент обновлен', created: 'Элемент создан', deleted: 'Элемент удален' },
   }
@@ -157,7 +167,7 @@ const languageData = {
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
     lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
         'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
-        classes: { name:'Classes', empty:'No classes yet', invite:'Create the first class', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
+        classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
       }
     },
     resources: {
@@ -169,7 +179,7 @@ const languageData = {
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
     lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
       'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
-      classes: { name:'Classes', empty:'No classes yet', invite:'Create the first class', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
+      classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
     },
   },
   ro: {
@@ -412,6 +422,28 @@ const resources = Object.fromEntries(
   })
 );
 
+// Runtime safeguard: if at startup ro/ru portal JSON was missing (so we fell back to English),
+// ensure on first language change (or immediate call) we try loading the real file dynamically.
+async function ensurePortalBundle(lng) {
+  try {
+    if (!i18n || !lng) return;
+    // If bundle exists and is clearly localized (different from English), skip
+    if (i18n.hasResourceBundle(lng, 'portal')) {
+      const enValue = i18n.getResource('en', 'portal', 'lessons.header.title');
+      const currentValue = i18n.getResource(lng, 'portal', 'lessons.header.title');
+      if (currentValue && enValue && currentValue !== enValue) return; // already localized
+    }
+    // Attempt dynamic import (works with Vite) – falls back silently if file absent
+    const mod = await import(`./locales/${lng}.json`).catch(() => null);
+    const data = mod && (mod.default || mod);
+    if (data && Object.keys(data).length) {
+      i18n.addResourceBundle(lng, 'portal', data, true, true);
+    }
+  } catch (err) {
+    // Ignore – fallback to English already present
+  }
+}
+
 // Initialize only once; keep a helper for legacy calls (initI18n) used in main.jsx
 export function initI18n(lang = storedLang || 'en') {
   if (!i18n.isInitialized) {
@@ -423,13 +455,31 @@ export function initI18n(lang = storedLang || 'en') {
       defaultNS: 'common',
       interpolation: { escapeValue: false },
     });
-    i18n.on('languageChanged', (lng) => { try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {} });
+    // Initial hydration attempt for starting language
+    ensurePortalBundle(lang);
+    i18n.on('languageChanged', (lng) => {
+      try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {}
+      ensurePortalBundle(lng);
+    });
   }
   return i18n;
 }
 
 // Ensure default initialization (so components using hooks without manual init still work)
 initI18n();
+
+// Small helper React hook (kept here to avoid a new file) to force a re-render on language changes when
+// a component needs to display newly hydrated async portal bundles immediately. In most cases
+// useTranslation already re-renders, but if a key was missing at first render (showing raw) and later
+// gets added via ensurePortalBundle, this hook guarantees a flush.
+export function useI18nForceUpdate() {
+  const [, setTick] = React.useState(0);
+  React.useEffect(() => {
+    const handler = () => setTick(t => t + 1);
+    i18n.on('languageChanged', handler);
+    return () => { i18n.off('languageChanged', handler); };
+  }, []);
+}
 
 // Expose globally for console debugging (e.g., window.i18n.changeLanguage('ro'))
 if (typeof window !== 'undefined') {

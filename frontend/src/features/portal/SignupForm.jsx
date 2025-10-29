@@ -6,6 +6,7 @@ import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-j
 import './StudentLogin.css';
 import heroImg from '../../../assets/login.png';
 import PageIcon from './PageIcon';
+import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 
 const Field = ({ label, children }) => (
   <label style={{ display: 'flex', flexDirection: 'column', fontSize: '.9rem', gap: '.25rem' }}>
@@ -49,7 +50,8 @@ const SignupForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [apiMessage, setApiMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const { t, i18n } = useTranslation('common');
+  // Use portal namespace (plus common/validation) so keys defined in portal locale JSON resolve
+  const { t } = useTranslation(['portal','common','validation']);
 
   const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -159,6 +161,7 @@ const SignupForm = () => {
 
   return (
     <div className="student-login-page">
+      <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50"><PortalLanguageSelect /></div>
       <div className="hero-section">
         <img src={heroImg} alt={t('signupHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
       </div>
@@ -166,27 +169,27 @@ const SignupForm = () => {
         <div className="form-container">
           <div className="form-wrapper" style={{ maxWidth:460, margin:'0 auto' }}>
         <div className="form-header">
-          <h1 className="form-title"><PageIcon name="signup" style={{ marginRight:8 }} />{t('common:signupTitle', 'Create your account')}</h1>
-          <p className="form-subtitle">{t('common:signupIntro', 'Create an account to start')}</p>
+          <h1 className="form-title"><PageIcon name="signup" style={{ marginRight:8 }} />{t('signupTitle', { defaultValue: 'Create your account' })}</h1>
+          <p className="form-subtitle">{t('signupIntro')}</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="ui-form">
           <div className="input-group" style={{ display:'flex', gap:'.75rem' }}>
             <div style={{ position:'relative', flex:1 }}>
               <div className="input-icon">👤</div>
-              <input name="firstName" className="input" placeholder={t('common:firstName')} value={form.firstName} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.firstName} />
+              <input name="firstName" className="input" placeholder={t('firstName', { defaultValue: 'First Name' })} value={form.firstName} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.firstName} />
               {errors.firstName && <div className="error-text">{renderError(errors.firstName)}</div>}
             </div>
             <div style={{ position:'relative', flex:1 }}>
               <div className="input-icon">👤</div>
-              <input name="lastName" className="input" placeholder={t('common:lastName')} value={form.lastName} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.lastName} />
+              <input name="lastName" className="input" placeholder={t('lastName', { defaultValue: 'Last Name' })} value={form.lastName} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.lastName} />
               {errors.lastName && <div className="error-text">{renderError(errors.lastName)}</div>}
             </div>
           </div>
 
           <div className="input-group">
             <div className="input-icon">📧</div>
-            <input name="email" type="email" className="input" placeholder={t('common:email')} value={form.email} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.email} />
+            <input name="email" type="email" className="input" placeholder={t('email', { defaultValue: 'Email' })} value={form.email} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.email} />
             {errors.email && <div className="error-text">{renderError(errors.email)}</div>}
           </div>
 
@@ -198,7 +201,7 @@ const SignupForm = () => {
             </div>
             <div style={{ position:'relative', flex:1 }}>
               <div className="input-icon">📱</div>
-              <input name="localPhone" type="tel" inputMode="tel" className="input" placeholder="60123456" value={form.localPhone} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.localPhone} />
+              <input name="localPhone" type="tel" inputMode="tel" className="input" placeholder={t('phoneNumber', { defaultValue: 'Phone Number' })} value={form.localPhone} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.localPhone} />
               {errors.localPhone && <div className="error-text">{renderError(errors.localPhone)}</div>}
             </div>
           </div>
@@ -212,7 +215,7 @@ const SignupForm = () => {
           <div className="input-group">
             <div className="input-icon">🔒</div>
             <div style={{ position:'relative' }}>
-              <input name="password" type={showPassword ? 'text' : 'password'} className="input" placeholder={t('passwordPlaceholder', 'Password')} value={form.password} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.password} />
+              <input name="password" type={showPassword ? 'text' : 'password'} className="input" placeholder={t('passwordPlaceholder')} value={form.password} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.password} />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="password-toggle">{showPassword ? '🙈' : '👁'}</button>
             </div>
             {errors.password && <div className="error-text">{renderError(errors.password)}</div>}
@@ -221,7 +224,7 @@ const SignupForm = () => {
           <div className="input-group">
             <div className="input-icon">🔒</div>
             <div style={{ position:'relative' }}>
-              <input name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} className="input" placeholder={t('confirmPassword', 'Confirm Password')} value={form.confirmPassword} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.confirmPassword} />
+              <input name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} className="input" placeholder={t('confirmPassword')} value={form.confirmPassword} onChange={handleChange} onBlur={handleBlur} required aria-invalid={!!errors.confirmPassword} />
               <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="password-toggle">{showConfirmPassword ? '🙈' : '👁'}</button>
             </div>
             {errors.confirmPassword && <div className="error-text">{renderError(errors.confirmPassword)}</div>}
@@ -230,12 +233,12 @@ const SignupForm = () => {
           <div style={{ marginTop:'.75rem' }}>
             <label style={{ display:'flex', alignItems:'center', gap:'.5rem', justifyContent:'center' }}>
               <input type="checkbox" checked={agreed} onChange={(e) => { setAgreed(e.target.checked); if(e.target.checked) setAgreedError(null); }} />
-              <span style={{ fontSize:'.9rem' }}>{t('common:agreeTo', 'I agree to the')} <Link to="/terms">{t('common:terms', 'Terms of Use')}</Link> {t('common:and', 'and')} <Link to="/privacy">{t('common:privacy', 'Privacy Policy')}</Link></span>
+              <span style={{ fontSize:'.9rem' }}>{t('agreeTo')} <Link to="/terms">{t('terms')}</Link> {t('and')} <Link to="/privacy">{t('privacy')}</Link></span>
             </label>
             {agreedError && <div className="error-text" style={{ textAlign:'center', marginTop:'.5rem' }}>{t('validation:required', 'Please accept Terms and Privacy')}</div>}
           </div>
 
-          <button type="submit" disabled={submitting || !formIsValid || !agreed} className="button">{submitting ? t('common:submitting') : t('common:signUp')}</button>
+          <button type="submit" disabled={submitting || !formIsValid || !agreed} className="button">{submitting ? t('submitting', { defaultValue: 'Submitting...' }) : t('signUp', { defaultValue: 'Sign Up' })}</button>
 
           {apiMessage && (() => {
             const v = messageVariant(apiMessage, debugInfo);
@@ -256,12 +259,12 @@ const SignupForm = () => {
           })()}
           {debugInfo && <pre className="message" style={{ background:'#f7f7f7', padding:'.5rem', fontSize:'.7rem', overflowX:'auto' }}>{t('common:debugLabel')}: {JSON.stringify(debugInfo, null, 2)}</pre>}
 
-          <div className="form-footer" style={{ marginTop:'1rem', textAlign:'center' }}>{t('common:haveAccount', 'Already have an account?')} <Link to="/login">{t('common:login', 'Log in')}</Link></div>
+          <div className="form-footer" style={{ marginTop:'1rem', textAlign:'center' }}>{t('haveAccount')} <Link to="/login">{t('login', { defaultValue: 'Log in' })}</Link></div>
 
           <div className="footer" style={{ marginTop:'1rem', textAlign:'center' }}>
-            <a href="/legal">{t('legalCenter', 'Legal Center')}</a>
-            <a href="/terms" style={{ marginLeft:'1rem' }}>{t('termsOfUse', 'Terms of Use')}</a>
-            <a href="/privacy" style={{ marginLeft:'1rem' }}>{t('privacyPolicy', 'Privacy Policy')}</a>
+            <a href="/legal">{t('legalCenter')}</a>
+            <a href="/terms" style={{ marginLeft:'1rem' }}>{t('termsOfUse')}</a>
+            <a href="/privacy" style={{ marginLeft:'1rem' }}>{t('privacyPolicy')}</a>
           </div>
         </form>
       </div>

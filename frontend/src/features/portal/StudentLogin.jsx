@@ -5,6 +5,7 @@ import heroImg from '../../../assets/login.png';
 import PageIcon from './PageIcon';
 import './StudentLogin.css';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
+import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 
 /**
  * StudentLogin
@@ -23,7 +24,8 @@ import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-j
  *  - Signup API endpoint guessed as /api/auth/student/signup/ (adjust when backend contract confirmed).
  */
 const StudentLogin = () => {
-  const { t } = useTranslation('common');
+  // Include 'portal' namespace first so auth/landing keys stored in portal locale JSON resolve correctly
+  const { t } = useTranslation(['portal','common','validation']);
   const navigate = useNavigate();
 
   // Mode toggle
@@ -310,6 +312,7 @@ const StudentLogin = () => {
 
   return (
     <div className="student-login-page">
+      <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50"><PortalLanguageSelect /></div>
       <div className="hero-section">
         <img src={heroImg} alt={t('loginHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
         {mode === 'login' && (
@@ -324,8 +327,8 @@ const StudentLogin = () => {
             {mode === 'login' && (
               <div>
                 <div className="form-header">
-                  <h1 className="form-title"><PageIcon name="login" style={{ marginRight:8 }} />{t('welcome', 'Welcome to DriveAdmin!')}</h1>
-                  <p className="form-subtitle">{t('loginIntroPhone', 'Log in with your phone number or email and password')}</p>
+                  <h1 className="form-title"><PageIcon name="login" style={{ marginRight:8 }} />{t('welcome', 'Welcome back')}</h1>
+                  <p className="form-subtitle">{t('loginIntroPhone')}</p>
                 </div>
                 <form onSubmit={handleLoginSubmit} className="ui-form">
                   <div className="input-group">
@@ -333,7 +336,7 @@ const StudentLogin = () => {
                     <input
                       type="text"
                       className="input"
-                      placeholder={t('phoneOrEmail', 'Phone Number or Email')}
+                      placeholder={t('phoneOrEmail')}
                       value={loginPhoneOrEmail}
                       onChange={(e) => setLoginPhoneOrEmail(e.target.value)}
                       required
@@ -344,7 +347,7 @@ const StudentLogin = () => {
                     <input
                       type={loginShowPassword ? 'text' : 'password'}
                       className="input"
-                      placeholder={t('passwordPlaceholder', 'Password')}
+                      placeholder={t('passwordPlaceholder')}
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
@@ -352,28 +355,28 @@ const StudentLogin = () => {
                     <EyeButton shown={loginShowPassword} onClick={() => setLoginShowPassword(s => !s)} />
                   </div>
                   <div className="forgot-password">
-                    <a href="#">{t('forgotPassword', 'Forgot password?')}</a>
+                    <a href="#">{t('forgotPassword')}</a>
                   </div>
                   <button
                     type="submit"
                     disabled={submitting || !loginValid()}
                     className="button"
                   >
-                    {submitting ? t('loggingIn', 'Logging in...') : t('login', 'Log in')}
+                    {submitting ? t('loggingIn') : t('login')}
                     <span>→</span>
                   </button>
                 </form>
                 <div className="form-footer">
-                  {t('noAccount', "Don't have an account?")}{' '}
-                  <button type="button" onClick={() => navigate('/signup')}>{t('createAccount', 'Create one')}</button>
+                  {t('noAccount')}{' '}
+                  <button type="button" onClick={() => navigate('/signup')}>{t('createAccount')}</button>
                 </div>
               </div>
             )}
             {mode === 'signup' && (
               <div>
                 <div className="form-header">
-                  <h1 className="form-title"><PageIcon name="signup" style={{ marginRight:8 }} />{t('createAccount', 'Create Account')}</h1>
-                  <p className="form-subtitle">{t('signupIntro', 'Sign up to start managing your driving journey')}</p>
+                  <h1 className="form-title"><PageIcon name="signup" style={{ marginRight:8 }} />{t('createAccount')}</h1>
+                  <p className="form-subtitle">{t('signupIntro')}</p>
                 </div>
                 <form onSubmit={handleSignupSubmit} className="ui-form">
                   {/* Name row */}
@@ -384,7 +387,7 @@ const StudentLogin = () => {
                         type="text"
                         name="firstName"
                         className="input"
-                        placeholder={t('firstName', 'First Name')}
+                        placeholder={t('firstName', { defaultValue: 'First Name' })}
                         value={signup.firstName}
                         onChange={handleSignupChange}
                         required
@@ -397,7 +400,7 @@ const StudentLogin = () => {
                         type="text"
                         name="lastName"
                         className="input"
-                        placeholder={t('lastName', 'Last Name')}
+                        placeholder={t('lastName', { defaultValue: 'Last Name' })}
                         value={signup.lastName}
                         onChange={handleSignupChange}
                         required
@@ -412,7 +415,7 @@ const StudentLogin = () => {
                       type="email"
                       name="email"
                       className="input"
-                      placeholder={t('email', 'Email')}
+                      placeholder={t('email', { defaultValue: 'Email' })}
                       value={signup.email}
                       onChange={handleSignupChange}
                       required
@@ -437,7 +440,7 @@ const StudentLogin = () => {
                         type="tel"
                         name="localPhone"
                         className="input"
-                        placeholder={t('phoneNumber', 'Phone Number')}
+                        placeholder={t('phoneNumber', { defaultValue: 'Phone Number' })}
                         value={signup.localPhone}
                         onChange={handleSignupChange}
                         required
@@ -483,7 +486,7 @@ const StudentLogin = () => {
                       type={signupShowPassword ? 'text' : 'password'}
                       name="password"
                       className="input"
-                      placeholder={t('passwordPlaceholder', 'Password')}
+                      placeholder={t('passwordPlaceholder')}
                       value={signup.password}
                       onChange={handleSignupChange}
                       required
@@ -498,7 +501,7 @@ const StudentLogin = () => {
                       type={signupShowPassword2 ? 'text' : 'password'}
                       name="confirmPassword"
                       className="input"
-                      placeholder={t('confirmPassword', 'Confirm Password')}
+                      placeholder={t('confirmPassword')}
                       value={signup.confirmPassword}
                       onChange={handleSignupChange}
                       required
@@ -509,19 +512,19 @@ const StudentLogin = () => {
                   <div style={{ marginTop:'.75rem' }}>
                     <label style={{ display:'flex', alignItems:'center', gap:'.5rem', justifyContent:'center' }}>
                       <input type="checkbox" checked={signupAgreed} onChange={(e) => { setSignupAgreed(e.target.checked); if(e.target.checked) setSignupAgreedError(null); }} />
-                      <span style={{ fontSize:'.9rem' }}>{t('common:agreeTo', 'I agree to the')} <a href="/terms">{t('common:terms', 'Terms of Use')}</a> {t('common:and', 'and')} <a href="/privacy">{t('common:privacy', 'Privacy Policy')}</a></span>
+                      <span style={{ fontSize:'.9rem' }}>{t('agreeTo')} <a href="/terms">{t('terms')}</a> {t('and')} <a href="/privacy">{t('privacy')}</a></span>
                     </label>
                     {signupAgreedError && <div className="error-text" style={{ textAlign:'center', marginTop:'.5rem' }}>{t('validation:required', 'Please accept Terms and Privacy')}</div>}
                   </div>
 
                   <button type="submit" disabled={submitting || !signupValid() || !signupAgreed} className="button">
-                    {submitting ? t('creatingAccount', 'Creating account...') : t('createAccount', 'Create Account')}
+                    {submitting ? t('creatingAccount', { defaultValue: 'Creating account...' }) : t('createAccount')}
                     <span>→</span>
                   </button>
                 </form>
                 <div className="form-footer">
-                  {t('haveAccount', 'Already have an account?')}{' '}
-                  <button type="button" onClick={() => setMode('login')}>{t('login', 'Log in')}</button>
+                  {t('haveAccount')}{' '}
+                  <button type="button" onClick={() => setMode('login')}>{t('login', { defaultValue: 'Log in' })}</button>
                 </div>
               </div>
             )}
