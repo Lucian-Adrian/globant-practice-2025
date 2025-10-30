@@ -1,11 +1,4 @@
-import StudentListAside from './features/students/StudentListAside';
-import { makeStudentList } from './features/students';
-import ImportButton from './components/ImportButton';
-import ResourceEmptyState from './components/ResourceEmptyState';
-import InstructorDetails from './instructors/InstructorDetails';
-import InstructorCalendar from './instructors/InstructorCalendar';
-import { ClassDetails, CourseList as CourseListComponent } from './features/courses';
-import { InstructorAvailabilityList, InstructorAvailabilityEdit } from './features/instructoravailabilities';
+import StudentListAside from './students/StudentListAside';
 
 import * as React from 'react';
 import {
@@ -21,6 +14,8 @@ import {
   DateField,
   NumberField,
   BooleanField,
+  Edit,
+  Create,
   SimpleForm,
   TextInput,
   NumberInput,
@@ -32,14 +27,11 @@ import {
   useListContext,
   useNotify,
   useRefresh,
-  HttpError,
 } from 'react-admin';
-import { CreateSmart, EditSmart } from './components/SmartCrudWrappers';
 import { raEmail, raPhone, raDob, raHireDate, req } from './validation/raValidators';
 import { YEARS_125, YEARS_15, yyyyMmDdYearsAgo } from './constants';
 import PhoneFieldRA from './components/PhoneFieldRA';
 import DisabledUntilValidToolbar from './components/DisabledUntilValidToolbar';
-import { Route } from 'react-router-dom';
 
 // Use relative base URL so the browser hits the Vite dev server, which proxies to the backend container
 const baseApi = '/api';
@@ -51,81 +43,10 @@ const mapResource = (resource) => {
   return `${name}/`;
 };
 
-// Normalize DRF error responses so RA shows a clear toast and inline field errors.
-// Strategy:
-// - Catch fetchJson HttpError
-// - Derive a human message using priority: json.message > json.detail > first field error > statusText > generic
-// - Re-throw new HttpError(message, status, body) where body is the full parsed JSON (unchanged)
-//   so RA can map field-level errors (e.g., { email: ["already exists"] }) to matching inputs.
-const httpClient = async (url, options = {}) => {
+const httpClient = (url, options = {}) => {
   const opts = { ...options };
   opts.headers = new Headers(opts.headers || { 'Content-Type': 'application/json' });
-
-  const deriveMessage = (body, fallback, status) => {
-    // Prefer explicit message/detail from API
-    if (body && typeof body === 'object') {
-      const msg = typeof body.message === 'string' ? body.message.trim() : '';
-      if (msg) return msg;
-      const det = typeof body.detail === 'string' ? body.detail.trim() : '';
-      if (det) return det;
-      // Otherwise pick first field error (arrays or strings)
-      for (const [k, v] of Object.entries(body)) {
-        if (k === 'message' || k === 'detail') continue;
-        if (Array.isArray(v) && v.length) {
-          const first = v.find((x) => typeof x === 'string');
-          if (first) return first;
-        }
-        if (typeof v === 'string' && v.trim()) return v.trim();
-      }
-    }
-    // Generic but meaningful fallback for 5xx
-    if (typeof status === 'number' && status >= 500) {
-      return 'A server error occurred. Please try again.';
-    }
-    return fallback || 'Request failed';
-  };
-
-  try {
-    return await fetchUtils.fetchJson(url, opts);
-  } catch (error) {
-    // fetchJson throws HttpError-like objects with status and body
-    const status = error?.status ?? 0;
-    let body = error?.body;
-    // Attempt to parse body if it's a JSON string
-    if (typeof body === 'string') {
-      try {
-        const parsed = JSON.parse(body);
-        body = parsed;
-      } catch {
-        // leave body as string
-      }
-    }
-    const statusText = error?.statusText || error?.message || '';
-    const message = deriveMessage(body, statusText, status);
-
-    // React-Admin expects server-side validation errors under body.errors
-    // in the shape: { errors: { field: 'message', other: '...' } }
-    // DRF typically returns: { field: ['msg1', 'msg2'], other: 'msg' }
-    // Map DRF field errors to RA format ONLY for 400/409/422 statuses.
-    let mappedBody = body;
-    if ([400, 409, 422].includes(Number(status)) && body && typeof body === 'object' && !Array.isArray(body)) {
-      const errors = {};
-      Object.entries(body).forEach(([key, value]) => {
-        if (key === 'message' || key === 'detail') return; // keep these for top-level messages
-        if (Array.isArray(value)) {
-          const first = value.find((v) => typeof v === 'string' && v.trim());
-          if (first) errors[key] = first.trim();
-        } else if (typeof value === 'string' && value.trim()) {
-          errors[key] = value.trim();
-        }
-      });
-      if (Object.keys(errors).length > 0) {
-        mappedBody = { ...body, errors };
-      }
-    }
-
-    throw new HttpError(message, status, mappedBody);
-  }
+  return fetchUtils.fetchJson(url, opts);
 };
 
 const buildQuery = (params) => {
@@ -180,20 +101,93 @@ const buildFilterSortQuery = (filterValues, sort) => {
 
 const StudentListActions = () => {
   const { filterValues, sort } = useListContext();
+  const notify = useNotify();
+  const refresh = useRefresh();
+
   const onExport = () => {
     const qs = buildFilterSortQuery(filterValues, sort);
     const url = `${baseApi}/students/export/${qs ? `?${qs}` : ''}`;
+    // Trigger file download in a new tab
     window.open(url, '_blank');
   };
+
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/students/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} students`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      // Reset input so the same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <TopToolbar>
-      <CreateButton />
-      <ImportButton endpoint="students" />
+  <CreateButton />
+      <Button label="Import CSV" onClick={onImportClick} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept=".csv,text/csv"
+        style={{ display: 'none' }}
+      />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
-// ImportActions removed in favor of shared <ImportButton /> component.
+const ImportActions = ({ endpoint, label = 'Import CSV' }) => {
+  const fileInputRef = React.useRef(null);
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const onImportClick = () => fileInputRef.current?.click();
+  const onFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const resp = await fetch(`${baseApi}/${endpoint}/import/`, {
+        method: 'POST',
+        body: form,
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || 'Import failed');
+      }
+      const json = await resp.json();
+      notify(`Imported ${json.created} ${endpoint}`, { type: 'info' });
+      refresh();
+    } catch (err) {
+      notify(err.message || 'Import failed', { type: 'warning' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+  return (
+    <>
+      <Button label={label} onClick={onImportClick} />
+      <input type="file" ref={fileInputRef} onChange={onFileChange} accept=".csv,text/csv" style={{ display: 'none' }} />
+    </>
+  );
+};
 
 
 
@@ -261,26 +255,14 @@ const dataProvider = {
   },
 };
 
-const customRoutes = [
-  <Route key="instructor-details" path="/instructors/:id/details" element={<InstructorDetails />} />,
-  <Route key="instructor-calendar" path="/instructors/:id/calendar" element={<InstructorCalendar />} />,
-  <Route key="class-details" path="/classes/:id/details" element={<ClassDetails />} />,
-];
-
-import { i18nProvider } from './i18n.js';
-
 export default function App() {
   return (
-    <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider}>
-      <Resource name="students" list={makeStudentList()} edit={StudentEdit} create={StudentCreate} />
+    <Admin dataProvider={dataProvider}>
+      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
-      <Resource name="classes" list={CourseListComponent} edit={CourseEdit} create={CourseCreate} />
+      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} />
       <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
-    {/* <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
-      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
-      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} /> */}
-      <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} />
     </Admin>
   );
 }
@@ -291,14 +273,48 @@ const VEHICLE_CATEGORIES = [
 ].map(v => ({ id: v, name: v }));
 
 const STUDENT_STATUS = [
-  'ACTIVE','INACTIVE','GRADUATED','PENDING',
+  'ACTIVE','INACTIVE','GRADUATED',
 ].map(v => ({ id: v, name: v }));
 
 const PAYMENT_METHODS = ['CASH','CARD','TRANSFER'].map(v => ({ id: v, name: v }));
 
-// Students Edit and Create components
+// Stiluri de culoare pentru fiecare status de student
+const studentRowStyle = (record, index) => {
+  if (!record) return {};
+  switch (record.status) {
+    case 'ACTIVE':
+      return { backgroundColor: 'rgba(96, 165, 250, 0.15)' };   // albastru pal
+    case 'INACTIVE':
+      return { backgroundColor: 'rgba(251, 191, 36, 0.15)' };   // galben pal
+    case 'GRADUATED':
+      return { backgroundColor: 'rgba(134, 239, 172, 0.15)' };  // verde pal
+    default:
+      return {};
+  }
+};
+
+
+// Students
+const StudentList = (props) => (
+  
+  <List {...props} aside={<StudentListAside />} filters={[]} actions={<StudentListActions />}>
+  
+    <Datagrid rowClick="edit" rowStyle={studentRowStyle}>
+      <NumberField source="id" />
+      <TextField source="first_name" />
+      <TextField source="last_name" />
+      <EmailField source="email" />
+      <TextField source="phone_number" />
+      <DateField source="date_of_birth" />
+      <DateField source="enrollment_date" />
+      <TextField source="status" />
+    </Datagrid>
+  </List>
+);
+
+
 const StudentEdit = (props) => (
-  <EditSmart {...props}>
+  <Edit {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
     <TextInput source="first_name" validate={[req]} />
     <TextInput source="last_name" validate={[req]} />
@@ -314,11 +330,11 @@ const StudentEdit = (props) => (
       />
       <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
-  </EditSmart>
+  </Edit>
 );
 
 const StudentCreate = (props) => (
-  <CreateSmart {...props}>
+  <Create {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
     <TextInput source="first_name" validate={[req]} />
     <TextInput source="last_name" validate={[req]} />
@@ -334,7 +350,7 @@ const StudentCreate = (props) => (
       />
       <SelectInput source="status" choices={STUDENT_STATUS} validate={[req]} defaultValue="ACTIVE" />
     </SimpleForm>
-  </CreateSmart>
+  </Create>
 );
 
 // Instructors
@@ -348,19 +364,15 @@ const InstructorListActions = () => {
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportButton endpoint="instructors" />
+      <ImportActions endpoint="instructors" />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
 
 const InstructorList = (props) => (
-  <List
-    {...props}
-    actions={<InstructorListActions />}
-    empty={<ResourceEmptyState endpoint="instructors" message="No instructors yet. Create one or import a batch." />}
-  >
-    <Datagrid rowClick={(id, resource) => `/instructors/${id}/details`}>
+  <List {...props} actions={<InstructorListActions />}>
+    <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="first_name" />
       <TextField source="last_name" />
@@ -373,7 +385,7 @@ const InstructorList = (props) => (
 );
 
 const InstructorEdit = (props) => (
-  <EditSmart {...props}>
+  <Edit {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
     <TextInput source="first_name" validate={[req]} />
     <TextInput source="last_name" validate={[req]} />
@@ -388,11 +400,11 @@ const InstructorEdit = (props) => (
       />
       <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
-  </EditSmart>
+  </Edit>
 );
 
 const InstructorCreate = (props) => (
-  <CreateSmart {...props}>
+  <Create {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
     <TextInput source="first_name" validate={[req]} />
     <TextInput source="last_name" validate={[req]} />
@@ -407,7 +419,7 @@ const InstructorCreate = (props) => (
       />
       <TextInput source="license_categories" validate={[req]} />
     </SimpleForm>
-  </CreateSmart>
+  </Create>
 );
 
 // Vehicles
@@ -421,18 +433,14 @@ const VehicleListActions = () => {
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportButton endpoint="vehicles" />
+      <ImportActions endpoint="vehicles" />
       <Button label="Export CSV" onClick={onExport} />
     </TopToolbar>
   );
 };
 
 const VehicleList = (props) => (
-  <List
-    {...props}
-    actions={<VehicleListActions />}
-    empty={<ResourceEmptyState endpoint="vehicles" message="No vehicles yet. Create one or import a batch." />}
-  >
+  <List {...props} actions={<VehicleListActions />}>
     <Datagrid rowClick="edit">
       <NumberField source="id" />
       <TextField source="make" />
@@ -446,7 +454,7 @@ const VehicleList = (props) => (
 );
 
 const VehicleEdit = (props) => (
-  <EditSmart {...props}>
+  <Edit {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
   <TextInput source="make" validate={[req]} />
   <TextInput source="model" validate={[req]} />
@@ -455,11 +463,11 @@ const VehicleEdit = (props) => (
   <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
-  </EditSmart>
+  </Edit>
 );
 
 const VehicleCreate = (props) => (
-  <CreateSmart {...props}>
+  <Create {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
   <TextInput source="make" validate={[req]} />
   <TextInput source="model" validate={[req]} />
@@ -468,12 +476,25 @@ const VehicleCreate = (props) => (
   <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
       <BooleanInput source="is_available" />
     </SimpleForm>
-  </CreateSmart>
+  </Create>
 );
 
 // Courses (exposed as "classes")
+const CourseList = (props) => (
+  <List {...props}>
+    <Datagrid rowClick="edit">
+      <NumberField source="id" />
+      <TextField source="name" />
+      <TextField source="category" />
+      <TextField source="description" />
+      <NumberField source="price" />
+      <NumberField source="required_lessons" />
+    </Datagrid>
+  </List>
+);
+
 const CourseEdit = (props) => (
-  <EditSmart {...props}>
+  <Edit {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
   <TextInput source="name" validate={[req]} />
   <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
@@ -481,11 +502,11 @@ const CourseEdit = (props) => (
   <NumberInput source="price" validate={[req]} />
   <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
-  </EditSmart>
+  </Edit>
 );
 
 const CourseCreate = (props) => (
-  <CreateSmart {...props}>
+  <Create {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
   <TextInput source="name" validate={[req]} />
   <SelectInput source="category" choices={VEHICLE_CATEGORIES} validate={[req]} />
@@ -493,7 +514,7 @@ const CourseCreate = (props) => (
   <NumberInput source="price" validate={[req]} />
   <NumberInput source="required_lessons" validate={[req]} />
     </SimpleForm>
-  </CreateSmart>
+  </Create>
 );
 
 // Payments
@@ -511,7 +532,7 @@ const PaymentList = (props) => (
 );
 
 const PaymentEdit = (props) => (
-  <EditSmart {...props}>
+  <Edit {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={true} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
         <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
@@ -520,11 +541,11 @@ const PaymentEdit = (props) => (
       <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
-  </EditSmart>
+  </Edit>
 );
 
 const PaymentCreate = (props) => (
-  <CreateSmart {...props}>
+  <Create {...props}>
     <SimpleForm mode="onChange" reValidateMode="onChange" toolbar={<DisabledUntilValidToolbar isEdit={false} />}>
       <ReferenceInput label="Enrollment" source="enrollment_id" reference="enrollments" perPage={50}>
         <SelectInput optionText={(r) => `#${r.id}`} validate={[req]} />
@@ -533,5 +554,5 @@ const PaymentCreate = (props) => (
       <SelectInput source="payment_method" choices={PAYMENT_METHODS} validate={[req]} />
       <TextInput source="description" />
     </SimpleForm>
-  </CreateSmart>
+  </Create>
 );

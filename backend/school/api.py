@@ -156,10 +156,158 @@ class InstructorViewSet(FullCrudViewSet):
                 qs = qs.filter(hire_date__lt=threshold)
         return qs
 
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export filtered/sorted instructors to CSV; no pagination."""
+        qs = self.filter_queryset(self.get_queryset())
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'hire_date', 'license_categories']
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id,
+                obj.first_name,
+                obj.last_name,
+                obj.email,
+                obj.phone_number,
+                obj.hire_date.isoformat() if obj.hire_date else '',
+                obj.license_categories,
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=instructors.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        """Import instructors from uploaded CSV.
+
+        Expected header columns: first_name,last_name,email,phone_number,hire_date,license_categories
+        hire_date accepts YYYY-MM-DD.
+        """
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response(
+                {"detail": "No file uploaded. Use form field 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+
+        required_cols = {
+            'first_name', 'last_name', 'email', 'phone_number', 'hire_date', 'license_categories'
+        }
+        missing = required_cols - set([c.strip() for c in (reader.fieldnames or [])])
+        if missing:
+            return response.Response(
+                {"detail": f"Missing required columns: {', '.join(sorted(missing))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created_ids = []
+        errors = []
+        for idx, row in enumerate(reader, start=2):
+            data = {
+                'first_name': (row.get('first_name') or '').strip(),
+                'last_name': (row.get('last_name') or '').strip(),
+                'email': (row.get('email') or '').strip(),
+                'phone_number': (row.get('phone_number') or '').strip(),
+                'hire_date': (row.get('hire_date') or '').strip(),
+                'license_categories': (row.get('license_categories') or '').strip(),
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save()
+                created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+
+        return response.Response({
+            "created": len(created_ids),
+            "created_ids": created_ids,
+            "errors": errors,
+        })
+
 
 class VehicleViewSet(FullCrudViewSet):
     queryset = Vehicle.objects.all().order_by('-year')
     serializer_class = VehicleSerializer
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export filtered/sorted vehicles to CSV; no pagination."""
+        qs = self.filter_queryset(self.get_queryset())
+        fields = ['id', 'make', 'model', 'license_plate', 'year', 'category', 'is_available']
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id,
+                obj.make,
+                obj.model,
+                obj.license_plate,
+                obj.year,
+                obj.category,
+                'true' if obj.is_available else 'false',
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=vehicles.csv'
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        """Import vehicles from uploaded CSV.
+
+        Expected header columns: make,model,license_plate,year,category[,is_available]
+        - year: integer
+        - category: one of defined categories
+        - is_available: optional, truthy values: 'true','1','yes' (case-insensitive)
+        """
+        upload = request.FILES.get('file') or request.FILES.get('csv')
+        if not upload:
+            return response.Response(
+                {"detail": "No file uploaded. Use form field 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
+        reader = csv.DictReader(text_stream)
+
+        required_cols = {'make', 'model', 'license_plate', 'year', 'category'}
+        missing = required_cols - set([c.strip() for c in (reader.fieldnames or [])])
+        if missing:
+            return response.Response(
+                {"detail": f"Missing required columns: {', '.join(sorted(missing))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        truthy = {"true", "1", "yes", "y", "t"}
+        created_ids = []
+        errors = []
+        for idx, row in enumerate(reader, start=2):
+            raw_available = (row.get('is_available') or '').strip().lower()
+            data = {
+                'make': (row.get('make') or '').strip(),
+                'model': (row.get('model') or '').strip(),
+                'license_plate': (row.get('license_plate') or '').strip(),
+                'year': (row.get('year') or '').strip(),
+                'category': (row.get('category') or '').strip(),
+                'is_available': raw_available in truthy if raw_available else True,
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save()
+                created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+
+        return response.Response({
+            "created": len(created_ids),
+            "created_ids": created_ids,
+            "errors": errors,
+        })
 
 
 class CourseViewSet(FullCrudViewSet):

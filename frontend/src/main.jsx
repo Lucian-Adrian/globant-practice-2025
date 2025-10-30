@@ -1,36 +1,18 @@
+// import React from 'react';
+// import ReactDOM from 'react-dom/client';
+// import Root from './Root.jsx';
+// import './i18n.js';
+
+// ReactDOM.createRoot(document.getElementById('root')).render(
+//   <React.StrictMode>
+//     <Root />
+//   </React.StrictMode>
+// );
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './app/App.jsx';
-import SignupForm from './features/portal/SignupForm.jsx';
-import LandingPublic from './features/portal/LandingPublic.tsx';
-import LandingStudent from './features/portal/LandingStudent.tsx';
-import Lessons from './features/portal/Lessons.tsx';
-import BookLesson from './features/portal/BookLesson.tsx';
-import Progress from './features/portal/Progress.tsx';
-import Practice from './features/portal/Practice.tsx';
-import Payments from './features/portal/Payments.tsx';
-import DashboardStudent from './features/portal/DashboardStudent.tsx';
-import StudentLogin from './features/portal/StudentLogin.jsx';
-import StudentDashboard from './features/portal/StudentDashboard.jsx';
-import TestJWT from './TestJWT.jsx';
-import { initI18n } from './i18n/index.js';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import './index.css';
-
-// Component to protect admin routes from student tokens
-const ProtectedAdminRoute = ({ children }) => {
-  const studentToken = localStorage.getItem('student_access_token');
-  
-  // If student token exists, redirect to dashboard
-  if (studentToken) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  // Otherwise, allow access to admin (it will handle its own auth)
-  return children;
-};
-
-initI18n();
+import App from './App.jsx';
+import './i18n.js';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -51,5 +33,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/dash" element={<StudentDashboard />} />
       </Routes>
     </BrowserRouter>
+
   </React.StrictMode>
 );
