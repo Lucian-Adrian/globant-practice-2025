@@ -362,7 +362,7 @@ const StudentLogin = () => {
                     disabled={submitting || !loginValid()}
                     className="button"
                   >
-                    {submitting ? t('loggingIn', { defaultValue: 'Logging in...' }) : t('login', { defaultValue: 'Log in' })}
+                    {submitting ? t('loggingIn') : t('login')}
                     <span>→</span>
                   </button>
                 </form>

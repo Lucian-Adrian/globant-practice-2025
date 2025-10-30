@@ -156,6 +156,15 @@ const languageData = {
       invalidEmail: 'Invalid email address',
       invalidDob: 'You cannot select a future date',
       tooYoung: 'You must be at least {{years}} years old',
+      // Admin / Backend validation keys
+      requiredField: 'This field is required',
+      instructorConflict: 'Instructor has a conflicting lesson at this time',
+      studentConflict: 'Student has a conflicting lesson at this time',
+      vehicleConflict: 'Vehicle is already booked at this time',
+      outsideAvailability: 'Selected time is outside instructor availability',
+      categoryMismatch: 'Vehicle category does not match course category',
+      instructorLicenseMismatch: 'Instructor is not licensed for this category',
+      vehicleUnavailable: 'Vehicle is unavailable',
     },
     admin: {
       resources: {
@@ -167,7 +176,7 @@ const languageData = {
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
     lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
         'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
-        classes: { name:'Classes', empty:'No classes yet', invite:'Create the first class', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
+        classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
       }
     },
     resources: {
@@ -179,7 +188,7 @@ const languageData = {
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
     lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
       'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
-      classes: { name:'Classes', empty:'No classes yet', invite:'Create the first class', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
+      classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
     },
   },
   ro: {
@@ -263,6 +272,15 @@ const languageData = {
       invalidEmail: 'Adresă de email invalidă',
       invalidDob: 'Nu puteți selecta o dată din viitor',
       tooYoung: 'Trebuie să aveți cel puțin {{years}} ani',
+      // Admin / Backend validation keys
+      requiredField: 'Acest câmp este obligatoriu',
+      instructorConflict: 'Instructorul are deja o lecție în acest interval',
+      studentConflict: 'Studentul are deja o lecție în acest interval',
+      vehicleConflict: 'Vehiculul este deja rezervat în acest interval',
+      outsideAvailability: 'Ora selectată este în afara disponibilității instructorului',
+      categoryMismatch: 'Categoria vehiculului nu corespunde categoriei cursului',
+      instructorLicenseMismatch: 'Instructorul nu este licențiat pentru această categorie',
+      vehicleUnavailable: 'Vehiculul selectat este indisponibil',
     },
     // Duplicate resource labels under the 'admin' namespace to ensure RA menu/items resolve without falling back to EN
     admin: {

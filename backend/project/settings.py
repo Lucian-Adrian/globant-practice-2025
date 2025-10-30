@@ -147,6 +147,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS (allow all in dev; tighten later)
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Business-local timezone for availability calculations (admin & backend logic)
+# Keep TIME_ZONE=UTC for storage; use BUSINESS_TZ for human scheduling rules.
+BUSINESS_TZ = os.getenv('BUSINESS_TZ', 'Europe/Chisinau')
+
 REST_FRAMEWORK = {
     # Use a pagination class compatible with react-admin (?page & ?page_size)
     'DEFAULT_PAGINATION_CLASS': 'school.pagination.StandardResultsSetPagination',
