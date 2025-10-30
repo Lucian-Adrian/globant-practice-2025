@@ -1,6 +1,5 @@
 import { API_PREFIX } from '../../api/httpClient';
 
-const toIso = (d) => new Date(d).toISOString();
 const addMinutes = (date, mins) => new Date(new Date(date).getTime() + (mins*60000));
 const overlap = (startA, endA, startB, endB) => startA < endB && startB < endA; // adjacency allowed
 const DAY_ENUM = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
