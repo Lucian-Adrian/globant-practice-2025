@@ -1,5 +1,7 @@
 // Extracted dataProvider from App.jsx (working logic only)
 import { httpJson, rawFetch, API_PREFIX } from './httpClient';
+import { HttpError } from 'react-admin';
+import { raI18nProvider } from '../i18n/index.js';
 
 const baseApi = API_PREFIX; // consistent single source
 
@@ -36,15 +38,22 @@ const buildQuery = (params) => {
   return query.toString();
 };
 
+const translateIfValidationKey = (msg) => {
+  if (typeof msg === 'string' && msg.startsWith('validation.')) {
+    try { return raI18nProvider.translate(msg); } catch (_) { return msg; }
+  }
+  return msg;
+};
+
 const extractFieldErrors = (body) => {
   if (!body || typeof body !== 'object') return {};
   const source = body.errors && typeof body.errors === 'object' ? body.errors : body;
   const map = {};
   for (const [field, messages] of Object.entries(source)) {
     if (messages == null) continue;
-    if (Array.isArray(messages) && messages.length) map[field] = String(messages[0]);
-    else if (typeof messages === 'string') map[field] = messages;
-    else if (typeof messages === 'object' && messages.message) map[field] = String(messages.message);
+    if (Array.isArray(messages) && messages.length) map[field] = String(translateIfValidationKey(messages[0]));
+    else if (typeof messages === 'string') map[field] = translateIfValidationKey(messages);
+    else if (typeof messages === 'object' && messages.message) map[field] = String(translateIfValidationKey(messages.message));
   }
   return map;
 };
@@ -80,6 +89,10 @@ const dataProvider = {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:update] lessons payload', params.data); } catch (_) {}
+      // Ensure UTC ISO for scheduled_time
+      if (params.data && params.data.scheduled_time) {
+        params.data = { ...params.data, scheduled_time: new Date(params.data.scheduled_time).toISOString() };
+      }
     }
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}${params.id}/`;
@@ -88,12 +101,9 @@ const dataProvider = {
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
       const fieldErrors = extractFieldErrors(body);
-      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
-      const error = new Error(baseMessage);
-      error.status = resp.status;
-      error.body = fieldErrors;
-      error.backend = body;
-      throw error;
+      // Ensure inline field errors in RA by using HttpError(message, status, { errors })
+      const baseMessage = resp.status === 400 ? 'validation' : (body.message || body.detail || body.error || 'Server error');
+      throw new HttpError(baseMessage, resp.status, { errors: fieldErrors });
     }
     return { data: body };
   },
@@ -110,6 +120,10 @@ const dataProvider = {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:create] lessons payload', params.data); } catch (_) {}
+      // Ensure UTC ISO for scheduled_time
+      if (params.data && params.data.scheduled_time) {
+        params.data = { ...params.data, scheduled_time: new Date(params.data.scheduled_time).toISOString() };
+      }
     }
     const resName = mapResource(resource);
     const url = `${baseApi}/${resName}`;
@@ -118,12 +132,9 @@ const dataProvider = {
     try { body = await resp.json(); } catch (_) {}
     if (!resp.ok) {
       const fieldErrors = extractFieldErrors(body);
-      const baseMessage = body.message || body.detail || body.error || (resp.status === 400 ? 'Validation failed' : 'Server error');
-      const error = new Error(baseMessage);
-      error.status = resp.status;
-      error.body = fieldErrors;
-      error.backend = body;
-      throw error;
+      // Ensure inline field errors in RA by using HttpError(message, status, { errors })
+      const baseMessage = resp.status === 400 ? 'validation' : (body.message || body.detail || body.error || 'Server error');
+      throw new HttpError(baseMessage, resp.status, { errors: fieldErrors });
     }
     return { data: body };
   },

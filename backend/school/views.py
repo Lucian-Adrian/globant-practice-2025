@@ -374,6 +374,8 @@ class LessonViewSet(FullCrudViewSet):
         'scheduled_time': ['gte', 'lte', 'gt', 'lt'],
         'instructor': ['exact'],
         'vehicle__license_plate': ['exact'],
+        # New: allow filtering by vehicle id directly for efficient conflict checks
+        'vehicle_id': ['exact'],
         'enrollment__student': ['exact'],
         'enrollment__course': ['exact'],
     }

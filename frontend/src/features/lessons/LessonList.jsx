@@ -78,11 +78,11 @@ const FilteredDatagrid = (props) => {
       rowClick="edit"
       sx={{
         '& .RaDatagrid-row': {
-          '&[data-lesson-status="COMPLETED"]': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
-          '&[data-lesson-status="CANCELED"]': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
+          '&.lesson-status-COMPLETED': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
+          '&.lesson-status-CANCELED': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
         }
       }}
-      rowStyle={(record) => ({ 'data-lesson-status': getLessonStatus(record).status })}
+      rowClassName={(record) => record ? `lesson-status-${getLessonStatus(record).status}` : ''}
     >
       <NumberField source="id" label="ID" />
       <FunctionField

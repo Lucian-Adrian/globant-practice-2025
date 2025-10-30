@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
 ## [Unreleased]
 
 ### Added
+- BUSINESS_TZ setting (default Europe/Chisinau) for business-local availability rules.
+- vehicle_id filter on LessonViewSet for efficient conflict checks.
+- Client-side preflight for lessons (interval availability and server existence checks using page_size=1).
+- Validation keys for EN and RO: requiredField, instructorConflict, studentConflict, vehicleConflict, outsideAvailability, categoryMismatch, instructorLicenseMismatch, vehicleUnavailable.
+
 - Payment status field to Payment model with enum choices (PENDING, COMPLETED, REFUNDED, FAILED)
 - Payment status field to PaymentSerializer for API responses
 - Payment status filtering in PaymentViewSet
@@ -19,12 +24,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
 - Default values for form fields to prevent undefined options
 
 ### Changed
+- LessonSerializer now validates instructor, student, and vehicle conflicts; enforces business-local interval availability (any-minute start within [t[i], t[i+1]) or exact last slot); checks vehicle.is_available for scheduled lessons; verifies instructor license vs. course category; defaults to 90-minute lessons.
+- Admin now sends scheduled_time as UTC ISO and performs aligned client-side availability/conflict checks.
+- Inline translated field errors replace toast notifications in Admin.
+- Vehicle list improved with detail drawer and safe row-click handling.
+
 - Payment status display logic now uses actual database status instead of calculated business rules
 - Enrollment search now uses AutocompleteInput instead of SelectInput for better UX
 - Form components now have proper memoization to prevent unnecessary re-renders
 - PaymentList performance optimized by removing debug console.logs and adding useMemo/useCallback
 
 ### Fixed
+- Inline translation for validation.vehicleUnavailable under Vehicle field.
+- Stable MUI Select menus using keepMounted to prevent flicker.
+- Lesson list row styling changed to CSS classes.
+
 - JWT token expiry issues in authentication flow
 - Undefined options in RadioButtonGroupInput and SelectInput components
 - Missing translations for React Admin components (ra.page.error, ra.message.invalid_form, etc.)
@@ -34,12 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
 
 ### Technical Details
 - **Backend Changes:**
+  - BUSINESS_TZ (default `Europe/Chisinau`) added; LessonSerializer enforces interval-based business-local availability and conflict rules (instructor/student/vehicle); validations return i18n-safe keys (`validation.*`).
+  - LessonViewSet: added `vehicle_id` filter to support efficient preflight/conflict checks from clients.
+
   - Added `status` field to Payment model with PaymentStatus enum
   - Updated PaymentSerializer to include status field
   - Added status filtering to PaymentViewSet
   - Created migration for payment status field
 
 - **Frontend Changes:**
+  - Admin dataProvider: converts `scheduled_time` to UTC ISO on create/update for lessons.
+  - Admin client: client-side preflight uses `page_size=1` existence checks and `vehicle_id` filter; validation.* keys are translated and surfaced as inline field errors (no toasts).
+  - Added validation keys in EN/RO locales and wired Admin to display translated inline errors.
+  - LessonList and VehicleList: visual/UX improvements (row class styling, detail drawer, safe row-click handling).
+
   - Updated PaymentList to use database status field
   - Added memoization to PaymentStatusField component
   - Optimized FilteredPaymentDatagrid with useMemo for filtered data
@@ -51,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
   - Removed 100+ console.log statements from PaymentList
   - Added React.useMemo for expensive calculations
   - Implemented proper memoization patterns throughout forms and lists
+
+**Notes:** Business rules use `BUSINESS_TZ` (default `Europe/Chisinau`) for human scheduling decisions while storing datetimes in UTC. Student Portal alignment with these rules is deferred to a follow-up. Vehicle vs. classroom/resource unification will be handled in a future change.
 
 ### Migration Notes
 - Run `python manage.py migrate` to apply the payment status field migration

@@ -10,16 +10,21 @@ import {
     useTranslate, 
     required 
 } from 'react-admin';
+import { validateLesson } from '../../shared/validation/lessonValidation';
 
 export default function LessonEdit(props) {
   const t = useTranslate();
   return (
     <Edit {...props}>
-      <SimpleForm>
+      <SimpleForm validate={async (values) => validateLesson(values, t, values?.id)}>
         <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
           <SelectInput 
             label={t('resources.lessons.fields.enrollment', 'Enrollment')} 
             optionText={(r) => r.label || `#${r.id}`} 
+            optionValue="id"
+            emptyText={t('validation.requiredField')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
             validate={[required()]} 
           />
         </ReferenceInput>
@@ -27,6 +32,11 @@ export default function LessonEdit(props) {
           <SelectInput 
             label={t('resources.lessons.fields.instructor', 'Instructor')} 
             optionText={(r) => `${r.first_name} ${r.last_name}`} 
+            optionValue="id"
+            emptyText={t('validation.requiredField')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
+            SelectProps={{ MenuProps: { keepMounted: true } }}
             validate={[required()]} 
           />
         </ReferenceInput>
@@ -34,6 +44,11 @@ export default function LessonEdit(props) {
           <SelectInput 
             label={t('resources.lessons.fields.vehicle', 'Vehicle')} 
             optionText={(r) => `${r.license_plate}`} 
+            optionValue="id"
+            emptyText={t('resources.lessons.fields.vehicle', 'Vehicle')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
+            SelectProps={{ MenuProps: { keepMounted: true } }}
           />
         </ReferenceInput>
 
@@ -56,6 +71,7 @@ export default function LessonEdit(props) {
             { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
             { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
           ]}
+          SelectProps={{ MenuProps: { keepMounted: true } }}
         />
         <TextInput 
           source="notes" 
