@@ -62,6 +62,13 @@ class PaymentMethod(_ChoiceStrEnum):
     TRANSFER = "TRANSFER"
 
 
+class PaymentStatus(_ChoiceStrEnum):
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    REFUNDED = "REFUNDED"
+    FAILED = "FAILED"
+
+
 class VehicleCategory(_ChoiceStrEnum):
     AM = "AM"
     A1 = "A1"
@@ -104,6 +111,7 @@ def all_enums_for_meta() -> dict[str, list[str]]:
         "enrollment_status": values(EnrollmentStatus),
         "lesson_status": values(LessonStatus),
         "payment_method": values(PaymentMethod),
+        "payment_status": values(PaymentStatus),
         "vehicle_category": values(VehicleCategory),
     "course_type": values(CourseType),
         "day_of_week": values(DayOfWeek),

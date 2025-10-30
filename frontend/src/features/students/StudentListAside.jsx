@@ -4,7 +4,6 @@ import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
 export default function StudentListAside() {
   return (
     <ListAsideFilters
-      dateField="enrollment_date"
       statusLabelKey="filters.status"
       statusItems={[
         { value: { status: 'ACTIVE' }, labelKey: 'filters.active', color: '#3b82f6' },
