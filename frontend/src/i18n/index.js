@@ -164,7 +164,7 @@ const languageData = {
       outsideAvailability: 'Selected time is outside instructor availability',
       categoryMismatch: 'Vehicle category does not match course category',
       instructorLicenseMismatch: 'Instructor is not licensed for this category',
-      vehicleUnavailable: 'Selected vehicle is unavailable',
+      vehicleUnavailable: 'Vehicle is unavailable',
     },
     admin: {
       resources: {
