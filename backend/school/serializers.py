@@ -311,8 +311,21 @@ class LessonSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'scheduled_time': [_('validation.outsideAvailability')]})
 
         def to_minutes(hhmm: str) -> int:
-            hh, mm = hhmm.split(':')
-            return int(hh) * 60 + int(mm)
+            # Validate format: must contain colon and both parts must be numeric
+            if not isinstance(hhmm, str) or ':' not in hhmm:
+                raise serializers.ValidationError({'scheduled_time': [_('validation.invalidTimeFormat')]})
+            parts = hhmm.split(':')
+            if len(parts) != 2:
+                raise serializers.ValidationError({'scheduled_time': [_('validation.invalidTimeFormat')]})
+            hh, mm = parts
+            try:
+                hh_int = int(hh)
+                mm_int = int(mm)
+            except ValueError:
+                raise serializers.ValidationError({'scheduled_time': [_('validation.invalidTimeFormat')]})
+            if not (0 <= hh_int <= 23 and 0 <= mm_int <= 59):
+                raise serializers.ValidationError({'scheduled_time': [_('validation.invalidTimeFormat')]})
+            return hh_int * 60 + mm_int
 
         slot_list = sorted(slots)
         slot_mins = [to_minutes(s) for s in slot_list]
