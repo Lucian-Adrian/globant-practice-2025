@@ -203,11 +203,11 @@ class LessonSerializer(serializers.ModelSerializer):
         # Required minimal fields
         errors: dict[str, list[str]] = {}
         if not enrollment:
-            errors.setdefault('enrollment_id', [_('validation.requiredField')])
+            errors['enrollment_id'] = [_('validation.requiredField')]
         if not instructor:
-            errors.setdefault('instructor_id', [_('validation.requiredField')])
+            errors['instructor_id'] = [_('validation.requiredField')]
         if not start:
-            errors.setdefault('scheduled_time', [_('validation.requiredField')])
+            errors['scheduled_time'] = [_('validation.requiredField')]
         if errors:
             raise serializers.ValidationError(errors)
 
