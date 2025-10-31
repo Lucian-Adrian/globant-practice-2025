@@ -196,15 +196,38 @@ class InstructorViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {k: (row.get(k) or '').strip() for k in required}
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            email = data.get('email')
+
+            # Use update_or_create to prevent duplicates based on email
+            try:
+                existing = Instructor.objects.filter(email=email).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class InstructorAvailabilityViewSet(FullCrudViewSet):
@@ -251,7 +274,7 @@ class VehicleViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {
                 'make': (row.get('make') or '').strip(),
@@ -261,12 +284,35 @@ class VehicleViewSet(FullCrudViewSet):
                 'category': (row.get('category') or '').strip(),
                 'is_available': ((row.get('is_available') or 'true').strip().lower() in ['1','true','yes'])
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            license_plate = data.get('license_plate')
+
+            # Use update_or_create to prevent duplicates based on license_plate
+            try:
+                existing = Vehicle.objects.filter(license_plate=license_plate).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class CourseViewSet(FullCrudViewSet):
@@ -300,15 +346,39 @@ class CourseViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {k: (row.get(k) or '').strip() for k in required}
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            name = data.get('name')
+            category = data.get('category')
+
+            # Use update_or_create to prevent duplicates based on name + category
+            try:
+                existing = Course.objects.filter(name=name, category=category).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class EnrollmentViewSet(FullCrudViewSet):
@@ -350,7 +420,7 @@ class EnrollmentViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {
                 'student_id': (row.get('student_id') or '').strip(),
@@ -358,12 +428,36 @@ class EnrollmentViewSet(FullCrudViewSet):
                 'type': (row.get('type') or '').strip(),
                 'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            student_id = data.get('student_id')
+            course_id = data.get('course_id')
+
+            # Use update_or_create to prevent duplicates based on student_id + course_id
+            try:
+                existing = Enrollment.objects.filter(student_id=student_id, course_id=course_id).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class LessonViewSet(FullCrudViewSet):
@@ -420,7 +514,7 @@ class LessonViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
@@ -431,12 +525,41 @@ class LessonViewSet(FullCrudViewSet):
                 'status': (row.get('status') or '').strip(),
                 'notes': (row.get('notes') or '').strip(),
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            enrollment_id = data.get('enrollment_id')
+            instructor_id = data.get('instructor_id')
+            scheduled_time = data.get('scheduled_time')
+
+            # Use update_or_create to prevent duplicates based on enrollment_id + instructor_id + scheduled_time
+            try:
+                existing = Lesson.objects.filter(
+                    enrollment_id=enrollment_id,
+                    instructor_id=instructor_id,
+                    scheduled_time=scheduled_time
+                ).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class PaymentViewSet(FullCrudViewSet):
@@ -476,7 +599,7 @@ class PaymentViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
@@ -485,12 +608,42 @@ class PaymentViewSet(FullCrudViewSet):
                 'status': (row.get('status') or 'PENDING').strip() or 'PENDING',
                 'description': (row.get('description') or '').strip(),
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            enrollment_id = data.get('enrollment_id')
+            amount = data.get('amount')
+            description = data.get('description')
+
+            # Use update_or_create to prevent duplicates based on enrollment_id + amount + description
+            # Note: This assumes that payments with same enrollment, amount, and description are duplicates
+            try:
+                existing = Payment.objects.filter(
+                    enrollment_id=enrollment_id,
+                    amount=amount,
+                    description=description
+                ).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class UtilityViewSet(viewsets.ViewSet):
