@@ -66,3 +66,5 @@ Thumbs.db
 .dockerignore
 
 # AI
+implementation.md
+plan.md

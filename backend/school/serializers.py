@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability, Resource, ScheduledClass
 from .enums import CourseType
 from .validators import validate_name, normalize_phone
 from django.utils.translation import gettext as _
@@ -145,6 +145,20 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields = ["id", "make", "model", "license_plate", "year", "category", "is_available"]
 
 
+class ResourceSerializer(serializers.ModelSerializer):
+    resource_type = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Resource
+        fields = [
+            "id", "name", "max_capacity", "category", "is_available",
+            "license_plate", "make", "model", "year", "resource_type"
+        ]
+
+    def get_resource_type(self, obj):
+        return obj.resource_type
+
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -176,15 +190,15 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 class LessonSerializer(serializers.ModelSerializer):
     instructor = InstructorSerializer(read_only=True)
     enrollment = EnrollmentSerializer(read_only=True)
-    vehicle = VehicleSerializer(read_only=True)
+    resource = ResourceSerializer(read_only=True)
     instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
     enrollment_id = serializers.PrimaryKeyRelatedField(queryset=Enrollment.objects.all(), source="enrollment", write_only=True)
-    vehicle_id = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all(), source="vehicle", write_only=True, required=False, allow_null=True)
+    resource_id = serializers.PrimaryKeyRelatedField(queryset=Resource.objects.all(), source="resource", write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Lesson
         fields = [
-            "id", "enrollment", "instructor", "vehicle", "enrollment_id", "instructor_id", "vehicle_id", "scheduled_time",
+            "id", "enrollment", "instructor", "resource", "enrollment_id", "instructor_id", "resource_id", "scheduled_time",
             "duration_minutes", "status", "notes"
         ]
 
@@ -195,7 +209,7 @@ class LessonSerializer(serializers.ModelSerializer):
         instance = getattr(self, 'instance', None)
         enrollment = attrs.get('enrollment') or (instance.enrollment if instance else None)
         instructor = attrs.get('instructor') or (instance.instructor if instance else None)
-        vehicle = attrs.get('vehicle') if 'vehicle' in attrs else (instance.vehicle if instance else None)
+        resource = attrs.get('resource') if 'resource' in attrs else (instance.resource if instance else None)
         start = attrs.get('scheduled_time') or (instance.scheduled_time if instance else None)
         duration = attrs.get('duration_minutes') or (instance.duration_minutes if instance else 90)
         status = attrs.get('status') or (instance.status if instance else 'SCHEDULED')
@@ -260,25 +274,25 @@ class LessonSerializer(serializers.ModelSerializer):
             if has_overlap(student_qs):
                 raise serializers.ValidationError({'enrollment_id': [_('validation.studentConflict')]})
 
-        # Vehicle conflicts (if a vehicle is set)
-        veh_id = getattr(vehicle, 'id', None) if vehicle else None
-        if veh_id:
-            veh_qs = LessonModel.objects.filter(
-                vehicle_id=veh_id,
+        # Resource conflicts (if a resource is set)
+        res_id = getattr(resource, 'id', None) if resource else None
+        if res_id:
+            res_qs = LessonModel.objects.filter(
+                resource_id=res_id,
                 status__in=ACTIVE_STATUSES,
                 scheduled_time__lt=end,
                 scheduled_time__gte=start - timedelta(hours=8),
             )
-            if has_overlap(veh_qs):
-                raise serializers.ValidationError({'vehicle_id': [_('validation.vehicleConflict')]})
+            if has_overlap(res_qs):
+                raise serializers.ValidationError({'resource_id': [_('validation.resourceConflict')]})
 
-        # Enforce vehicle availability for scheduled lessons
-        if (status == 'SCHEDULED') and vehicle is not None:
+        # Enforce resource availability for scheduled lessons
+        if (status == 'SCHEDULED') and resource is not None:
             try:
-                if getattr(vehicle, 'is_available', True) is False:
-                    raise serializers.ValidationError({'vehicle_id': [_('validation.vehicleUnavailable')]})
+                if getattr(resource, 'is_available', True) is False:
+                    raise serializers.ValidationError({'resource_id': [_('validation.resourceUnavailable')]})
             except AttributeError:
-                # If vehicle object doesn't expose is_available for any reason, skip this check gracefully
+                # If resource object doesn't expose is_available for any reason, skip this check gracefully
                 pass
 
         # Availability check for the instructor in business-local time with interval acceptance
@@ -347,9 +361,9 @@ class LessonSerializer(serializers.ModelSerializer):
         # Category & license checks
         course = getattr(enrollment, 'course', None)
         course_category = getattr(course, 'category', None)
-        if vehicle and course_category:
-            if vehicle.category != course_category:
-                raise serializers.ValidationError({'vehicle_id': [_('validation.categoryMismatch')]})
+        if resource and course_category:
+            if resource.category != course_category:
+                raise serializers.ValidationError({'resource_id': [_('validation.categoryMismatch')]})
         if course_category:
             lic_raw = getattr(instructor, 'license_categories', '') or ''
             cats = [c.strip().upper() for c in str(lic_raw).split(',') if c.strip()]
@@ -366,3 +380,36 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ["id", "enrollment", "enrollment_id", "amount", "payment_date", "payment_method", "description", "status"]
+
+
+class ScheduledClassSerializer(serializers.ModelSerializer):
+    course = CourseSerializer(read_only=True)
+    instructor = InstructorSerializer(read_only=True)
+    resource = ResourceSerializer(read_only=True)
+    course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), source="course", write_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor", write_only=True)
+    resource_id = serializers.PrimaryKeyRelatedField(queryset=Resource.objects.all(), source="resource", write_only=True)
+    current_enrollment = serializers.SerializerMethodField(read_only=True)
+    available_spots = serializers.SerializerMethodField(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+    student_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        source="students",
+        many=True,
+        write_only=True,
+        required=False
+    )
+
+    class Meta:
+        model = ScheduledClass
+        fields = [
+            "id", "course", "course_id", "name", "scheduled_time", "duration_minutes",
+            "instructor", "instructor_id", "resource", "resource_id", "students", "student_ids",
+            "max_students", "status", "current_enrollment", "available_spots"
+        ]
+
+    def get_current_enrollment(self, obj):
+        return obj.current_enrollment()
+
+    def get_available_spots(self, obj):
+        return obj.available_spots()
