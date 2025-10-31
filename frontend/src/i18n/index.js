@@ -3,10 +3,10 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import React from 'react';
 import portalEn from './locales/en.json';
-// Auto-pickup of additional portal locales if present (Vite only)
-const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
-  ? import.meta.glob('./locales/*.json', { eager: true })
-  : {};
+import portalRo from './locales/ro.json';
+import portalRu from './locales/ru.json';
+// Static mapping to avoid any runtime async loading/flicker
+const portalByLng = { en: portalEn, ro: portalRo, ru: portalRu };
 
 // To avoid runtime failures inside Docker if extra language packages are missing,
 // we inline minimal RA translation objects instead of importing optional packages.
@@ -17,9 +17,9 @@ const englishMessages = {
   sort: { sort_by: 'Sort by {{field}} {{order}}',  ASC: 'ascending', DESC: 'descending' },
     // Merged auth keys
     auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
-    // Merged page keys
-    page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show', error: 'Error' },
-    message: { error: 'Error', invalid_form: 'Invalid form' },
+  // Merged page keys
+  page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show', error: 'Error', not_found: 'Page not found' },
+  message: { error: 'Error', invalid_form: 'Invalid form', not_found: 'Not found' },
     validation: { required: 'Required' },
     custom: { import_csv: 'Import CSV', export_csv: 'Export CSV' },
     notification: { updated: 'Element updated', created: 'Element created', deleted: 'Element deleted' },
@@ -32,9 +32,9 @@ const romanianMessages = {
   sort: { sort_by: 'Sortează după {{field}} {{order}}', ASC: 'crescător', DESC: 'descrescător' },
     // Merged auth keys
     auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare', logout: 'Deconectare', user_menu: 'Utilizator' },
-    // Merged page keys
-    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi', error: 'Eroare' },
-    message: { error: 'Eroare', invalid_form: 'Formular invalid' },
+  // Merged page keys
+  page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi', error: 'Eroare', not_found: 'Pagina nu a fost găsită' },
+  message: { error: 'Eroare', invalid_form: 'Formular invalid', not_found: 'Nu a fost găsit' },
     validation: { required: 'Obligatoriu' },
     custom: { import_csv: 'Importă CSV', export_csv: 'Exportă CSV' },
     notification: { updated: 'Element actualizat', created: 'Element creat', deleted: 'Element șters' },
@@ -47,9 +47,9 @@ const russianMessages = {
   sort: { sort_by: 'Сортировать по {{field}} {{order}}', ASC: 'по возрастанию', DESC: 'по убыванию' },
     // Merged auth keys
     auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти', logout: 'Выйти', user_menu: 'Пользователь' },
-    // Merged page keys
-    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр', error: 'Ошибка' },
-    message: { error: 'Ошибка', invalid_form: 'Неверная форма' },
+  // Merged page keys
+  page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр', error: 'Ошибка', not_found: 'Страница не найдена' },
+  message: { error: 'Ошибка', invalid_form: 'Неверная форма', not_found: 'Не найдено' },
     validation: { required: 'Обязательно' },
     custom: { import_csv: 'Импорт CSV', export_csv: 'Экспорт CSV' },
     notification: { updated: 'Элемент обновлен', created: 'Элемент создан', deleted: 'Элемент удален' },
@@ -425,62 +425,45 @@ const resources = Object.fromEntries(
     const { common = {}, resources: resourceBlock, ...rest } = data;
     // Avoid overwriting if already nested
     const mergedCommon = { ...common, resources: resourceBlock };
-    // Add portal namespace: use English placeholders by default; if ro/ru files exist, they will be used automatically
-    let portalNS = portalEn;
-    try {
-      const key = `./locales/${lng}.json`;
-      const mod = portalLocales[key];
-      if (mod && (mod.default || mod)) {
-        portalNS = mod.default || mod;
-      }
-    } catch (_) {
-      portalNS = portalEn;
-    }
-    return [lng, { ...rest, common: mergedCommon, portal: portalNS }];
+  // Attach portal namespace statically by language to ensure sync availability
+  const portalNS = portalByLng[lng] || portalEn;
+  return [lng, { ...rest, common: mergedCommon, portal: portalNS }];
   })
 );
-
-// Runtime safeguard: if at startup ro/ru portal JSON was missing (so we fell back to English),
-// ensure on first language change (or immediate call) we try loading the real file dynamically.
-async function ensurePortalBundle(lng) {
-  try {
-    if (!i18n || !lng) return;
-    // If bundle exists and is clearly localized (different from English), skip
-    if (i18n.hasResourceBundle(lng, 'portal')) {
-      const enValue = i18n.getResource('en', 'portal', 'lessons.header.title');
-      const currentValue = i18n.getResource(lng, 'portal', 'lessons.header.title');
-      if (currentValue && enValue && currentValue !== enValue) return; // already localized
-    }
-    // Attempt dynamic import (works with Vite) – falls back silently if file absent
-    const mod = await import(`./locales/${lng}.json`).catch(() => null);
-    const data = mod && (mod.default || mod);
-    if (data && Object.keys(data).length) {
-      i18n.addResourceBundle(lng, 'portal', data, true, true);
-    }
-  } catch (err) {
-    // Ignore – fallback to English already present
-  }
-}
 
 // Initialize only once; keep a helper for legacy calls (initI18n) used in main.jsx
 export function initI18n(lang = storedLang || 'en') {
   if (!i18n.isInitialized) {
-    i18n.use(initReactI18next).init({
+    const supported = ['en', 'ro', 'ru'];
+    const initPromise = i18n.use(initReactI18next).init({
       resources,
       lng: lang,
       fallbackLng: 'en',
+  supportedLngs: ['en', 'ro', 'ru'],
+  load: 'languageOnly',
+  nonExplicitSupportedLngs: true,
+  cleanCode: true,
       ns: ['ra', 'common', 'validation', 'admin', 'portal'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
+  // Ensure react-i18next binds to language and loaded events and avoids Suspense stalls
+      react: { useSuspense: false, bindI18n: 'languageChanged loaded' },
+      // Make init synchronous when resources are provided to avoid first-render flicker
+      initImmediate: false,
+  }).then(async () => {
+      try {
+        // Preload all namespaces for all supported languages (no-ops if already present)
+        await i18n.loadLanguages(supported);
+        await i18n.loadNamespaces(['ra','common','validation','admin','portal']);
+        await i18n.reloadResources(supported, ['ra','common','validation','admin','portal']).catch(() => {});
+      } catch {}
+      i18n.on('languageChanged', (lng) => {
+        try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {}
+      });
     });
-    // Initial hydration attempt for starting language
-    ensurePortalBundle(lang);
-    i18n.on('languageChanged', (lng) => {
-      try { window.localStorage.setItem(LS_KEY, lng); } catch (_) {}
-      ensurePortalBundle(lng);
-    });
+    return initPromise;
   }
-  return i18n;
+  return Promise.resolve(i18n);
 }
 
 // Ensure default initialization (so components using hooks without manual init still work)
@@ -493,9 +476,14 @@ initI18n();
 export function useI18nForceUpdate() {
   const [, setTick] = React.useState(0);
   React.useEffect(() => {
-    const handler = () => setTick(t => t + 1);
-    i18n.on('languageChanged', handler);
-    return () => { i18n.off('languageChanged', handler); };
+    const bump = () => setTick(t => t + 1);
+    i18n.on('languageChanged', bump);
+    // Also react when async namespaces (like 'portal') finish loading
+    i18n.on('loaded', bump);
+    return () => {
+      i18n.off('languageChanged', bump);
+      i18n.off('loaded', bump);
+    };
   }, []);
 }
 
@@ -512,7 +500,9 @@ export const raI18nProvider = {
     if (!key) return '';
 
     const tryKey = (k, ns) => {
-      const r = i18n.t(k, { ns, defaultValue: k, ...options });
+  // react-admin often passes '_' as alias for defaultValue
+  const { _, defaultValue, ...rest } = options || {};
+  const r = i18n.t(k, { ns, defaultValue: defaultValue ?? _ ?? k, ...rest });
       return r && r !== k ? r : null;
     };
 
@@ -557,7 +547,8 @@ export const raI18nProvider = {
       if (rCommon2) return rCommon2;
     }
     // 6. Direct attempt (maybe already using internal path without prefix)
-    const direct = i18n.t(key, { ...options, defaultValue: key });
+  const { _, defaultValue, ...rest } = options || {};
+  const direct = i18n.t(key, { ...rest, defaultValue: defaultValue ?? _ ?? key });
     if (direct && direct !== key) return direct;
     return key; // fallback to raw key (helps detect missing keys in UI)
   },
@@ -568,3 +559,30 @@ export const raI18nProvider = {
 };
 
 export default i18n;
+
+// Simple app-wide locale state mirroring RA's useLocaleState for the portal
+const APP_LOCALE_KEY = 'app_lang';
+export function useAppLocaleState() {
+  const getBase = (lng) => (lng || 'en').split('-')[0];
+  const [locale, setLocaleState] = React.useState(getBase(i18n.resolvedLanguage || i18n.language));
+  React.useEffect(() => {
+    const onLang = (lng) => setLocaleState(getBase(lng));
+    i18n.on('languageChanged', onLang);
+    // reflect in <html lang> to help a11y and browser widgets
+    try { if (typeof document !== 'undefined') { document.documentElement.lang = getBase(i18n.language); } } catch {}
+    return () => { i18n.off('languageChanged', onLang); };
+  }, []);
+  const setLocale = React.useCallback((lng) => {
+    const base = getBase(lng);
+    const allowed = ['en','ro','ru'];
+    const next = allowed.includes(base) ? base : 'en';
+    // Eagerly update local state for instant UI switch
+    setLocaleState(next);
+    // Persist and reflect in document
+    try { window.localStorage.setItem(APP_LOCALE_KEY, next); } catch {}
+    try { if (typeof document !== 'undefined') { document.documentElement.lang = next; } } catch {}
+    // Trigger i18n language change (async under the hood)
+    return i18n.changeLanguage(next);
+  }, []);
+  return [locale, setLocale];
+}

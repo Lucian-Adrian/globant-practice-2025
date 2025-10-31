@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SelectInput, useGetList } from 'react-admin';
+import { SelectInput, useGetList, useTranslate } from 'react-admin';
 
 /**
  * Resource dropdown for toolbar filters.
