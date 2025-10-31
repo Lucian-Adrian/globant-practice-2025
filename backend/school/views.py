@@ -13,10 +13,11 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability, Resource, ScheduledClass
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer,
+    ResourceSerializer, ScheduledClassSerializer
 )
 from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
@@ -366,14 +367,16 @@ class EnrollmentViewSet(FullCrudViewSet):
 
 
 class LessonViewSet(FullCrudViewSet):
-    queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
+    queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'resource').all()
     serializer_class = LessonSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         'status': ['exact'],
         'scheduled_time': ['gte', 'lte', 'gt', 'lt'],
         'instructor': ['exact'],
-        'vehicle__license_plate': ['exact'],
+        'resource__name': ['exact'],
+        # New: allow filtering by resource id directly for efficient conflict checks
+        'resource_id': ['exact'],
         'enrollment__student': ['exact'],
         'enrollment__course': ['exact'],
     }
@@ -385,20 +388,20 @@ class LessonViewSet(FullCrudViewSet):
             instr = self.request.query_params.get('instructor') or self.request.query_params.get('instructor_id')
             if instr:
                 qs = qs.filter(instructor_id=instr)
-            # Accept 'vehicle' as a license plate string alias for vehicle__license_plate
-            vehicle_lp = self.request.query_params.get('vehicle')
-            if vehicle_lp:
-                qs = qs.filter(vehicle__license_plate=vehicle_lp)
+            # Accept 'resource' as a name string alias for resource__name
+            resource_name = self.request.query_params.get('resource')
+            if resource_name:
+                qs = qs.filter(resource__name__icontains=resource_name)
         return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
-        fields = ['id', 'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status', 'notes']
+        fields = ['id', 'enrollment_id', 'instructor_id', 'resource_id', 'scheduled_time', 'duration_minutes', 'status', 'notes']
         qs = self.filter_queryset(self.get_queryset())
         buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
         for obj in qs:
             writer.writerow([
-                obj.id, obj.enrollment_id, obj.instructor_id, obj.vehicle_id,
+                obj.id, obj.enrollment_id, obj.instructor_id, obj.resource_id,
                 obj.scheduled_time.isoformat() if obj.scheduled_time else '',
                 obj.duration_minutes, obj.status, (obj.notes or '').replace('\n', ' ')
             ])
@@ -413,7 +416,7 @@ class LessonViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status'}
+        required = {'enrollment_id', 'instructor_id', 'resource_id', 'scheduled_time', 'duration_minutes', 'status'}
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -422,7 +425,7 @@ class LessonViewSet(FullCrudViewSet):
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'instructor_id': (row.get('instructor_id') or '').strip(),
-                'vehicle_id': (row.get('vehicle_id') or '').strip() or None,
+                'resource_id': (row.get('resource_id') or '').strip() or None,
                 'scheduled_time': (row.get('scheduled_time') or '').strip(),
                 'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
                 'status': (row.get('status') or '').strip(),
@@ -498,7 +501,7 @@ class UtilityViewSet(viewsets.ViewSet):
         data = {
             "students": Student.objects.count(),
             "instructors": Instructor.objects.count(),
-            "vehicles": Vehicle.objects.count(),
+            "resources": Resource.objects.count(),
             "courses": Course.objects.count(),
             "enrollments_active": Enrollment.objects.exclude(status='COMPLETED').count(),
             "lessons_scheduled": Lesson.objects.filter(status='SCHEDULED').count(),
@@ -783,3 +786,92 @@ def student_dashboard(request):
         "enrollments": enrollment_data,
         "lesson_summary": lesson_summary,
     })
+
+
+class ResourceViewSet(FullCrudViewSet):
+    queryset = Resource.objects.all().order_by('name')
+    serializer_class = ResourceSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'is_available': ['exact'],
+        'category': ['exact'],
+        'max_capacity': ['exact', 'lte', 'gte'],
+    }
+
+    @decorators.action(detail=False, methods=["get"], url_path="available")
+    def available_resources(self, request):
+        """Get resources available for a specific time period"""
+        start_time = request.query_params.get('start_time')
+        end_time = request.query_params.get('end_time')
+        resource_type = request.query_params.get('type')  # 'vehicle' or 'classroom'
+
+        qs = self.get_queryset().filter(is_available=True)
+
+        if resource_type == 'vehicle':
+            qs = qs.filter(max_capacity=2)
+        elif resource_type == 'classroom':
+            qs = qs.filter(max_capacity__gt=2)
+
+        # TODO: Add time-based availability filtering
+        # For now, just return all available resources
+
+        serializer = self.get_serializer(qs, many=True)
+        return response.Response(serializer.data)
+
+
+class ScheduledClassViewSet(FullCrudViewSet):
+    queryset = ScheduledClass.objects.all().order_by('scheduled_time')
+    serializer_class = ScheduledClassSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'course': ['exact'],
+        'instructor': ['exact'],
+        'resource': ['exact'],
+        'status': ['exact'],
+        'scheduled_time': ['gte', 'lte', 'date'],
+    }
+
+    @decorators.action(detail=True, methods=["post"], url_path="enroll")
+    def enroll_student(self, request, pk=None):
+        """Enroll a student in a scheduled class"""
+        scheduled_class = self.get_object()
+        student_id = request.data.get('student_id')
+
+        if not student_id:
+            return response.Response({"detail": "student_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if scheduled_class.students.filter(id=student_id).exists():
+            return response.Response({"detail": "Student already enrolled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if scheduled_class.is_full():
+            return response.Response({"detail": "Class is full"}, status=status.HTTP_400_BAD_REQUEST)
+
+        scheduled_class.students.add(student)
+        serializer = self.get_serializer(scheduled_class)
+        return response.Response(serializer.data)
+
+    @decorators.action(detail=True, methods=["post"], url_path="unenroll")
+    def unenroll_student(self, request, pk=None):
+        """Unenroll a student from a scheduled class"""
+        scheduled_class = self.get_object()
+        student_id = request.data.get('student_id')
+
+        if not student_id:
+            return response.Response({"detail": "student_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not scheduled_class.students.filter(id=student_id).exists():
+            return response.Response({"detail": "Student not enrolled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        scheduled_class.students.remove(student)
+        serializer = self.get_serializer(scheduled_class)
+        return response.Response(serializer.data)

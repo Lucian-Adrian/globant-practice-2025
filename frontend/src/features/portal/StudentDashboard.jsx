@@ -198,7 +198,7 @@ const StudentDashboard = () => {
                     <p>{t('common:time', 'Time')}: {new Date(lesson.scheduled_time).toLocaleTimeString()}</p>
                     <p>{t('common:duration', 'Duration')}: {lesson.duration_minutes} minutes</p>
                     <p>{t('common:instructor', 'Instructor')}: {lesson.instructor.first_name} {lesson.instructor.last_name}</p>
-                    <p>{t('common:vehicle', 'Vehicle')}: {lesson.vehicle.license_plate}</p>
+                    <p>{t('common:resource', 'Resource')}: {lesson.resource?.license_plate || lesson.resource?.name || 'N/A'}</p>
                     <p>{t('common:status', 'Status')}: {lesson.status}</p>
                   </div>
                 ))}

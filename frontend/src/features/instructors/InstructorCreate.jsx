@@ -26,7 +26,7 @@ export default function InstructorCreate(props) {
         />
         <RadioButtonGroupInput
           source="car_category"
-          label={t('resources.vehicles.fields.category')}
+          label={t('resources.instructors.fields.category')}
           validate={[required()]}
           defaultValue="both"
           choices={choices}

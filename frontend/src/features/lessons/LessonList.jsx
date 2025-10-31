@@ -55,9 +55,9 @@ const FilteredDatagrid = (props) => {
       const { status: derivedStatus } = getLessonStatus(record);
       if (filterValues.status && derivedStatus !== filterValues.status) return false;
       if (filterValues.instructor_id && String(record.instructor.id) !== String(filterValues.instructor_id)) return false;
-      if (filterValues.vehicle) {
-        const plate = record?.vehicle?.license_plate || '';
-        if (String(plate) !== String(filterValues.vehicle)) return false;
+      if (filterValues.resource) {
+        const plate = record?.resource?.license_plate || record?.resource?.name || '';
+        if (String(plate) !== String(filterValues.resource)) return false;
       }
       // Lesson type filter (client-side): supports 'Theory' and 'Driving' values
       if (filterValues.lesson_type) {
@@ -78,11 +78,11 @@ const FilteredDatagrid = (props) => {
       rowClick="edit"
       sx={{
         '& .RaDatagrid-row': {
-          '&[data-lesson-status="COMPLETED"]': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
-          '&[data-lesson-status="CANCELED"]': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
+          '&.lesson-status-COMPLETED': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
+          '&.lesson-status-CANCELED': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
         }
       }}
-      rowStyle={(record) => ({ 'data-lesson-status': getLessonStatus(record).status })}
+      rowClassName={(record) => record ? `lesson-status-${getLessonStatus(record).status}` : ''}
     >
       <NumberField source="id" label="ID" />
       <FunctionField
@@ -96,7 +96,7 @@ const FilteredDatagrid = (props) => {
       <ReferenceField source="instructor.id" reference="instructors" label={t('resources.lessons.fields.instructor')}>
         <FunctionField render={record => record ? `${record.first_name} ${record.last_name}` : ''} />
       </ReferenceField>
-      <TextField source="vehicle.license_plate" label={t('resources.lessons.fields.vehicle')} />
+      <TextField source="resource.license_plate" label={t('resources.lessons.fields.resource')} emptyText="N/A" />
       <DateField
         source="scheduled_time"
         label={t('resources.lessons.fields.scheduled_time')}
@@ -122,7 +122,7 @@ export default function LessonList(props) {
   const t = useTranslate();
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
-    <VehicleFilterInput key="vehicle" alwaysOn />,
+    <VehicleFilterInput key="resource" source="resource" alwaysOn />,
     <TypeFilterInput key="lesson_type" source="lesson_type" alwaysOn />,
   ];
   return (
