@@ -19,6 +19,15 @@
     "showLess": "Показать меньше",
     "noItems": "Нет элементов"
   },
+  "common": {
+    "date": "Дата",
+    "time": "Время",
+    "duration": "Длительность",
+    "instructor": "Инструктор",
+    "resource": "Ресурс",
+    "status": "Статус",
+    "noLessonsYet": "Уроки еще не запланированы."
+  },
   "signupTitle": "Регистрация студента",
   "signupIntro": "Создайте аккаунт, чтобы начать",
   "passwordPlaceholder": "Пароль",
@@ -47,6 +56,77 @@
   "lastName": "Фамилия",
   "email": "Email",
   "type": { "theory": "Теория", "driving": "Практика" },
+  "filters": {
+    "available": "Доступен",
+    "unavailable": "Недоступен"
+  },
+  "resources": {
+    "students": {
+      "name": "Студенты",
+      "empty": "Пока нет студентов",
+      "import_helper": "Импортируйте студентов через CSV или создайте вручную.",
+      "import_format_hint": "Формат CSV: first_name,last_name,email,phone_number,date_of_birth,password",
+      "fields": {
+        "first_name": "Имя",
+        "last_name": "Фамилия",
+        "email": "Email",
+        "phone_number": "Номер телефона",
+        "date_of_birth": "Дата рождения",
+        "password": "Пароль",
+        "confirm_password": "Подтверждение пароля"
+      }
+    },
+    "instructors": {
+      "name": "Инструкторы",
+      "fields": {
+        "category": "Категория"
+      }
+    },
+    "resources": {
+      "name": "Ресурсы",
+      "empty": "Пока нет ресурсов",
+      "import_helper": "Импортируйте ресурсы через CSV или создайте вручную.",
+      "fields": {
+        "id": "ID",
+        "resource_type": "Тип",
+        "is_available": "Доступность",
+        "name": "Название",
+        "max_capacity": "Максимальная вместимость",
+        "category": "Категория",
+        "license_plate": "Номер автомобиля",
+        "make": "Марка",
+        "model": "Модель",
+        "year": "Год"
+      }
+    },
+    "courses": {
+      "name": "Курсы",
+      "fields": {
+        "type": "Тип",
+        "category": "Категория"
+      }
+    },
+    "lessons": {
+      "name": "Уроки",
+      "fields": {
+        "enrollment": "Запись",
+        "instructor": "Инструктор",
+        "resource": "Ресурс",
+        "scheduled_time": "Запланированное время",
+        "duration_minutes": "Длительность (мин)",
+        "notes": "Заметки",
+        "time": "Время"
+      }
+    },
+    "payments": {
+      "name": "Платежи",
+      "empty": "Пока нет платежей",
+      "import_helper": "Импортируйте платежи через CSV или создайте вручную.",
+      "fields": {
+        "enrollment": "Запись"
+      }
+    }
+  },
   "lessons": {
     "header": {
       "title": "Ваши уроки",
@@ -177,7 +257,7 @@
         "course": "Курс",
         "type": "Тип",
         "instructor": "Инструктор",
-        "vehicleOrRoom": "Транспорт / Аудитория",
+        "resource": "Ресурс",
         "datetime": "Дата и время",
         "duration": "Длительность (мин)",
         "notes": "Заметки",

@@ -227,7 +227,7 @@ export default function Dashboard() {
             <Stat label={t('resources.instructors.name', 'Instructors')} value={data.instructors} />
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2}>
-            <Stat label={t('resources.vehicles.name', 'Vehicles')} value={data.vehicles} />
+            <Stat label={t('resources.resources.name', 'Resources')} value={data.resources} />
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2}>
             <Stat label={t('resources.courses.name', 'Courses')} value={data.courses} />

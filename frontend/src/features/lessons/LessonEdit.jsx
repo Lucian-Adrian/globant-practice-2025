@@ -40,12 +40,12 @@ export default function LessonEdit(props) {
             validate={[required()]} 
           />
         </ReferenceInput>
-        <ReferenceInput source="vehicle_id" reference="vehicles" perPage={50}>
+        <ReferenceInput source="resource_id" reference="resources" perPage={50}>
           <SelectInput 
-            label={t('resources.lessons.fields.vehicle', 'Vehicle')} 
-            optionText={(r) => `${r.license_plate}`} 
+            label={t('resources.lessons.fields.resource', 'Resource')} 
+            optionText={(r) => r.name || `${r.license_plate || 'N/A'}`} 
             optionValue="id"
-            emptyText={t('resources.lessons.fields.vehicle', 'Vehicle')}
+            emptyText={t('resources.lessons.fields.resource', 'Resource')}
             parse={(v) => (v === '' ? null : Number(v))}
             format={(v) => (v == null ? '' : String(v))}
             SelectProps={{ MenuProps: { keepMounted: true } }}

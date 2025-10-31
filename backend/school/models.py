@@ -67,6 +67,40 @@ class InstructorAvailability(models.Model):
         return f"{self.instructor} - {self.day}: {self.hours}"
 
 
+class Resource(models.Model):
+    name = models.CharField(max_length=100)
+    max_capacity = models.IntegerField(help_text="2=vehicle, 30+=classroom")
+    category = models.CharField(max_length=5, choices=VehicleCategory.choices())
+    is_available = models.BooleanField(default=True)
+    # Vehicle-specific fields (nullable for classrooms)
+    license_plate = models.CharField(max_length=15, null=True, blank=True)
+    make = models.CharField(max_length=50, null=True, blank=True)
+    model = models.CharField(max_length=50, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        if self.is_vehicle():
+            return f"{self.make} {self.model} ({self.license_plate})"
+        return f"{self.name} (Classroom)"
+
+    def is_vehicle(self):
+        """Check if this resource is a vehicle (capacity = 2)"""
+        return self.max_capacity == 2
+
+    def is_classroom(self):
+        """Check if this resource is a classroom (capacity > 2)"""
+        return self.max_capacity > 2
+
+    @property
+    def resource_type(self):
+        """Return human-readable resource type"""
+        if self.is_vehicle():
+            return "Vehicle"
+        elif self.is_classroom():
+            return "Classroom"
+        return "Unknown"
+
+
 class Vehicle(models.Model):
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
@@ -91,6 +125,40 @@ class Course(models.Model):
         return self.name
 
 
+class ScheduledClass(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='scheduled_classes')
+    name = models.CharField(max_length=100, help_text="e.g., 'Monday Theory Class'")
+    scheduled_time = models.DateTimeField()
+    duration_minutes = models.IntegerField(default=60)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='scheduled_classes')
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='scheduled_classes')
+    students = models.ManyToManyField(Student, related_name='scheduled_classes', blank=True)
+    max_students = models.IntegerField()
+    status = models.CharField(
+        max_length=20,
+        choices=LessonStatus.choices(),
+        default=LessonStatus.SCHEDULED.value,
+    )
+
+    def __str__(self):
+        return f"{self.name} - {self.course.name}"
+
+    def current_enrollment(self):
+        """Return current number of enrolled students"""
+        return self.students.count()
+
+    def available_spots(self):
+        """Return number of available spots"""
+        return max(0, self.max_students - self.current_enrollment())
+
+    def is_full(self):
+        """Check if class is at capacity"""
+        return self.current_enrollment() >= self.max_students
+
+    class Meta:
+        ordering = ['scheduled_time']
+
+
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
@@ -113,7 +181,7 @@ class Enrollment(models.Model):
 class Lesson(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='lessons')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='lessons')
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name='lessons')
+    resource = models.ForeignKey(Resource, on_delete=models.SET_NULL, null=True, blank=True, related_name='lessons')
     scheduled_time = models.DateTimeField()
     duration_minutes = models.IntegerField(default=60)
     status = models.CharField(

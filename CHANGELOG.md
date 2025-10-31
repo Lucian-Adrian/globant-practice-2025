@@ -23,6 +23,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
 - Memoization optimizations for form choices and list data
 - Default values for form fields to prevent undefined options
 
+- Resource model that unifies vehicles and classrooms with max_capacity field
+- ScheduledClass model for group theory classes with direct student enrollment
+- API endpoints for resources and scheduled classes with enrollment actions
+- Data migration that preserves all existing vehicle and lesson data
+- Comprehensive tests for new models and enrollment logic
+
+### Changed
+- LessonSerializer now validates instructor, student, and vehicle conflicts; enforces business-local interval availability (any-minute start within [t[i], t[i+1]) or exact last slot); checks vehicle.is_available for scheduled lessons; verifies instructor license vs. course category; defaults to 90-minute lessons.
+- Admin now sends scheduled_time as UTC ISO and performs aligned client-side availability/conflict checks.
+- Inline translated field errors replace toast notifications in Admin.
+- Vehicle list improved with detail drawer and safe row-click handling.
+
+- Payment status display logic now uses actual database status instead of calculated business rules
+- Enrollment search now uses AutocompleteInput instead of SelectInput for better UX
+- Form components now have proper memoization to prevent unnecessary re-renders
+- PaymentList performance optimized by removing debug console.logs and adding useMemo/useCallback
+
+- Lesson model now uses Resource instead of Vehicle field
+- Database migration updates all existing lessons to reference resources
+- Admin interface updated to display new Resource and ScheduledClass models
+
 ### Changed
 - LessonSerializer now validates instructor, student, and vehicle conflicts; enforces business-local interval availability (any-minute start within [t[i], t[i+1]) or exact last slot); checks vehicle.is_available for scheduled lessons; verifies instructor license vs. course category; defaults to 90-minute lessons.
 - Admin now sends scheduled_time as UTC ISO and performs aligned client-side availability/conflict checks.
@@ -56,6 +77,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
   - Added status filtering to PaymentViewSet
   - Created migration for payment status field
 
+  - Created Resource model with max_capacity field (2 for vehicles, 30+ for classrooms)
+  - Created ScheduledClass model with M2M relationship to students
+  - Updated Lesson model to use Resource instead of Vehicle
+  - Migration 0009 handles data migration from Vehicle to Resource model
+  - Added ResourceViewSet and ScheduledClassViewSet with enrollment actions
+  - Created comprehensive test suite for new models
+
 - **Frontend Changes:**
   - Admin dataProvider: converts `scheduled_time` to UTC ISO on create/update for lessons.
   - Admin client: client-side preflight uses `page_size=1` existence checks and `vehicle_id` filter; validation.* keys are translated and surfaced as inline field errors (no toasts).
@@ -74,10 +102,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/SemVer
   - Added React.useMemo for expensive calculations
   - Implemented proper memoization patterns throughout forms and lists
 
-**Notes:** Business rules use `BUSINESS_TZ` (default `Europe/Chisinau`) for human scheduling decisions while storing datetimes in UTC. Student Portal alignment with these rules is deferred to a follow-up. Vehicle vs. classroom/resource unification will be handled in a future change.
+**Notes:** Business rules use `BUSINESS_TZ` (default `Europe/Chisinau`) for human scheduling decisions while storing datetimes in UTC. Student Portal alignment with these rules is deferred to a follow-up. Vehicle vs. classroom/resource unification has been completed with the Resource model.
 
 ### Migration Notes
 - Run `python manage.py migrate` to apply the payment status field migration
 - Existing payments will have PENDING status by default
-- Update payment statuses manually through the admin interface as needed</content>
+- Update payment statuses manually through the admin interface as needed
+
+- Run `python manage.py migrate` to apply the Resource and ScheduledClass model changes
+- Migration 0009 safely migrates all existing Vehicle data to Resource model
+- All existing Lesson records are updated to reference Resources instead of Vehicles
+- Default classrooms are created automatically during migration</content>
 <parameter name="filePath">d:\uni\sem2\pbl\globant-practice-2025\CHANGELOG.md
