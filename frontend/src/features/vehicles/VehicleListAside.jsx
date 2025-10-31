@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { Card, CardContent } from '@mui/material';
 import ListAsideFilters from '../../shared/components/ListAsideFilters.jsx';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 export default function VehicleListAside() {
+  const { collapsed } = useAsidePanel();
+  if (collapsed) return null;
   return (
     <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 16em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>

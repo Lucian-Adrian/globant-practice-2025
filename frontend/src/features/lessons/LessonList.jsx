@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import LessonListAside from './LessonListAside.jsx';
 import LessonListEmpty from './LessonListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
 import VehicleFilterInput from '../../shared/components/VehicleFilterInput.jsx';
 import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
@@ -120,6 +121,7 @@ const FilteredDatagrid = (props) => {
 
 export default function LessonList(props) {
   const t = useTranslate();
+  const { collapsed } = useAsidePanel();
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
     <VehicleFilterInput key="vehicle" alwaysOn />,
@@ -129,7 +131,7 @@ export default function LessonList(props) {
     <List 
       {...props} 
       filters={filters}
-      aside={<LessonListAside />} 
+      aside={collapsed ? null : <LessonListAside />} 
       title={t('resources.lessons.name', { defaultValue: 'Lessons' })}
       actions={<ListImportActions endpoint="lessons"/>}
       empty={<LessonListEmpty />}
