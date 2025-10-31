@@ -501,7 +501,7 @@ class UtilityViewSet(viewsets.ViewSet):
         data = {
             "students": Student.objects.count(),
             "instructors": Instructor.objects.count(),
-            "vehicles": Vehicle.objects.count(),
+            "resources": Resource.objects.count(),
             "courses": Course.objects.count(),
             "enrollments_active": Enrollment.objects.exclude(status='COMPLETED').count(),
             "lessons_scheduled": Lesson.objects.filter(status='SCHEDULED').count(),

@@ -19,6 +19,15 @@
     "showLess": "Arată mai puțin",
     "noItems": "Fără elemente"
   },
+  "common": {
+    "date": "Data",
+    "time": "Ora",
+    "duration": "Durată",
+    "instructor": "Instructor",
+    "resource": "Resursă",
+    "status": "Status",
+    "noLessonsYet": "Nicio lecție programată încă."
+  },
   "signupTitle": "Înregistrare Student",
   "signupIntro": "Creează un cont pentru a începe",
   "passwordPlaceholder": "Parolă",
@@ -47,6 +56,77 @@
   "lastName": "Nume",
   "email": "Email",
   "type": { "theory": "Teorie", "driving": "Practică" },
+  "filters": {
+    "available": "Disponibil",
+    "unavailable": "Indisponibil"
+  },
+  "resources": {
+    "students": {
+      "name": "Studenti",
+      "empty": "Niciun student încă",
+      "import_helper": "Importați studenți via CSV sau creați manual.",
+      "import_format_hint": "Format CSV: first_name,last_name,email,phone_number,date_of_birth,password",
+      "fields": {
+        "first_name": "Prenume",
+        "last_name": "Nume",
+        "email": "Email",
+        "phone_number": "Număr telefon",
+        "date_of_birth": "Data nașterii",
+        "password": "Parolă",
+        "confirm_password": "Confirmare parolă"
+      }
+    },
+    "instructors": {
+      "name": "Instrucători",
+      "fields": {
+        "category": "Categorie"
+      }
+    },
+    "resources": {
+      "name": "Resurse",
+      "empty": "Nicio resursă încă",
+      "import_helper": "Importați resurse via CSV sau creați manual.",
+      "fields": {
+        "id": "ID",
+        "resource_type": "Tip",
+        "is_available": "Disponibilitate",
+        "name": "Nume",
+        "max_capacity": "Capacitate maximă",
+        "category": "Categorie",
+        "license_plate": "Număr înmatriculare",
+        "make": "Marcă",
+        "model": "Model",
+        "year": "An"
+      }
+    },
+    "courses": {
+      "name": "Cursuri",
+      "fields": {
+        "type": "Tip",
+        "category": "Categorie"
+      }
+    },
+    "lessons": {
+      "name": "Lecții",
+      "fields": {
+        "enrollment": "Înscriere",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "scheduled_time": "Ora programată",
+        "duration_minutes": "Durată (min)",
+        "notes": "Note",
+        "time": "Oră"
+      }
+    },
+    "payments": {
+      "name": "Plăți",
+      "empty": "Nicio plată încă",
+      "import_helper": "Importați plăți via CSV sau creați manual.",
+      "fields": {
+        "enrollment": "Înscriere"
+      }
+    }
+  },
   "lessons": {
     "header": {
       "title": "Lecțiile tale",
@@ -177,7 +257,7 @@
         "course": "Curs",
         "type": "Tip",
         "instructor": "Instructor",
-        "vehicleOrRoom": "Vehicul / Sală",
+        "resource": "Resursă",
         "datetime": "Dată & Oră",
         "duration": "Durată (minute)",
         "notes": "Note",
