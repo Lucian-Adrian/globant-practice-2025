@@ -3,9 +3,7 @@ import { List, Datagrid, NumberField, TextField, DateField, FunctionField, useLi
 import { useLocation } from 'react-router-dom';
 import { Chip } from '@mui/material';
 import PaymentListAside from './PaymentListAside.jsx';
-import PaymentListEmpty from './PaymentListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
-import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 // Function to determine payment status based on stored status field
 const getPaymentStatus = (record) => {
@@ -64,9 +62,8 @@ const PaymentStatusField = (recordOrProps) => {
 };
 
 export default function PaymentList(props) {
-  const { collapsed } = useAsidePanel();
   return (
-    <List {...props} aside={collapsed ? null : <PaymentListAside />} actions={<ListImportActions endpoint="payments" />} empty={<PaymentListEmpty />}>
+    <List {...props} aside={<PaymentListAside />} actions={<ListImportActions endpoint="payments" />}>
       <FilteredPaymentDatagrid />
     </List>
   );
