@@ -2,6 +2,10 @@
 
 Thank you for your interest in contributing! This guide will help you understand our development workflow and standards.
 
+## Important: Development Branch
+
+All new features and changes should branch from and merge back to the dev branch. The dev branch is our integration branch where all development work happens before being merged to main.
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
@@ -37,48 +41,67 @@ Services will be available at:
 - Backend API: http://localhost:8000/api/
 - Database: localhost:5432
 
+### Repository Structure
+
+```
+globant-practice-2025/
+├── backend/              # Django backend with DRF
+│   ├── project/          # Project settings
+│   ├── school/           # Main app with models, views, serializers
+│   └── staticfiles/      # Static files
+├── frontend/             # React Admin frontend
+│   ├── src/              # Source code
+│   │   ├── features/     # Feature modules (students, instructors, etc.)
+│   │   ├── shared/       # Shared components and utilities
+│   │   └── i18n.js       # Internationalization
+│   └── assets/           # Static assets
+├── docs/                 # Documentation
+├── template/             # Project templates
+└── docker-compose.yml    # Docker configuration
+```
+
 ## Git Workflow
 
-We follow a **feature branch workflow** with protected main branch.
+We follow a feature branch workflow with protected main branch and use dev as the integration branch for new features.
 
 ### Basic Workflow
 
-1. **Always start from the latest main branch**
+1. Always start from the latest dev branch
    ```bash
-   git checkout main
-   git pull origin main
+   git checkout dev
+   git pull origin dev
    ```
 
-2. **Create a feature branch**
+2. Create a feature branch
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
-3. **Make your changes and commit regularly**
+3. Make your changes and commit regularly
    ```bash
    git add .
    git commit -m "type: brief description"
    ```
 
-4. **Keep your branch up to date**
+4. Keep your branch up to date
    ```bash
-   git checkout main
-   git pull origin main
+   git checkout dev
+   git pull origin dev
    git checkout feature/your-feature-name
-   git merge main
+   git merge dev
    # Resolve any conflicts if they occur
    ```
 
-5. **Push your branch and create a Pull Request**
+5. Push your branch and create a Pull Request
    ```bash
    git push origin feature/your-feature-name
    ```
 
 ### When to Create Branches
 
-- **Always** create a new branch for any change, no matter how small
-- **Never** commit directly to `main`
-- Create branches for:
+- Always create a new branch for any change, no matter how small
+- Never commit directly to main or dev
+- Create branches from dev for:
   - New features
   - Bug fixes
   - Documentation updates
@@ -128,7 +151,7 @@ Use descriptive, lowercase names with hyphens. Follow this pattern:
 
 ## Commit Guidelines
 
-Write clear, meaningful commit messages that explain **what** and **why**, not just **how**.
+Write clear, meaningful commit messages that explain what and why, not just how.
 
 ### Commit Message Format
 
@@ -162,7 +185,7 @@ Write clear, meaningful commit messages that explain **what** and **why**, not j
 
 ### Examples
 
-**Good commits:**
+Good commits:
 ```bash
 feat: add payment status field to Payment model
 fix: resolve instructor conflict validation in lessons
@@ -172,7 +195,7 @@ test: add unit tests for lesson conflict detection
 chore: update Django to version 4.2
 ```
 
-**Bad commits:**
+Bad commits:
 ```bash
 Update files           # Too vague
 Fixed bug              # Which bug?
@@ -201,24 +224,24 @@ Task: P0-STR-01
 
 ### When to Commit
 
-- **Commit often**: Small, logical chunks
-- **Commit working code**: Don't break the build
-- **One logical change per commit**: Easier to review and revert
-- **Before switching tasks**: Commit current work first
+- Commit often: Small, logical chunks
+- Commit working code: Don't break the build
+- One logical change per commit: Easier to review and revert
+- Before switching tasks: Commit current work first
 
 ## Pull Request Process
 
 ### Before Creating a PR
 
-1. **Ensure your branch is up to date**
+1. Ensure your branch is up to date
    ```bash
-   git checkout main
-   git pull origin main
+   git checkout dev
+   git pull origin dev
    git checkout your-branch
-   git merge main
+   git merge dev
    ```
 
-2. **Run all tests and linters**
+2. Run all tests and linters
    ```bash
    # Backend (from backend/ directory)
    python manage.py test
@@ -230,20 +253,20 @@ Task: P0-STR-01
    npm run build
    ```
 
-3. **Test your changes locally**
-   - Start services with `docker-compose up`
+3. Test your changes locally
+   - Start services with docker-compose up
    - Manually test the functionality
    - Check for console errors
    - Verify no regressions
 
 ### Creating a Pull Request
 
-1. **Push your branch**
+1. Push your branch
    ```bash
    git push origin your-branch-name
    ```
 
-2. **Open PR on GitHub**
+2. Open PR on GitHub
    - Go to the repository on GitHub
    - Click "New Pull Request"
    - Select your branch
@@ -266,14 +289,14 @@ Examples:
 
 Include:
 
-1. **Summary**: What does this PR do?
-2. **Motivation**: Why is this change needed?
-3. **Changes**: Key changes made (bullet list)
-4. **Testing**: How was this tested?
-5. **Screenshots**: For UI changes (required)
-6. **Task Reference**: Link to task ID if applicable (e.g., `P0-STR-01`)
+1. Summary: What does this PR do?
+2. Motivation: Why is this change needed?
+3. Changes: Key changes made (bullet list)
+4. Testing: How was this tested?
+5. Screenshots: For UI changes (required)
+6. Task Reference: Link to task ID if applicable (e.g., P0-STR-01)
 
-**Template:**
+Template:
 ```markdown
 ## Summary
 Brief description of what this PR accomplishes.
@@ -301,21 +324,21 @@ P0-STR-01
 
 ### PR Review Process
 
-1. **Self-review first**: Review your own changes before requesting review
-2. **Request reviewers**: Tag appropriate team members
-3. **Respond to feedback**: Address comments promptly and professionally
-4. **Update as needed**: Push additional commits to address feedback
-5. **Keep PR focused**: One feature/fix per PR
-6. **Stay responsive**: Respond to reviews within 24 hours
+1. Self-review first: Review your own changes before requesting review
+2. Request reviewers: Tag appropriate team members
+3. Respond to feedback: Address comments promptly and professionally
+4. Update as needed: Push additional commits to address feedback
+5. Keep PR focused: One feature/fix per PR
+6. Stay responsive: Respond to reviews within 24 hours
 
 ### PR Approval & Merge
 
-- **Minimum 1 approval** required (project may require more)
-- **All CI checks** must pass
-- **No merge conflicts** with main
-- **Squash and merge** for small PRs (preferred)
-- **Merge commit** for feature branches with multiple logical commits
-- **Delete branch** after merge
+- Minimum 1 approval required (project may require more)
+- All CI checks must pass
+- No merge conflicts with dev
+- Squash and merge for small PRs (preferred)
+- Merge commit for feature branches with multiple logical commits
+- Delete branch after merge
 
 ### When NOT to Merge
 
@@ -329,14 +352,14 @@ P0-STR-01
 
 ### Python (Backend)
 
-We use **Black**, **isort**, and **Ruff** for Python code.
+We use Black, isort, and Ruff for Python code.
 
-**Configuration** (see `pyproject.toml`):
+Configuration (see pyproject.toml):
 - Line length: 100 characters
 - Target: Python 3.11
 - Profile: Black
 
-**Run formatters:**
+Run formatters:
 ```bash
 cd backend/
 black .
@@ -344,7 +367,7 @@ isort .
 ruff check . --fix
 ```
 
-**Pre-commit check:**
+Pre-commit check:
 ```bash
 black --check .
 ruff check .
@@ -354,57 +377,64 @@ ruff check .
 
 Follow React and React Admin conventions.
 
-**Key principles:**
+Key principles:
 - Use functional components and hooks
-- Prefer `const` over `let`, avoid `var`
+- Prefer const over let, avoid var
 - Use meaningful variable names
 - Add PropTypes or TypeScript types
 - Keep components small and focused
-- Use memoization (`useMemo`, `useCallback`) for performance
+- Use memoization (useMemo, useCallback) for performance
 
-**File organization:**
+File organization:
 ```
-src/
-├── features/          # Feature-based modules
-│   ├── students/
-│   │   ├── index.js
-│   │   ├── StudentList.jsx
-│   │   ├── StudentCreate.jsx
-│   │   └── StudentEdit.jsx
-├── shared/
-│   ├── components/    # Reusable components
-│   └── validation/    # Shared validation logic
-└── i18n.js           # Internationalization
+frontend/
+└── src/
+    ├── features/          # Feature-based modules
+    │   ├── students/
+    │   │   ├── index.js
+    │   │   ├── StudentList.jsx
+    │   │   ├── StudentCreate.jsx
+    │   │   └── StudentEdit.jsx
+    │   ├── instructors/
+    │   ├── vehicles/
+    │   ├── courses/
+    │   ├── enrollments/
+    │   ├── lessons/
+    │   └── payments/
+    ├── shared/
+    │   ├── components/    # Reusable components
+    │   └── validation/    # Shared validation logic
+    └── i18n.js           # Internationalization
 ```
 
 ### General Principles
 
-- **DRY**: Don't Repeat Yourself - extract reusable code
-- **KISS**: Keep It Simple, Stupid - avoid overengineering
-- **Clear naming**: Variables and functions should be self-documenting
-- **Comments**: Explain "why", not "what"
-- **Consistent style**: Follow existing patterns in the codebase
+- DRY: Don't Repeat Yourself - extract reusable code
+- KISS: Keep It Simple, Stupid - avoid overengineering
+- Clear naming: Variables and functions should be self-documenting
+- Comments: Explain "why", not "what"
+- Consistent style: Follow existing patterns in the codebase
 
 ## Testing
 
 ### Backend Tests
 
-Located in `backend/school/tests/`.
+Located in backend/school/tests/.
 
-**Run tests:**
+Run tests:
 ```bash
 cd backend/
 python manage.py test
 ```
 
-**Writing tests:**
+Writing tests:
 - Test all new features and bug fixes
 - Use Django's TestCase or APITestCase
 - Test both success and error cases
 - Test edge cases and validation
 - Mock external dependencies
 
-**Example:**
+Example:
 ```python
 from django.test import TestCase
 from school.models import Student
@@ -423,9 +453,9 @@ class StudentModelTest(TestCase):
 
 Testing infrastructure is minimal currently. For critical features:
 
-- **Manual testing**: Essential for all UI changes
-- **Test in Docker**: Ensure it works in the containerized environment
-- **Cross-browser testing**: Test in Chrome, Firefox, Safari (if possible)
+- Manual testing: Essential for all UI changes
+- Test in Docker: Ensure it works in the containerized environment
+- Cross-browser testing: Test in Chrome, Firefox, Safari (if possible)
 
 ### Test Requirements
 
@@ -458,15 +488,15 @@ Update docs when you:
 
 ### Updating CHANGELOG.md
 
-**Always update** `CHANGELOG.md` with your changes!
+Always update CHANGELOG.md with your changes!
 
-Add entries under `## [Unreleased]` in appropriate sections:
-- `### Added` - New features
-- `### Changed` - Changes to existing functionality
-- `### Fixed` - Bug fixes
-- `### Removed` - Removed features
+Add entries under ## [Unreleased] in appropriate sections:
+- ### Added - New features
+- ### Changed - Changes to existing functionality
+- ### Fixed - Bug fixes
+- ### Removed - Removed features
 
-**Format:**
+Format:
 ```markdown
 ### Added
 - Payment status field to Payment model with enum choices
@@ -486,12 +516,12 @@ Keep docstrings updated in serializers and viewsets.
 
 ### Dependencies
 
-**When adding dependencies:**
+When adding dependencies:
 
-1. **Check necessity**: Do we really need this package?
-2. **Check security**: Any known vulnerabilities?
-3. **Check maintenance**: Is it actively maintained?
-4. **Update requirements**:
+1. Check necessity: Do we really need this package?
+2. Check security: Any known vulnerabilities?
+3. Check maintenance: Is it actively maintained?
+4. Update requirements:
    ```bash
    # Python
    cd backend/
@@ -502,7 +532,7 @@ Keep docstrings updated in serializers and viewsets.
    cd frontend/
    npm install --save package-name
    ```
-5. **Document why**: Add comment in requirements file if non-obvious
+5. Document why: Add comment in requirements file if non-obvious
 
 ### Environment Variables
 
@@ -512,24 +542,24 @@ Keep docstrings updated in serializers and viewsets.
 
 ### Database Migrations
 
-**Backend migrations:**
+Backend migrations:
 ```bash
 cd backend/
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-**Include migrations in your PR** - Don't let others recreate them
+Include migrations in your PR - Don't let others recreate them
 
 ### Troubleshooting
 
-**Clean slate:**
+Clean slate:
 ```bash
 docker-compose down -v
 docker-compose up --build
 ```
 
-**Reset database:**
+Reset database:
 ```bash
 docker-compose down -v
 docker volume rm globant-practice-2025_postgres_data
@@ -553,6 +583,6 @@ docker-compose up --build
 
 ---
 
-**Thank you for contributing! 🎉**
+Thank you for contributing! 🎉
 
 Your contributions make this project better for everyone.
