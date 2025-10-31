@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SelectInput, useGetList } from 'react-admin';
+import { SelectInput, useGetList, useTranslate } from 'react-admin';
 
 /**
  * Instructor dropdown for toolbar filters.
@@ -7,6 +7,7 @@ import { SelectInput, useGetList } from 'react-admin';
  * - Default source: 'instructor_id'
  */
 export default function InstructorFilterInput({ source = 'instructor_id', label, ...rest }) {
+  const t = useTranslate();
   const { data, isLoading } = useGetList('instructors', {
     pagination: { page: 1, perPage: 1000 },
     sort: { field: 'id', order: 'ASC' },
@@ -20,7 +21,7 @@ export default function InstructorFilterInput({ source = 'instructor_id', label,
   return (
     <SelectInput
       source={source}
-      label={label || 'Instructor'}
+  label={label || t('resources.lessons.fields.instructor', { defaultValue: 'Instructor' })}
       choices={choices}
       disabled={isLoading}
       {...rest}

@@ -74,8 +74,8 @@ export default function StudentListActions() {
   return (
     <TopToolbar>
       <CreateButton />
-      <ImportButton label="ra.custom.import_csv" accept=".csv,text/csv" onImport={onImport} />
-      <Button label="ra.custom.export_csv" onClick={onExport} />
+  <ImportButton label="ra.custom.import_csv" accept=".csv,text/csv" onImport={onImport} />
+  <Button label="ra.custom.export_csv" onClick={onExport} />
     </TopToolbar>
   );
 }

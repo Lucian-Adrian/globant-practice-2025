@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SelectInput, useGetList } from 'react-admin';
+import { SelectInput, useGetList, useTranslate } from 'react-admin';
 
 /**
  * Vehicle dropdown for toolbar filters.
@@ -8,6 +8,7 @@ import { SelectInput, useGetList } from 'react-admin';
  * - Default source: 'vehicle'
  */
 export default function VehicleFilterInput({ source = 'vehicle', label, ...rest }) {
+  const t = useTranslate();
   const { data, isLoading } = useGetList('vehicles', {
     pagination: { page: 1, perPage: 1000 },
     sort: { field: 'id', order: 'ASC' },
@@ -25,7 +26,7 @@ export default function VehicleFilterInput({ source = 'vehicle', label, ...rest 
   return (
     <SelectInput
       source={source}
-      label={label || 'Vehicle'}
+  label={label || t('resources.lessons.fields.vehicle', { defaultValue: 'Vehicle' })}
       choices={choices}
       disabled={isLoading}
       {...rest}

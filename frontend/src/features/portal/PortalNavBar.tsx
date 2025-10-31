@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useTranslation } from 'react-i18next';
+import { useAppLocaleState, useI18nForceUpdate } from '../../i18n/index.js';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -21,8 +22,11 @@ function getStudentInitials(): string {
 }
 
 const PortalNavBar: React.FC = () => {
+  // Force re-render on language changes and async namespace loads across all portal pages
+  useI18nForceUpdate();
   const [open, setOpen] = React.useState(false);
-  const { t, i18n } = useTranslation(['portal', 'common']);
+  const { t } = useTranslation(['portal', 'common']);
+  const [locale, setLocale] = useAppLocaleState() as [string, (lng: string) => void];
   const toggle = () => setOpen((v) => !v);
   const logout = () => {
     try {
@@ -69,8 +73,8 @@ const PortalNavBar: React.FC = () => {
                 <select
                   aria-label={t('language.label', { ns: 'portal' })}
                   className="tw-bg-transparent tw-border tw-border-border tw-rounded-md tw-text-sm tw-px-2 tw-py-1 tw-text-muted-foreground hover:tw-text-foreground"
-                  value={(i18n.language || 'en').split('-')[0]}
-                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  value={(locale || 'en').split('-')[0]}
+                  onChange={(e) => setLocale(e.target.value)}
                 >
                   <option value="en">{t('language.en', { ns: 'portal' })}</option>
                   <option value="ro">{t('language.ro', { ns: 'portal' })}</option>

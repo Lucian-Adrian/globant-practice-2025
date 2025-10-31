@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppLocaleState } from '../../i18n/index.js';
 import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { t, i18n } = useTranslation('portal');
+  const { t } = useTranslation('portal');
+  const [locale, setLocale] = useAppLocaleState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,7 +79,7 @@ const StudentDashboard = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
   <h1>{t('portal.dashboard.welcome', 'Student Dashboard')}</h1>
         <div style={{ position: 'absolute', top: 20, right: 20 }}>
-          <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
+          <select value={locale} onChange={e => setLocale(e.target.value)}>
             <option value="en">EN</option>
             <option value="ro">RO</option>
             <option value="ru">RU</option>

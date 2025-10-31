@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Card, CardContent, Box, Stack, Typography } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { FilterList, FilterListItem, useTranslate } from 'react-admin';
+import { endOfYesterday, startOfWeek, subWeeks, startOfMonth, subMonths } from 'date-fns';
 
 /**
  * Generic reusable aside filter panel for React-Admin List pages.
@@ -14,12 +16,32 @@ import { FilterList, FilterListItem, useTranslate } from 'react-admin';
  *  - children: optional extra <FilterList> sections appended after defaults.
  */
 export default function ListAsideFilters({
+  dateField,
   statusItems = [],
+  hideDate = false,
+  dateLabelKey = 'filters.last_activity',
   statusLabelKey = 'filters.status',
+  dateIcon = <AccessTimeIcon />,
   statusIcon = <TrendingUpIcon />,
   children,
 }) {
   const t = useTranslate();
+
+  const dateFilters = React.useMemo(() => {
+    if (!dateField) return [];
+    const today = new Date();
+    const sow = startOfWeek(today);
+    const som = startOfMonth(today);
+    const previousMonthStart = subMonths(som, 1);
+    return [
+      { k: 'filters.today', v: { [`${dateField}_gte`]: endOfYesterday().toISOString(), [`${dateField}_lte`]: undefined } },
+      { k: 'filters.this_week', v: { [`${dateField}_gte`]: sow.toISOString(), [`${dateField}_lte`]: undefined } },
+      { k: 'filters.last_week', v: { [`${dateField}_gte`]: subWeeks(sow, 1).toISOString(), [`${dateField}_lte`]: sow.toISOString() } },
+      { k: 'filters.this_month', v: { [`${dateField}_gte`]: som.toISOString(), [`${dateField}_lte`]: undefined } },
+      { k: 'filters.last_month', v: { [`${dateField}_gte`]: previousMonthStart.toISOString(), [`${dateField}_lte`]: som.toISOString() } },
+      { k: 'filters.earlier', v: { [`${dateField}_gte`]: undefined, [`${dateField}_lte`]: previousMonthStart.toISOString() } },
+    ];
+  }, [dateField]);
 
   const StatusLabel = ({ text, color }) => (
     <Stack direction="row" alignItems="center" spacing={1}>
@@ -31,6 +53,13 @@ export default function ListAsideFilters({
   return (
     <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 22em', maxWidth:'22em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
+        {!hideDate && dateField && (
+          <FilterList label={t(dateLabelKey, dateLabelKey)} icon={dateIcon}>
+            {dateFilters.map(df => (
+              <FilterListItem key={df.k} label={t(df.k, df.k)} value={df.v} />
+            ))}
+          </FilterList>
+        )}
         {statusItems.length > 0 && (
           <FilterList label={t(statusLabelKey, statusLabelKey)} icon={statusIcon}>
             {statusItems.map((s, i) => {
@@ -42,6 +71,7 @@ export default function ListAsideFilters({
           </FilterList>
         )}
         {children}
+  {/* Calendar embed removed as requested */}
       </CardContent>
     </Card>
   );
