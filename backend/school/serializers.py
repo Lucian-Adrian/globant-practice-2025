@@ -163,6 +163,9 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ["id", "name", "category", "type", "description", "price", "required_lessons"]
+        extra_kwargs = {
+            'type': {'required': False, 'allow_blank': True},  # Allow type to be omitted or blank, will use model default
+        }
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
@@ -175,6 +178,10 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = ["id", "student", "course", "student_id", "course_id", "enrollment_date", "type", "status", "label"]
+        extra_kwargs = {
+            'type': {'required': False, 'allow_blank': True},  # Allow type to be omitted or blank, will copy from course
+            'status': {'required': False, 'allow_blank': True},  # Allow status to be omitted or blank, will use model default
+        }
 
     def get_label(self, obj):  # Name - Type - Category
         return f"{obj.student.first_name} {obj.student.last_name} - {obj.type or obj.course.type} - {obj.course.category}"
@@ -380,6 +387,10 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ["id", "enrollment", "enrollment_id", "amount", "payment_date", "payment_method", "description", "status"]
+        extra_kwargs = {
+            'description': {'required': False, 'allow_blank': True},  # Allow description to be omitted or blank
+            'status': {'required': False},  # Allow status to be omitted, will use model default
+        }
 
 
 class ScheduledClassSerializer(serializers.ModelSerializer):

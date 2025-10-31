@@ -111,7 +111,11 @@ class StudentViewSet(FullCrudViewSet):
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
 
-        required_cols = {'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth'}
+        # Critical columns that must be present in CSV headers and have values
+        required_cols = {'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'password'}
+        # Optional columns that can be blank (will use defaults)
+        optional_cols = {'status'}
+
         missing = required_cols - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response(
@@ -128,19 +132,21 @@ class StudentViewSet(FullCrudViewSet):
             except Exception as e:  # noqa: BLE001
                 errors.append({"row": idx, "errors": {"phone_number": [str(e)]}})
                 continue
+
+            # Build data dict with required fields
             data = {
                 'first_name': row.get('first_name', '').strip(),
                 'last_name': row.get('last_name', '').strip(),
                 'email': row.get('email', '').strip(),
                 'phone_number': phone,
                 'date_of_birth': (row.get('date_of_birth') or '').strip(),
-                'status': (row.get('status') or 'ACTIVE').strip() or 'ACTIVE',
+                'password': (row.get("password") or "").strip(),
             }
 
-            # Password handling
-            pwd = (row.get("password") or "").strip()
-            if pwd:
-                data["password"] = pwd
+            # Add optional fields only if they have non-blank values
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
 
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
@@ -270,20 +276,29 @@ class VehicleViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
+        # Critical columns that must be present
         required = {'make', 'model', 'license_plate', 'year', 'category'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'is_available'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
         created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'make': (row.get('make') or '').strip(),
                 'model': (row.get('model') or '').strip(),
                 'license_plate': (row.get('license_plate') or '').strip(),
                 'year': (row.get('year') or '').strip(),
                 'category': (row.get('category') or '').strip(),
-                'is_available': ((row.get('is_available') or 'true').strip().lower() in ['1','true','yes'])
             }
+
+            # Add optional fields only if present and non-blank
+            is_avail_val = (row.get('is_available') or '').strip()
+            if is_avail_val:
+                data['is_available'] = is_avail_val.lower() in ['1', 'true', 'yes']
             license_plate = data.get('license_plate')
 
             # Use update_or_create to prevent duplicates based on license_plate
@@ -342,13 +357,23 @@ class CourseViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'name', 'category', 'type', 'description', 'price', 'required_lessons'}
+        # Critical columns that must be present
+        required = {'name', 'category', 'description', 'price', 'required_lessons'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'type'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
         created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {k: (row.get(k) or '').strip() for k in required}
+
+            # Add optional fields only if present and non-blank
+            type_val = (row.get('type') or '').strip()
+            if type_val:
+                data['type'] = type_val
             name = data.get('name')
             category = data.get('category')
 
@@ -416,18 +441,30 @@ class EnrollmentViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'student_id', 'course_id', 'type', 'status'}
+        # Critical columns that must be present
+        required = {'student_id', 'course_id'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'type', 'status'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
         created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'student_id': (row.get('student_id') or '').strip(),
                 'course_id': (row.get('course_id') or '').strip(),
-                'type': (row.get('type') or '').strip(),
-                'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
             }
+
+            # Add optional fields only if present and non-blank
+            type_val = (row.get('type') or '').strip()
+            if type_val:
+                data['type'] = type_val
+
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
             student_id = data.get('student_id')
             course_id = data.get('course_id')
 
@@ -510,21 +547,36 @@ class LessonViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'enrollment_id', 'instructor_id', 'resource_id', 'scheduled_time', 'duration_minutes', 'status'}
+        # Critical columns that must be present
+        required = {'enrollment_id', 'instructor_id', 'scheduled_time', 'status'}
+        # Optional columns that can be blank (will use defaults or null)
+        optional = {'resource_id', 'duration_minutes', 'notes'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
         created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'instructor_id': (row.get('instructor_id') or '').strip(),
-                'resource_id': (row.get('resource_id') or '').strip() or None,
                 'scheduled_time': (row.get('scheduled_time') or '').strip(),
-                'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
                 'status': (row.get('status') or '').strip(),
-                'notes': (row.get('notes') or '').strip(),
             }
+
+            # Add optional fields only if present and non-blank
+            resource_val = (row.get('resource_id') or '').strip()
+            if resource_val:
+                data['resource_id'] = resource_val
+
+            duration_val = (row.get('duration_minutes') or '').strip()
+            if duration_val:
+                data['duration_minutes'] = duration_val
+
+            notes_val = (row.get('notes') or '').strip()
+            if notes_val:
+                data['notes'] = notes_val
             enrollment_id = data.get('enrollment_id')
             instructor_id = data.get('instructor_id')
             scheduled_time = data.get('scheduled_time')
@@ -595,31 +647,42 @@ class PaymentViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'enrollment_id', 'amount', 'payment_method', 'description'}
+        # Critical columns that must be present
+        required = {'enrollment_id', 'amount', 'payment_method'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'status', 'description'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
         created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'amount': (row.get('amount') or '').strip(),
                 'payment_method': (row.get('payment_method') or '').strip(),
-                'status': (row.get('status') or 'PENDING').strip() or 'PENDING',
-                'description': (row.get('description') or '').strip(),
             }
+
+            # Add optional fields only if present and non-blank
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
+
+            description_val = (row.get('description') or '').strip()
+            if description_val:
+                data['description'] = description_val
             enrollment_id = data.get('enrollment_id')
             amount = data.get('amount')
-            description = data.get('description')
+            description = data.get('description', '')
 
-            # Use update_or_create to prevent duplicates based on enrollment_id + amount + description
-            # Note: This assumes that payments with same enrollment, amount, and description are duplicates
+            # Use update_or_create to prevent duplicates based on enrollment_id + amount
+            # If description is provided, use it as additional uniqueness criteria
             try:
-                existing = Payment.objects.filter(
-                    enrollment_id=enrollment_id,
-                    amount=amount,
-                    description=description
-                ).first()
+                filter_criteria = {'enrollment_id': enrollment_id, 'amount': amount}
+                if description:
+                    filter_criteria['description'] = description
+                existing = Payment.objects.filter(**filter_criteria).first()
                 if existing:
                     serializer = self.get_serializer(existing, data=data)
                     if serializer.is_valid():
