@@ -92,4 +92,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.3.0]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Lucian-Adrian/globant-practice-2025/releases/tag/v0.1.0</content>
-<parameter name="filePath">d:\uni\sem2\pbl\globant-practice-2025\CHANGELOG.md
