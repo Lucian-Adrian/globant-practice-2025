@@ -729,7 +729,7 @@ class UtilityViewSet(viewsets.ViewSet):
     def schedule(self, request):
         start = now()
         end = start + timedelta(days=7)
-        lessons = Lesson.objects.select_related('instructor', 'enrollment__student', 'vehicle') \
+        lessons = Lesson.objects.select_related('instructor', 'enrollment__student', 'resource') \
             .filter(scheduled_time__gte=start, scheduled_time__lte=end) \
             .order_by('scheduled_time')
         serializer = LessonSerializer(lessons, many=True)
@@ -895,7 +895,7 @@ def student_dashboard(request):
     
     # Get student's enrollments and lessons
     enrollments = Enrollment.objects.filter(student=student).select_related('course')
-    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'vehicle').order_by('scheduled_time')
+    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'resource').order_by('scheduled_time')
     lesson_data = LessonSerializer(lessons, many=True).data
     
     # Get payments for the student's enrollments
