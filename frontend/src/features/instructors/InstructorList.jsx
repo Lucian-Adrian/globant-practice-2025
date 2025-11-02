@@ -8,6 +8,7 @@ import InstructorListEmpty from './InstructorListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
 import SearchInput from '../../shared/components/SearchInput.jsx';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 export const InstructorIcon = PeopleIcon;
 
@@ -84,11 +85,12 @@ const InstructorBulkActionButtons = props => (
 export default function InstructorList() {
   const isSmall = useMediaQuery(theme => theme.breakpoints.down('md'));
   const [selectedId, setSelectedId] = React.useState(null);
+  const { collapsed } = useAsidePanel();
   return (
     <List
       filters={getInstructorFilters()}
       sort={{ field: 'first_name', order: 'ASC' }}
-      aside={<InstructorListAside />}
+      aside={collapsed ? null : <InstructorListAside />}
       actions={<ListImportActions endpoint="instructors" />}
       empty={<InstructorListEmpty />}
     >

@@ -7,6 +7,7 @@ import { Chip } from '@mui/material';
 import EnrollmentListAside from './EnrollmentListAside.jsx';
 import EnrollmentListEmpty from './EnrollmentListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 // Function to get enrollment status with color coding
 const getEnrollmentStatus = (record) => {
@@ -68,12 +69,13 @@ const EnrollmentStatusField = (recordOrProps) => {
 };
 
 export default function EnrollmentList(props) {
+  const { collapsed } = useAsidePanel();
   const filters = [
     <CategoryFilterInput key="category" source="course__category" alwaysOn />,
     <TypeFilterInput key="type" source="type" alwaysOn />,
   ];
   return (
-    <List {...props} filters={filters} aside={<EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />} empty={<EnrollmentListEmpty />}>
+    <List {...props} filters={filters} aside={collapsed ? null : <EnrollmentListAside />} actions={<ListImportActions endpoint="enrollments" />} empty={<EnrollmentListEmpty />}>
       <FilteredEnrollmentDatagrid />
     </List>
   );

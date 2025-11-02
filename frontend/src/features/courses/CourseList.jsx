@@ -8,6 +8,7 @@ import CourseListEmpty from './CourseListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
 import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 // Function to determine course status based on available data
 // Status -> color map. Keep in sync with CourseListAside statusItems
@@ -93,6 +94,7 @@ const ViewDetailsButton = ({ record }) => {
 
 export default function CourseList(props) {
   const t = useTranslate();
+  const { collapsed } = useAsidePanel();
 
   const filters = [
     <CategoryFilterInput key="category" alwaysOn />,
@@ -100,7 +102,7 @@ export default function CourseList(props) {
   ];
 
   return (
-    <List {...props} filters={filters} aside={<CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
+    <List {...props} filters={filters} aside={collapsed ? null : <CourseListAside />} actions={<ListImportActions endpoint="courses" />} empty={<CourseListEmpty />}> 
       <FilteredCourseDatagrid />
     </List>
   );
