@@ -235,6 +235,14 @@ class LessonSerializer(serializers.ModelSerializer):
         # If any critical is missing, skip deeper validation (already raised required field errors above)
         if not (enrollment and instructor and start):
             return attrs
+        
+        # Enforce: Lessons must use a vehicle-type resource (capacity == 2)
+        if resource is not None:
+            cap = getattr(resource, "max_capacity", None)
+            if cap is not None and cap > 2:
+                raise serializers.ValidationError({
+                    "resource_id": [_("validation.vehicleResourceRequired")]
+                })
 
         # Compute end time
         end = start + timedelta(minutes=int(duration or 90))
