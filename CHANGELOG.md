@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- React Admin lessons list now uses `rowStyle` to avoid DOM warnings while preserving status-specific highlighting.
+- Admin enums bootstrap effect guards against post-unmount updates to suppress memory leak warnings during navigation.
+
 ## [0.3.0] - 2025-10-31
 
 ### Added
