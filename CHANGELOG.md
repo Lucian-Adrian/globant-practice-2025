@@ -172,17 +172,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation keys for EN and RO translations: requiredField, instructorConflict, studentConflict, vehicleConflict, outsideAvailability, categoryMismatch, instructorLicenseMismatch, vehicleUnavailable.
 
 ([#46](https://github.com/Lucian-Adrian/globant-practice-2025/pull/46))
-- Payment status field to Payment model with enum choices (PENDING, COMPLETED, REFUNDED, FAILED).
-- Payment status filtering in PaymentViewSet.
-- Payment status display in PaymentList with color-coded badges.
-- AutocompleteInput for enrollment selection in payment forms.
-- Default values for form fields to prevent undefined options.
+- Shared SearchInput (q param) with debounced typing for improved search performance.
+- Toolbar filters for instructor, vehicle, lesson type, and date range across admin lists.
+- Shared CategoryFilterInput and TypeFilterInput components for consistent filtering.
+- Date-range filters for courses and lessons with proper inclusion logic.
+- Backend-driven QSearchFilter for unified filtering across admin and portal endpoints.
+- Dynamic sidebar filters fetched from backend instead of hardcoded data.
+- Removed redundant inline filters and deprecated local filtering logic.
 
 ([#44](https://github.com/Lucian-Adrian/globant-practice-2025/pull/44))
 - Comprehensive React Admin translations (ra.* keys) in English, Romanian, and Russian.
 
 ([#43](https://github.com/Lucian-Adrian/globant-practice-2025/pull/43))
-- Filtering, searching, and sorting capabilities for backend API viewsets.
+- Central QSearchFilter using `q` parameter for unified search across admin and portal endpoints.
+- Enabled DjangoFilterBackend and ordering backends on Instructor, Lesson, Course, and Enrollment viewsets.
+- Internationalized "no_results" message for filtered views.
+- Unified instructor and vehicle search field handling.
+- Consistent query parameter aliases (q vs search) across all endpoints.
 
 ### Changed
 ([#39](https://github.com/Lucian-Adrian/globant-practice-2025/pull/39))
