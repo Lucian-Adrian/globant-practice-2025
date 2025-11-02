@@ -239,7 +239,7 @@ class LessonSerializer(serializers.ModelSerializer):
         # Enforce: Lessons must use a vehicle-type resource (capacity == 2)
         if resource is not None:
             cap = getattr(resource, "max_capacity", None)
-            if cap is not None and cap > 2:
+            if cap is not None and cap != 2:
                 raise serializers.ValidationError({
                     "resource_id": [_("validation.vehicleResourceRequired")]
                 })
