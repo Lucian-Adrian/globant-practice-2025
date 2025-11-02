@@ -5,6 +5,7 @@ import { useI18nForceUpdate } from '../../i18n/index.js';
 import { useNavigate } from "react-router-dom";
 import { studentRawFetch } from "../../api/httpClient";
 import InstructorCalendarAvailability from "./InstructorCalendarAvailability";
+import { validateLesson } from '../../shared/validation/lessonValidation.js';
 
 // Minimal UI primitives matching portal styling
 const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = "" }) => (
@@ -50,7 +51,7 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
 
 type Instructor = { id: number; first_name: string; last_name: string };
 type Enrollment = { id: number; type?: string; course?: { type?: string } };
-type Resource = { id: number; category: string; is_available?: boolean };
+type Resource = { id: number; category: string; is_available?: boolean; max_capacity?: number; license_plate?: string; name?: string; make?: string; model?: string };
 type Lesson = {
   id: number;
   scheduled_time: string;
@@ -75,6 +76,8 @@ const BookLesson: React.FC = () => {
   const [selectedInstructor, setSelectedInstructor] = React.useState<string>("");
   const [selectedDate, setSelectedDate] = React.useState<string>("");
   const [selectedTime, setSelectedTime] = React.useState<string>("");
+  const [selectedResource, setSelectedResource] = React.useState<string>("");
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
 
   // Availability and lessons for the selected instructor
   const [availability, setAvailability] = React.useState<Record<string,string[]>>({});
@@ -106,10 +109,10 @@ const BookLesson: React.FC = () => {
   const ins: Instructor[] = Array.isArray(body?.instructors) ? body.instructors : [];
   const ens: Enrollment[] = Array.isArray(body?.enrollments) ? body.enrollments : [];
   const stuLessons: Lesson[] = Array.isArray(body?.lessons) ? body.lessons : [];
-        setInstructors(ins);
-        setEnrollments(ens);
-  setStudentLessons(stuLessons);
-        if (ins.length) setSelectedInstructor(String(ins[0].id));
+    setInstructors(ins);
+    setEnrollments(ens);
+    setStudentLessons(stuLessons);
+    // Do NOT auto-select instructor; student must choose manually
       } catch (e: any) {
   if (mounted) setError(e?.message || t('commonUI.networkError'));
       } finally {
@@ -164,35 +167,80 @@ const BookLesson: React.FC = () => {
     fetchData();
   }, [selectedInstructor]);
 
-  // Compute valid time slots for the selected date based on availability + conflicts
+  // Helpers for 30-minute slot generation
+  const toMinutes = (hhmm: string) => {
+    const [h, m] = hhmm.split(':').map((x) => parseInt(x, 10));
+    return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
+  };
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fromMinutes = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+
+  // Compute valid 30-min start time slots for the selected date based on availability + conflicts
   const getTimeOptions = React.useCallback(() => {
     if (!selectedInstructor || !selectedDate) return [] as string[];
     const d = new Date(`${selectedDate}T00:00:00`);
     const dayEnum = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'][(d.getDay()+6)%7];
-    const allowed = availability[dayEnum] || [];
+    const raw = (availability[dayEnum] || []).slice().sort();
+    const mins = raw.map(toMinutes).sort((a, b) => a - b);
     const now = new Date();
-    const cleaned: string[] = [];
-    for (const hhmm of allowed) {
-      const start = new Date(`${selectedDate}T${hhmm}:00`);
-      if (start < now) continue; // no past
-      const end = new Date(start.getTime() + 60*60000);
-      const conflict = instructorLessons.some((l:any) => {
-        const lStart = new Date(l.scheduled_time);
-        const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60)*60000);
-        return lStart < end && start < lEnd; // allow adjacency
-      });
-      const studentConflict = studentLessons.some((l:any) => {
-        if (l?.status !== 'SCHEDULED') return false;
-        const lStart = new Date(l.scheduled_time);
-        const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60)*60000);
-        return lStart < end && start < lEnd; // allow adjacency
-      });
-      if (!conflict && !studentConflict) cleaned.push(hhmm);
+    const options: string[] = [];
+    for (let i = 0; i < mins.length - 1; i++) {
+      const startWin = mins[i];
+      const endWin = mins[i + 1];
+      for (let t = startWin; t < endWin; t += 30) {
+        const hhmm = fromMinutes(t);
+        const start = new Date(`${selectedDate}T${hhmm}:00`);
+        if (start < now) continue; // no past
+        const end = new Date(start.getTime() + 90 * 60000);
+        const conflict = instructorLessons.some((l: any) => {
+          const lStart = new Date(l.scheduled_time);
+          const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 90) * 60000);
+          return lStart < end && start < lEnd; // allow adjacency
+        });
+        const studentConflict = studentLessons.some((l: any) => {
+          if (l?.status !== 'SCHEDULED') return false;
+          const lStart = new Date(l.scheduled_time);
+          const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 90) * 60000);
+          return lStart < end && start < lEnd; // allow adjacency
+        });
+        if (!conflict && !studentConflict) options.push(hhmm);
+      }
     }
-    return cleaned.sort();
+    // Also allow the last defined time exactly (aligns with validation behavior)
+    if (mins.length) {
+      const last = mins[mins.length - 1];
+      const hhmm = fromMinutes(last);
+      const start = new Date(`${selectedDate}T${hhmm}:00`);
+      if (start >= now) options.push(hhmm);
+    }
+    return Array.from(new Set(options)).sort();
   }, [selectedInstructor, selectedDate, availability, instructorLessons, studentLessons]);
 
-  const canSubmit = Boolean(selectedInstructor && selectedDate && selectedTime && enrollments.length);
+  // Available vehicle resources at selected slot (max_capacity===2, available flag, not busy)
+  const availableVehicles = React.useMemo(() => {
+    if (!selectedDate || !selectedTime) return [] as Resource[];
+    const start = new Date(`${selectedDate}T${selectedTime}:00`);
+    const end = new Date(start.getTime() + 90 * 60000);
+    const isVehicle = (r: Resource) => (r.max_capacity === 2);
+    const overlaps = (l: Lesson) => {
+      if (!l || l.status !== 'SCHEDULED') return false;
+      const ls = new Date(l.scheduled_time);
+      const le = new Date(ls.getTime() + (l.duration_minutes || 90) * 60000);
+      return ls < end && start < le;
+    };
+    const busy = new Set<number>();
+    for (const l of allLessons) {
+      const res: any = l?.resource as any;
+      const rid = typeof res === 'number' ? res : res?.id;
+      if (!rid) continue;
+      if (overlaps(l)) busy.add(rid);
+    }
+    return resources
+      .filter((r) => isVehicle(r) && r.is_available !== false)
+      .filter((r) => !busy.has(r.id));
+  }, [resources, allLessons, selectedDate, selectedTime]);
+
+  const canSubmit = Boolean(selectedInstructor && selectedDate && selectedTime && selectedResource && enrollments.length);
 
   const findPracticeEnrollmentId = () => {
     // Prefer PRACTICE enrollment; fall back to any
@@ -202,51 +250,12 @@ const BookLesson: React.FC = () => {
 
   const findEnrollmentById = (id: number | undefined) => enrollments.find(e => e.id === id);
 
-  // Auto-pick resource: most recently used by this student and available; otherwise random available
-  const pickResourceId = (start: Date, end: Date, enrollmentId: number | undefined): number | null => {
-    if (!enrollmentId) return null;
-    const enr = findEnrollmentById(enrollmentId);
-    const courseCategory = (enr as any)?.course?.category || (enr as any)?.category;
-    if (!courseCategory) return null;
-
-    // Candidates: resources matching course category and marked available (or missing flag treated as available)
-  const matching = resources.filter(r => r.category === courseCategory && r.is_available !== false && (r as any).max_capacity === 2);
-    if (matching.length === 0) return null;
-
-    // Exclude resources with overlapping SCHEDULED lessons at this time
-    const overlaps = (l: Lesson) => {
-      if (!l || l.status !== 'SCHEDULED') return false;
-      const lStart = new Date(l.scheduled_time);
-      const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60) * 60000);
-      return lStart < end && start < lEnd;
-    };
-    const busy = new Set<number>();
-    for (const l of allLessons) {
-      const res = l?.resource as any;
-      const rId = typeof res === 'number' ? res : res?.id;
-      if (!rId) continue;
-      if (overlaps(l)) busy.add(rId);
-    }
-    const free = matching.filter(r => !busy.has(r.id));
-    if (free.length === 0) return null;
-
-    // Try most-recently-used resource by this student that is free
-    const sortedByRecent = [...studentLessons]
-      .filter(l => l.resource)
-      .sort((a, b) => new Date(b.scheduled_time).getTime() - new Date(a.scheduled_time).getTime());
-    for (const l of sortedByRecent) {
-      const res = l.resource as any;
-      const rId = typeof res === 'number' ? res : res?.id;
-      const rCat = typeof res === 'number' ? undefined : res?.category;
-      if (!rId) continue;
-      if (rCat && rCat !== courseCategory) continue;
-      if (free.some(r => r.id === rId)) return rId;
-    }
-
-    // Fallback: pick a random free resource
-    const pick = free[Math.floor(Math.random() * free.length)];
-    return pick?.id ?? null;
-  };
+  // Helper: get selected resource entity
+  const getSelectedResource = React.useCallback((): Resource | undefined => {
+    const id = Number(selectedResource);
+    if (!id) return undefined;
+    return resources.find((r) => r.id === id);
+  }, [selectedResource, resources]);
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -255,12 +264,12 @@ const BookLesson: React.FC = () => {
     const instructorId = Number(selectedInstructor);
     const iso = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
     const start = new Date(`${selectedDate}T${selectedTime}:00`);
-    const end = new Date(start.getTime() + 60*60000);
+    const end = new Date(start.getTime() + 90 * 60000);
     // Block if the student already has a lesson overlapping this time
     const hasStudentConflict = studentLessons.some(l => {
       if (l?.status !== 'SCHEDULED') return false;
       const lStart = new Date(l.scheduled_time);
-      const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 60) * 60000);
+      const lEnd = new Date(lStart.getTime() + (l.duration_minutes || 90) * 60000);
       return lStart < end && start < lEnd; // adjacency allowed
     });
     if (hasStudentConflict) {
@@ -268,32 +277,48 @@ const BookLesson: React.FC = () => {
       return;
     }
 
-    const resourceId = pickResourceId(start, end, enrollmentId);
-    if (resourceId == null) {
-  setError(t('portal.booking.errors.vehicleUnavailable'));
+    const resEnt = getSelectedResource();
+    if (!resEnt) {
+      setFieldErrors({ resource_id: t('validation.requiredField') });
       return;
     }
+    if ((resEnt.max_capacity ?? 0) !== 2) {
+      setFieldErrors({ resource_id: t('validation.vehicleResourceRequired') });
+      return;
+    }
+
+    // Run shared frontend validation
+    setFieldErrors({});
+    const values = {
+      enrollment_id: enrollmentId,
+      instructor_id: instructorId,
+      resource_id: resEnt.id,
+      scheduled_time: iso,
+      duration_minutes: 90,
+      status: 'SCHEDULED',
+    } as any;
+    const vErrors = await validateLesson(values, t);
+    if (vErrors && Object.keys(vErrors).length) {
+      const mapped: Record<string, string> = {};
+      for (const [k, v] of Object.entries(vErrors)) mapped[k] = String(v);
+      setFieldErrors(mapped);
+      return;
+    }
+
     try {
       // IMPORTANT: Do not send Authorization header for this endpoint to avoid JWT auth failure (401)
       const resp = await fetch('/api/lessons/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          enrollment_id: enrollmentId,
-          instructor_id: instructorId,
-          resource_id: resourceId,
-          scheduled_time: iso,
-          duration_minutes: 60,
-          status: 'SCHEDULED',
-        }),
+        body: JSON.stringify(values),
       });
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({} as any));
-  throw new Error(body?.detail || body?.message || t('portal.booking.errors.submitFailed'));
+        throw new Error(body?.detail || body?.message || t('portal.booking.errors.submitFailed'));
       }
       navigate('/lessons?filter=upcoming');
     } catch (e: any) {
-  setError(e?.message || t('portal.booking.errors.submitFailed'));
+      setError(e?.message || t('portal.booking.errors.submitFailed'));
     }
   };
 
@@ -327,17 +352,23 @@ const BookLesson: React.FC = () => {
                     <option key={i.id} value={i.id}>{i.first_name} {i.last_name}</option>
                   ))}
                 </Select>
+                {fieldErrors.instructor_id && (
+                  <div className="tw-text-[11px] tw-text-destructive">{fieldErrors.instructor_id}</div>
+                )}
               </div>
             </div>
 
             <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
               <div className="tw-space-y-2">
                 <Label htmlFor="date">{t('portal.booking.form.datetime')}</Label>
-                <Input id="date" type="date" min={new Date().toISOString().split('T')[0]} value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setSelectedTime(''); }} />
+                <Input id="date" type="date" min={new Date().toISOString().split('T')[0]} value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setSelectedTime(''); setSelectedResource(''); setFieldErrors({}); }} />
+                {fieldErrors.scheduled_time && (
+                  <div className="tw-text-[11px] tw-text-destructive">{fieldErrors.scheduled_time}</div>
+                )}
               </div>
               <div className="tw-space-y-2">
                 <Label htmlFor="time">{t('portal.booking.form.datetime')}</Label>
-                <Select id="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} disabled={!selectedInstructor || !selectedDate}>
+                <Select id="time" value={selectedTime} onChange={(e) => { setSelectedTime(e.target.value); setSelectedResource(''); setFieldErrors({}); }} disabled={!selectedInstructor || !selectedDate}>
                   <option value="" disabled>{t('portal.booking.form.datetime')}</option>
                   {getTimeOptions().map(t => (
                     <option key={t} value={t}>{t}</option>
@@ -345,6 +376,31 @@ const BookLesson: React.FC = () => {
                 </Select>
                 {selectedInstructor && selectedDate && getTimeOptions().length === 0 && (
                   <div className="tw-text-[11px] tw-text-muted-foreground">{t('portal.booking.errors.noSlots')}</div>
+                )}
+                {fieldErrors.enrollment_id && (
+                  <div className="tw-text-[11px] tw-text-destructive">{fieldErrors.enrollment_id}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Vehicle (resource) selection */}
+            <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+              <div className="tw-space-y-2">
+                <Label htmlFor="resource">{t('portal.booking.form.resource')}</Label>
+                <Select id="resource" value={selectedResource} onChange={(e) => { setSelectedResource(e.target.value); setFieldErrors((prev) => ({ ...prev, resource_id: '' })); }} disabled={!selectedDate || !selectedTime}>
+                  <option value="" disabled>{t('portal.booking.form.resource')}</option>
+                  {availableVehicles.map((r) => {
+                    const label = r.license_plate || r.name || `${r.make || ''} ${r.model || ''}`.trim() || `#${r.id}`;
+                    return (
+                      <option key={r.id} value={r.id}>{label}</option>
+                    );
+                  })}
+                </Select>
+                {(!selectedResource && selectedDate && selectedTime && availableVehicles.length === 0) && (
+                  <div className="tw-text-[11px] tw-text-muted-foreground">{t('portal.booking.errors.vehicleUnavailable')}</div>
+                )}
+                {fieldErrors.resource_id && (
+                  <div className="tw-text-[11px] tw-text-destructive">{fieldErrors.resource_id}</div>
                 )}
               </div>
             </div>
