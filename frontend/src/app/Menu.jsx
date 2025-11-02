@@ -41,7 +41,7 @@ export default function Menu() {
       </ListItemButton>
       <RaMenu.ResourceItem name="students" />
       <RaMenu.ResourceItem name="instructors" />
-      <RaMenu.ResourceItem name="vehicles" />
+      <RaMenu.ResourceItem name="resources" />
       <RaMenu.ResourceItem name="classes" />
       <RaMenu.ResourceItem name="payments" />
       <RaMenu.ResourceItem name="enrollments" />

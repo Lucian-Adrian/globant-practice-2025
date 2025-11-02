@@ -29,6 +29,12 @@ function dateAtTime(base: Date, hhmm: string): Date {
   return t;
 }
 const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) => aStart < bEnd && bStart < aEnd;
+const toMinutes = (hhmm: string) => {
+  const [h, m] = (hhmm || '').split(':').map((x) => parseInt(x, 10));
+  return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
+};
+const pad = (n: number) => String(n).padStart(2, '0');
+const fromMinutes = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 
 function buildWeek(start: Date): Date[] {
   const days: Date[] = [];
@@ -47,7 +53,7 @@ const Legend: React.FC = () => {
   );
 };
 
-const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons, availability, onSelect, durationMinutes=60, loading, weekStart, onWeekChange }) => {
+const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons, availability, onSelect, durationMinutes=90, loading, weekStart, onWeekChange }) => {
   const { t } = useTranslation('portal');
   // IMPORTANT: Do not return early before declaring hooks; otherwise when instructorId becomes truthy
   // React will see a different hook order (causing the runtime error we observed). We compute hooks
@@ -66,12 +72,18 @@ const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons
   const weekDays = React.useMemo(()=> buildWeek(baseStart), [baseStart]);
   const todayLocal = fmtLocalDate(new Date());
 
-  // Union of all hours across the week for table rows
+  // Union of all 30-minute starts across the week for table rows
   const unionHours = React.useMemo(() => {
     const set = new Set<string>();
     for (const d of weekDays) {
-      const hours = availability[JS_TO_ENUM(d)] || [];
-      hours.forEach(h => set.add(h));
+      const hours = (availability[JS_TO_ENUM(d)] || []).slice().sort();
+      const mins = hours.map(toMinutes).sort((a, b) => a - b);
+      for (let i = 0; i < mins.length - 1; i++) {
+        const a = mins[i];
+        const b = mins[i + 1];
+        for (let t = a; t < b; t += 30) set.add(fromMinutes(t));
+      }
+      if (mins.length) set.add(fromMinutes(mins[mins.length - 1])); // include exact last bound
     }
     return Array.from(set).sort();
   }, [weekDays, availability]);
@@ -88,15 +100,26 @@ const InstructorCalendarAvailability: React.FC<Props> = ({ instructorId, lessons
 
   function slotState(dayDate: Date, hhmm: string): 'available' | 'booked' | 'unavailable' {
     const dayEnum = JS_TO_ENUM(dayDate);
-    const allowed = availability[dayEnum] || [];
-    if (!allowed.includes(hhmm)) return 'unavailable';
+    const raw = (availability[dayEnum] || []).slice().sort();
+    const mins = raw.map(toMinutes).sort((a, b) => a - b);
+    let isAllowed = false;
+    const m = toMinutes(hhmm);
+    if (mins.length) {
+      if (m === mins[mins.length - 1]) isAllowed = true; // exact last boundary allowed
+      else {
+        for (let i = 0; i < mins.length - 1; i++) {
+          if (mins[i] <= m && m < mins[i + 1] && ((m - mins[i]) % 30 === 0)) { isAllowed = true; break; }
+        }
+      }
+    }
+    if (!isAllowed) return 'unavailable';
     const start = dateAtTime(dayDate, hhmm);
     if (start < new Date()) return 'unavailable';
     const end = new Date(start.getTime() + durationMinutes*60000);
     const list = lessonsByDate[fmtLocalDate(dayDate)] || [];
     const conflict = list.some(l => {
       const s = new Date(l.scheduled_time);
-      const e = new Date(s.getTime() + (l.duration_minutes||60)*60000);
+      const e = new Date(s.getTime() + (l.duration_minutes || durationMinutes) * 60000);
       return overlaps(start, end, s, e);
     });
     return conflict ? 'booked' : 'available';

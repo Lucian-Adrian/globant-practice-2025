@@ -290,7 +290,7 @@ const Lessons: React.FC = () => {
                 const dt = lesson?.scheduled_time ? new Date(lesson.scheduled_time) : null;
                 const dateStr = dt ? dt.toLocaleDateString() : '—';
                 const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                const vehicleStr = lesson?.vehicle?.license_plate || (lesson?.enrollment?.course?.name || '—');
+                const vehicleStr = lesson?.resource?.license_plate || (lesson?.enrollment?.course?.name || '—');
                 return (
                 <Card
                   key={lesson.id}

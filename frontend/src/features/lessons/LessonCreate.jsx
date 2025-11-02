@@ -1,15 +1,16 @@
 import * as React from 'react';
 import { 
-    Create, 
-    SimpleForm, 
-    ReferenceInput, 
-    SelectInput, 
-    DateTimeInput, 
-    NumberInput, 
-    TextInput, 
-    useTranslate, 
-    required 
+  Create, 
+  SimpleForm, 
+  ReferenceInput, 
+  SelectInput, 
+  DateTimeInput, 
+  NumberInput, 
+  TextInput, 
+  useTranslate, 
+  required 
 } from 'react-admin';
+import { validateLesson } from '../../shared/validation/lessonValidation';
 
 export default function LessonCreate(props) {
   const t = useTranslate();
@@ -22,26 +23,48 @@ export default function LessonCreate(props) {
   return (
     
     <Create {...props}>
-      <SimpleForm>
+      <SimpleForm validate={async (values) => validateLesson(values, t)}>
         <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
           <SelectInput 
             label={t('resources.lessons.fields.enrollment', 'Enrollment')} 
             optionText={(r) => r.label || `#${r.id}`} 
-            validate={[required()]} 
+            optionValue="id"
+            emptyText={t('validation.requiredField')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
+            SelectProps={{ MenuProps: { keepMounted: true } }}
+            validate={[required()]}
           />
         </ReferenceInput>
         <ReferenceInput source="instructor_id" reference="instructors" perPage={50}>
           <SelectInput 
             label={t('resources.lessons.fields.instructor', 'Instructor')} 
             optionText={(r) => `${r.first_name} ${r.last_name}`} 
+            optionValue="id"
+            emptyText={t('validation.requiredField')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
+            SelectProps={{ MenuProps: { keepMounted: true } }}
             validate={[required()]} 
           />
         </ReferenceInput>
 
-        <ReferenceInput source="vehicle_id" reference="vehicles" perPage={50}>
-          <SelectInput 
-            label={t('resources.lessons.fields.vehicle', 'Vehicle')} 
-            optionText={(r) => `${r.license_plate}`} 
+        <ReferenceInput
+          source="resource_id"
+          reference="resources"
+          perPage={200}
+          filter={{ max_capacity: 2 }}
+          sort={{ field: 'license_plate', order: 'ASC' }}
+        >
+          <SelectInput
+            label={t('resources.lessons.fields.resource', 'Resource')}
+            optionText={(r) => r.license_plate || r.name || '—'}
+            optionValue="id"
+            emptyText={t('resources.lessons.fields.resource', 'Resource')}
+            parse={(v) => (v === '' ? null : Number(v))}
+            format={(v) => (v == null ? '' : String(v))}
+            SelectProps={{ MenuProps: { keepMounted: true } }}
+            validate={[required()]}
           />
         </ReferenceInput>
 
@@ -54,7 +77,7 @@ export default function LessonCreate(props) {
         <NumberInput 
           source="duration_minutes" 
           label={t('resources.lessons.fields.duration_minutes', 'Duration (min)')} 
-          defaultValue={50} 
+          defaultValue={90} 
         />
         
         <SelectInput
@@ -62,6 +85,7 @@ export default function LessonCreate(props) {
           label={t('filters.status', 'Status')}
           choices={statusChoices}
           defaultValue="SCHEDULED"
+          SelectProps={{ MenuProps: { keepMounted: true } }}
         />
         <TextInput 
           source="notes" 

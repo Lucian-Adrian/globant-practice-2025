@@ -13,10 +13,11 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability
+from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability, Resource, ScheduledClass
 from .serializers import (
     StudentSerializer, InstructorSerializer, VehicleSerializer, CourseSerializer,
-    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer
+    EnrollmentSerializer, LessonSerializer, PaymentSerializer, InstructorAvailabilitySerializer,
+    ResourceSerializer, ScheduledClassSerializer
 )
 from .enums import all_enums_for_meta, StudentStatus, LessonStatus
 import hashlib, json
@@ -110,7 +111,11 @@ class StudentViewSet(FullCrudViewSet):
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
 
-        required_cols = {'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth'}
+        # Critical columns that must be present in CSV headers and have values
+        required_cols = {'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'password'}
+        # Optional columns that can be blank (will use defaults)
+        optional_cols = {'status'}
+
         missing = required_cols - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response(
@@ -127,19 +132,21 @@ class StudentViewSet(FullCrudViewSet):
             except Exception as e:  # noqa: BLE001
                 errors.append({"row": idx, "errors": {"phone_number": [str(e)]}})
                 continue
+
+            # Build data dict with required fields
             data = {
                 'first_name': row.get('first_name', '').strip(),
                 'last_name': row.get('last_name', '').strip(),
                 'email': row.get('email', '').strip(),
                 'phone_number': phone,
                 'date_of_birth': (row.get('date_of_birth') or '').strip(),
-                'status': (row.get('status') or 'ACTIVE').strip() or 'ACTIVE',
+                'password': (row.get("password") or "").strip(),
             }
 
-            # Password handling
-            pwd = (row.get("password") or "").strip()
-            if pwd:
-                data["password"] = pwd
+            # Add optional fields only if they have non-blank values
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
 
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
@@ -195,15 +202,38 @@ class InstructorViewSet(FullCrudViewSet):
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
             data = {k: (row.get(k) or '').strip() for k in required}
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+            email = data.get('email')
+
+            # Use update_or_create to prevent duplicates based on email
+            try:
+                existing = Instructor.objects.filter(email=email).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class InstructorAvailabilityViewSet(FullCrudViewSet):
@@ -246,26 +276,58 @@ class VehicleViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
+        # Critical columns that must be present
         required = {'make', 'model', 'license_plate', 'year', 'category'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'is_available'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'make': (row.get('make') or '').strip(),
                 'model': (row.get('model') or '').strip(),
                 'license_plate': (row.get('license_plate') or '').strip(),
                 'year': (row.get('year') or '').strip(),
                 'category': (row.get('category') or '').strip(),
-                'is_available': ((row.get('is_available') or 'true').strip().lower() in ['1','true','yes'])
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
+            # Add optional fields only if present and non-blank
+            is_avail_val = (row.get('is_available') or '').strip()
+            if is_avail_val:
+                data['is_available'] = is_avail_val.lower() in ['1', 'true', 'yes']
+            license_plate = data.get('license_plate')
+
+            # Use update_or_create to prevent duplicates based on license_plate
+            try:
+                existing = Vehicle.objects.filter(license_plate=license_plate).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class CourseViewSet(FullCrudViewSet):
@@ -295,19 +357,53 @@ class CourseViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'name', 'category', 'type', 'description', 'price', 'required_lessons'}
+        # Critical columns that must be present
+        required = {'name', 'category', 'description', 'price', 'required_lessons'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'type'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {k: (row.get(k) or '').strip() for k in required}
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
+            # Add optional fields only if present and non-blank
+            type_val = (row.get('type') or '').strip()
+            if type_val:
+                data['type'] = type_val
+            name = data.get('name')
+            category = data.get('category')
+
+            # Use update_or_create to prevent duplicates based on name + category
+            try:
+                existing = Course.objects.filter(name=name, category=category).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class EnrollmentViewSet(FullCrudViewSet):
@@ -345,35 +441,73 @@ class EnrollmentViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'student_id', 'course_id', 'type', 'status'}
+        # Critical columns that must be present
+        required = {'student_id', 'course_id'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'type', 'status'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'student_id': (row.get('student_id') or '').strip(),
                 'course_id': (row.get('course_id') or '').strip(),
-                'type': (row.get('type') or '').strip(),
-                'status': (row.get('status') or '').strip() or 'IN_PROGRESS',
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
+            # Add optional fields only if present and non-blank
+            type_val = (row.get('type') or '').strip()
+            if type_val:
+                data['type'] = type_val
+
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
+            student_id = data.get('student_id')
+            course_id = data.get('course_id')
+
+            # Use update_or_create to prevent duplicates based on student_id + course_id
+            try:
+                existing = Enrollment.objects.filter(student_id=student_id, course_id=course_id).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class LessonViewSet(FullCrudViewSet):
-    queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'vehicle').all()
+    queryset = Lesson.objects.select_related('enrollment__student', 'instructor', 'resource').all()
     serializer_class = LessonSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         'status': ['exact'],
         'scheduled_time': ['gte', 'lte', 'gt', 'lt'],
         'instructor': ['exact'],
-        'vehicle__license_plate': ['exact'],
+        'resource__name': ['exact'],
+        # New: allow filtering by resource id directly for efficient conflict checks
+        'resource_id': ['exact'],
         'enrollment__student': ['exact'],
         'enrollment__course': ['exact'],
     }
@@ -385,20 +519,20 @@ class LessonViewSet(FullCrudViewSet):
             instr = self.request.query_params.get('instructor') or self.request.query_params.get('instructor_id')
             if instr:
                 qs = qs.filter(instructor_id=instr)
-            # Accept 'vehicle' as a license plate string alias for vehicle__license_plate
-            vehicle_lp = self.request.query_params.get('vehicle')
-            if vehicle_lp:
-                qs = qs.filter(vehicle__license_plate=vehicle_lp)
+            # Accept 'resource' as a name string alias for resource__name
+            resource_name = self.request.query_params.get('resource')
+            if resource_name:
+                qs = qs.filter(resource__name__icontains=resource_name)
         return qs
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
-        fields = ['id', 'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status', 'notes']
+        fields = ['id', 'enrollment_id', 'instructor_id', 'resource_id', 'scheduled_time', 'duration_minutes', 'status', 'notes']
         qs = self.filter_queryset(self.get_queryset())
         buffer = StringIO(); writer = csv.writer(buffer); writer.writerow(fields)
         for obj in qs:
             writer.writerow([
-                obj.id, obj.enrollment_id, obj.instructor_id, obj.vehicle_id,
+                obj.id, obj.enrollment_id, obj.instructor_id, obj.resource_id,
                 obj.scheduled_time.isoformat() if obj.scheduled_time else '',
                 obj.duration_minutes, obj.status, (obj.notes or '').replace('\n', ' ')
             ])
@@ -413,27 +547,71 @@ class LessonViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'enrollment_id', 'instructor_id', 'vehicle_id', 'scheduled_time', 'duration_minutes', 'status'}
+        # Critical columns that must be present
+        required = {'enrollment_id', 'instructor_id', 'scheduled_time', 'status'}
+        # Optional columns that can be blank (will use defaults or null)
+        optional = {'resource_id', 'duration_minutes', 'notes'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'instructor_id': (row.get('instructor_id') or '').strip(),
-                'vehicle_id': (row.get('vehicle_id') or '').strip() or None,
                 'scheduled_time': (row.get('scheduled_time') or '').strip(),
-                'duration_minutes': (row.get('duration_minutes') or '').strip() or '60',
                 'status': (row.get('status') or '').strip(),
-                'notes': (row.get('notes') or '').strip(),
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
+            # Add optional fields only if present and non-blank
+            resource_val = (row.get('resource_id') or '').strip()
+            if resource_val:
+                data['resource_id'] = resource_val
+
+            duration_val = (row.get('duration_minutes') or '').strip()
+            if duration_val:
+                data['duration_minutes'] = duration_val
+
+            notes_val = (row.get('notes') or '').strip()
+            if notes_val:
+                data['notes'] = notes_val
+            enrollment_id = data.get('enrollment_id')
+            instructor_id = data.get('instructor_id')
+            scheduled_time = data.get('scheduled_time')
+
+            # Use update_or_create to prevent duplicates based on enrollment_id + instructor_id + scheduled_time
+            try:
+                existing = Lesson.objects.filter(
+                    enrollment_id=enrollment_id,
+                    instructor_id=instructor_id,
+                    scheduled_time=scheduled_time
+                ).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class PaymentViewSet(FullCrudViewSet):
@@ -469,25 +647,66 @@ class PaymentViewSet(FullCrudViewSet):
             return response.Response({"detail": "No file uploaded. Use form field 'file'."}, status=status.HTTP_400_BAD_REQUEST)
         text_stream = TextIOWrapper(upload.file, encoding='utf-8') if hasattr(upload, 'file') else upload
         reader = csv.DictReader(text_stream)
-        required = {'enrollment_id', 'amount', 'payment_method', 'description'}
+        # Critical columns that must be present
+        required = {'enrollment_id', 'amount', 'payment_method'}
+        # Optional columns that can be blank (will use defaults)
+        optional = {'status', 'description'}
+
         missing = required - set([c.strip() for c in reader.fieldnames or []])
         if missing:
             return response.Response({"detail": f"Missing required columns: {', '.join(sorted(missing))}"}, status=status.HTTP_400_BAD_REQUEST)
-        created_ids, errors = [], []
+        created_ids, updated_ids, errors = [], [], []
         for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields
             data = {
                 'enrollment_id': (row.get('enrollment_id') or '').strip(),
                 'amount': (row.get('amount') or '').strip(),
                 'payment_method': (row.get('payment_method') or '').strip(),
-                'status': (row.get('status') or 'PENDING').strip() or 'PENDING',
-                'description': (row.get('description') or '').strip(),
             }
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                obj = serializer.save(); created_ids.append(obj.id)
-            else:
-                errors.append({"row": idx, "errors": serializer.errors})
-        return response.Response({"created": len(created_ids), "created_ids": created_ids, "errors": errors})
+
+            # Add optional fields only if present and non-blank
+            status_val = (row.get('status') or '').strip()
+            if status_val:
+                data['status'] = status_val
+
+            description_val = (row.get('description') or '').strip()
+            if description_val:
+                data['description'] = description_val
+            enrollment_id = data.get('enrollment_id')
+            amount = data.get('amount')
+            description = data.get('description', '')
+
+            # Use update_or_create to prevent duplicates based on enrollment_id + amount
+            # If description is provided, use it as additional uniqueness criteria
+            try:
+                filter_criteria = {'enrollment_id': enrollment_id, 'amount': amount}
+                if description:
+                    filter_criteria['description'] = description
+                existing = Payment.objects.filter(**filter_criteria).first()
+                if existing:
+                    serializer = self.get_serializer(existing, data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        updated_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+                else:
+                    serializer = self.get_serializer(data=data)
+                    if serializer.is_valid():
+                        obj = serializer.save()
+                        created_ids.append(obj.id)
+                    else:
+                        errors.append({"row": idx, "errors": serializer.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response({
+            "created": len(created_ids),
+            "updated": len(updated_ids),
+            "created_ids": created_ids,
+            "updated_ids": updated_ids,
+            "errors": errors
+        })
 
 
 class UtilityViewSet(viewsets.ViewSet):
@@ -498,7 +717,7 @@ class UtilityViewSet(viewsets.ViewSet):
         data = {
             "students": Student.objects.count(),
             "instructors": Instructor.objects.count(),
-            "vehicles": Vehicle.objects.count(),
+            "resources": Resource.objects.count(),
             "courses": Course.objects.count(),
             "enrollments_active": Enrollment.objects.exclude(status='COMPLETED').count(),
             "lessons_scheduled": Lesson.objects.filter(status='SCHEDULED').count(),
@@ -510,7 +729,7 @@ class UtilityViewSet(viewsets.ViewSet):
     def schedule(self, request):
         start = now()
         end = start + timedelta(days=7)
-        lessons = Lesson.objects.select_related('instructor', 'enrollment__student', 'vehicle') \
+        lessons = Lesson.objects.select_related('instructor', 'enrollment__student', 'resource') \
             .filter(scheduled_time__gte=start, scheduled_time__lte=end) \
             .order_by('scheduled_time')
         serializer = LessonSerializer(lessons, many=True)
@@ -676,7 +895,7 @@ def student_dashboard(request):
     
     # Get student's enrollments and lessons
     enrollments = Enrollment.objects.filter(student=student).select_related('course')
-    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'vehicle').order_by('scheduled_time')
+    lessons = Lesson.objects.filter(enrollment__in=enrollments).select_related('enrollment__course', 'instructor', 'resource').order_by('scheduled_time')
     lesson_data = LessonSerializer(lessons, many=True).data
     
     # Get payments for the student's enrollments
@@ -783,3 +1002,210 @@ def student_dashboard(request):
         "enrollments": enrollment_data,
         "lesson_summary": lesson_summary,
     })
+
+
+class ResourceViewSet(FullCrudViewSet):
+    queryset = Resource.objects.all().order_by('name')
+    serializer_class = ResourceSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'is_available': ['exact'],
+        'category': ['exact'],
+        'max_capacity': ['exact', 'lte', 'gte'],
+    }
+
+    @decorators.action(detail=False, methods=["get"], url_path="available")
+    def available_resources(self, request):
+        """Get resources available for a specific time period"""
+        start_time = request.query_params.get('start_time')
+        end_time = request.query_params.get('end_time')
+        resource_type = request.query_params.get('type')  # 'vehicle' or 'classroom'
+
+        qs = self.get_queryset().filter(is_available=True)
+
+        if resource_type == 'vehicle':
+            qs = qs.filter(max_capacity=2)
+        elif resource_type == 'classroom':
+            qs = qs.filter(max_capacity__gt=2)
+
+        # TODO: Add time-based availability filtering
+        # For now, just return all available resources
+
+        serializer = self.get_serializer(qs, many=True)
+        return response.Response(serializer.data)
+    
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        fields = [
+            "id", "name", "max_capacity", "category", "is_available",
+            "license_plate", "make", "model", "year"
+        ]
+        qs = self.filter_queryset(self.get_queryset())
+
+        buf = StringIO()
+        w = csv.writer(buf)
+        w.writerow(fields)
+        for r in qs:
+            w.writerow([
+                r.id,
+                r.name,
+                r.max_capacity,
+                r.category or "",
+                "1" if r.is_available else "0",
+                r.license_plate or "",
+                r.make or "",
+                r.model or "",
+                r.year or "",
+            ])
+
+        resp = HttpResponse(buf.getvalue(), content_type="text/csv")
+        resp["Content-Disposition"] = "attachment; filename=resources.csv"
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get("file") or request.FILES.get("csv")
+        if not upload:
+            return response.Response(
+                {"detail": "No file uploaded. Use form field 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        stream = TextIOWrapper(upload.file, encoding="utf-8") if hasattr(upload, "file") else upload
+        reader = csv.DictReader(stream)
+
+        # Required columns for every row
+        required_cols = {"name", "max_capacity", "category"}
+        header = set(reader.fieldnames or [])
+        missing = required_cols - header
+        if missing:
+            return response.Response(
+                {"detail": f"Missing required columns: {', '.join(sorted(missing))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created_ids, updated_ids, errors = [], [], []
+
+        for idx, row in enumerate(reader, start=2):
+            # Trim known fields
+            data = {k: (row.get(k) or "").strip() for k in reader.fieldnames}
+
+            # Normalize primitives
+            try:
+                data["max_capacity"] = int(data.get("max_capacity") or 0)
+            except ValueError:
+                errors.append({"row": idx, "errors": {"max_capacity": ["Invalid number"]}})
+                continue
+
+            if data.get("year", "") != "":
+                try:
+                    data["year"] = int(data["year"])
+                except ValueError:
+                    errors.append({"row": idx, "errors": {"year": ["Invalid number"]}})
+                    continue
+            else:
+                data["year"] = None
+
+            data["is_available"] = str(data.get("is_available", "")).lower() in ("1", "true", "yes")
+
+            # Empty optional vehicle fields -> None
+            for f in ("license_plate", "make", "model"):
+                if not data.get(f):
+                    data[f] = None
+
+            # Conditional requirements:
+            # vehicle = capacity == 2 → plate/make/model/year required
+            is_vehicle = data["max_capacity"] == 2
+            if is_vehicle:
+                missing_vehicle = [f for f in ("license_plate", "make", "model", "year") if data.get(f) in (None, "")]
+                if missing_vehicle:
+                    errors.append({
+                        "row": idx,
+                        "errors": {f: ["This field is required for vehicle-type resources (max_capacity == 2)."] for f in missing_vehicle}
+                    })
+                    continue
+
+            # Upsert key: plate for vehicles, name for classrooms
+            lookup = {"license_plate": data["license_plate"]} if (is_vehicle and data.get("license_plate")) else {"name": data["name"]}
+
+            try:
+                existing = Resource.objects.filter(**lookup).first()
+                ser = ResourceSerializer(existing, data=data, partial=bool(existing)) if existing else ResourceSerializer(data=data)
+                if ser.is_valid():
+                    obj = ser.save()
+                    (updated_ids if existing else created_ids).append(obj.id)
+                else:
+                    errors.append({"row": idx, "errors": ser.errors})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response(
+            {
+                "created": len(created_ids),
+                "updated": len(updated_ids),
+                "created_ids": created_ids,
+                "updated_ids": updated_ids,
+                "errors": errors,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    
+
+
+class ScheduledClassViewSet(FullCrudViewSet):
+    queryset = ScheduledClass.objects.all().order_by('scheduled_time')
+    serializer_class = ScheduledClassSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        'course': ['exact'],
+        'instructor': ['exact'],
+        'resource': ['exact'],
+        'status': ['exact'],
+        'scheduled_time': ['gte', 'lte', 'date'],
+    }
+
+    @decorators.action(detail=True, methods=["post"], url_path="enroll")
+    def enroll_student(self, request, pk=None):
+        """Enroll a student in a scheduled class"""
+        scheduled_class = self.get_object()
+        student_id = request.data.get('student_id')
+
+        if not student_id:
+            return response.Response({"detail": "student_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if scheduled_class.students.filter(id=student_id).exists():
+            return response.Response({"detail": "Student already enrolled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if scheduled_class.is_full():
+            return response.Response({"detail": "Class is full"}, status=status.HTTP_400_BAD_REQUEST)
+
+        scheduled_class.students.add(student)
+        serializer = self.get_serializer(scheduled_class)
+        return response.Response(serializer.data)
+
+    @decorators.action(detail=True, methods=["post"], url_path="unenroll")
+    def unenroll_student(self, request, pk=None):
+        """Unenroll a student from a scheduled class"""
+        scheduled_class = self.get_object()
+        student_id = request.data.get('student_id')
+
+        if not student_id:
+            return response.Response({"detail": "student_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return response.Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not scheduled_class.students.filter(id=student_id).exists():
+            return response.Response({"detail": "Student not enrolled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        scheduled_class.students.remove(student)
+        serializer = self.get_serializer(scheduled_class)
+        return response.Response(serializer.data)

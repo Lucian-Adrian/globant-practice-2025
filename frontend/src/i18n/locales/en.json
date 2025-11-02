@@ -26,6 +26,15 @@
     "showLess": "Show less",
     "noItems": "No items"
   },
+  "common": {
+    "date": "Date",
+    "time": "Time",
+    "duration": "Duration",
+    "instructor": "Instructor",
+    "resource": "Resource",
+    "status": "Status",
+    "noLessonsYet": "No lessons scheduled yet."
+  },
   "signupIntro": "Create an account to start",
   "passwordPlaceholder": "Password",
   "confirmPassword": "Confirm Password",
@@ -47,6 +56,77 @@
   "type": {
     "theory": "Theory",
     "driving": "Driving"
+  },
+  "filters": {
+    "available": "Available",
+    "unavailable": "Unavailable"
+  },
+  "resources": {
+    "students": {
+      "name": "Students",
+      "empty": "No students yet",
+      "import_helper": "Import students via CSV or create manually.",
+      "import_format_hint": "CSV format: first_name,last_name,email,phone_number,date_of_birth,password",
+      "fields": {
+        "first_name": "First name",
+        "last_name": "Last name", 
+        "email": "Email",
+        "phone_number": "Phone number",
+        "date_of_birth": "Date of birth",
+        "password": "Password",
+        "confirm_password": "Confirm password"
+      }
+    },
+    "instructors": {
+      "name": "Instructors",
+      "fields": {
+        "category": "Category"
+      }
+    },
+    "resources": {
+      "name": "Resources",
+      "empty": "No resources yet",
+      "import_helper": "Import resources via CSV or create manually.",
+      "fields": {
+        "id": "ID",
+        "resource_type": "Type",
+        "is_available": "Availability",
+        "name": "Name",
+        "max_capacity": "Max Capacity",
+        "category": "Category",
+        "license_plate": "License Plate",
+        "make": "Make",
+        "model": "Model",
+        "year": "Year"
+      }
+    },
+    "courses": {
+      "name": "Courses",
+      "fields": {
+        "type": "Type",
+        "category": "Category"
+      }
+    },
+    "lessons": {
+      "name": "Lessons",
+      "fields": {
+        "enrollment": "Enrollment",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "notes": "Notes",
+        "time": "Time"
+      }
+    },
+    "payments": {
+      "name": "Payments",
+      "empty": "No payments yet",
+      "import_helper": "Import payments via CSV or create manually.",
+      "fields": {
+        "enrollment": "Enrollment"
+      }
+    }
   },
   "lessons": {
     "header": {
@@ -232,7 +312,7 @@
         "course": "Course",
         "type": "Type",
         "instructor": "Instructor",
-        "vehicleOrRoom": "Vehicle / Room",
+        "resource": "Resource",
         "datetime": "Date & Time",
         "duration": "Duration (minutes)",
         "notes": "Notes",

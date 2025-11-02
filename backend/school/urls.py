@@ -3,6 +3,7 @@ from rest_framework import routers
 from .views import (
     StudentViewSet, InstructorViewSet, VehicleViewSet, CourseViewSet,
     EnrollmentViewSet, LessonViewSet, PaymentViewSet, UtilityViewSet, InstructorAvailabilityViewSet,
+    ResourceViewSet, ScheduledClassViewSet,
     enums_meta, me, check_username, student_login, student_me, student_dashboard,
 )
 
@@ -11,7 +12,9 @@ router.register(r'students', StudentViewSet)
 router.register(r'instructors', InstructorViewSet)
 router.register(r'instructor-availabilities', InstructorAvailabilityViewSet)
 router.register(r'vehicles', VehicleViewSet)
+router.register(r'resources', ResourceViewSet)
 router.register(r'courses', CourseViewSet)
+router.register(r'scheduled-classes', ScheduledClassViewSet)
 router.register(r'enrollments', EnrollmentViewSet)
 router.register(r'lessons', LessonViewSet)
 router.register(r'payments', PaymentViewSet)
