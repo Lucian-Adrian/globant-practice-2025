@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Dropdowns in edit forms now pre-fill with current values instead of being empty
 - React Admin lessons list now uses `rowStyle` to avoid DOM warnings while preserving status-specific highlighting.
 - Admin enums bootstrap effect guards against post-unmount updates to suppress memory leak warnings during navigation.
 
