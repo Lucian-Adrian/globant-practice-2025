@@ -157,7 +157,7 @@ export async function validateLesson(values, t, currentId) {
     // Use efficient server-side filter by resource id
     const resUrl = `${API_PREFIX}/lessons/?resource_id=${encodeURIComponent(resourceId)}&${baseWin}`;
     const resHit = await findAnyOverlap(resUrl, () => true);
-    if (resHit) errors.resource_id = t('validation.vehicleConflict');
+    if (resHit) errors.resource_id = t('validation.resourceConflict');
   }
 
   return errors;
