@@ -50,13 +50,13 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
 
 type Instructor = { id: number; first_name: string; last_name: string };
 type Enrollment = { id: number; type?: string; course?: { type?: string } };
-type Vehicle = { id: number; category: string; is_available?: boolean };
+type Resource = { id: number; category: string; is_available?: boolean };
 type Lesson = {
   id: number;
   scheduled_time: string;
   duration_minutes?: number;
   status?: string;
-  vehicle?: Vehicle | number | null;
+  resource?: Resource | number | null;
   instructor?: { id: number } | number;
 };
 
@@ -70,7 +70,7 @@ const BookLesson: React.FC = () => {
   const [enrollments, setEnrollments] = React.useState<Enrollment[]>([]);
   const [studentLessons, setStudentLessons] = React.useState<Lesson[]>([]);
   const [allLessons, setAllLessons] = React.useState<Lesson[]>([]);
-  const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
+  const [resources, setResources] = React.useState<Resource[]>([]);
 
   const [selectedInstructor, setSelectedInstructor] = React.useState<string>("");
   const [selectedDate, setSelectedDate] = React.useState<string>("");
@@ -120,15 +120,15 @@ const BookLesson: React.FC = () => {
     return () => { mounted = false; };
   }, [navigate]);
 
-  // Fetch vehicles once for auto-selection logic
+  // Fetch resources once for auto-selection logic
   React.useEffect(() => {
     let cancelled = false;
     const run = async () => {
       try {
-        const r = await fetch('/api/vehicles/?page_size=500');
+        const r = await fetch('/api/resources/?page_size=500');
         const b = await r.json().catch(() => ({} as any));
         const arr = Array.isArray(b) ? b : (Array.isArray(b?.results) ? b.results : []);
-        if (!cancelled) setVehicles(arr as Vehicle[]);
+        if (!cancelled) setResources(arr as Resource[]);
       } catch { /* ignore */ }
     };
     run();
@@ -202,18 +202,18 @@ const BookLesson: React.FC = () => {
 
   const findEnrollmentById = (id: number | undefined) => enrollments.find(e => e.id === id);
 
-  // Auto-pick vehicle: most recently used by this student and available; otherwise random available
-  const pickVehicleId = (start: Date, end: Date, enrollmentId: number | undefined): number | null => {
+  // Auto-pick resource: most recently used by this student and available; otherwise random available
+  const pickResourceId = (start: Date, end: Date, enrollmentId: number | undefined): number | null => {
     if (!enrollmentId) return null;
     const enr = findEnrollmentById(enrollmentId);
     const courseCategory = (enr as any)?.course?.category || (enr as any)?.category;
     if (!courseCategory) return null;
 
-    // Candidates: vehicles matching course category and marked available (or missing flag treated as available)
-    const matching = vehicles.filter(v => v.category === courseCategory && v.is_available !== false);
+    // Candidates: resources matching course category and marked available (or missing flag treated as available)
+  const matching = resources.filter(r => r.category === courseCategory && r.is_available !== false && (r as any).max_capacity === 2);
     if (matching.length === 0) return null;
 
-    // Exclude vehicles with overlapping SCHEDULED lessons at this time
+    // Exclude resources with overlapping SCHEDULED lessons at this time
     const overlaps = (l: Lesson) => {
       if (!l || l.status !== 'SCHEDULED') return false;
       const lStart = new Date(l.scheduled_time);
@@ -222,28 +222,28 @@ const BookLesson: React.FC = () => {
     };
     const busy = new Set<number>();
     for (const l of allLessons) {
-      const veh = l?.vehicle as any;
-      const vId = typeof veh === 'number' ? veh : veh?.id;
-      if (!vId) continue;
-      if (overlaps(l)) busy.add(vId);
+      const res = l?.resource as any;
+      const rId = typeof res === 'number' ? res : res?.id;
+      if (!rId) continue;
+      if (overlaps(l)) busy.add(rId);
     }
-    const free = matching.filter(v => !busy.has(v.id));
+    const free = matching.filter(r => !busy.has(r.id));
     if (free.length === 0) return null;
 
-    // Try most-recently-used vehicle by this student that is free
+    // Try most-recently-used resource by this student that is free
     const sortedByRecent = [...studentLessons]
-      .filter(l => l.vehicle)
+      .filter(l => l.resource)
       .sort((a, b) => new Date(b.scheduled_time).getTime() - new Date(a.scheduled_time).getTime());
     for (const l of sortedByRecent) {
-      const veh = l.vehicle as any;
-      const vId = typeof veh === 'number' ? veh : veh?.id;
-      const vCat = typeof veh === 'number' ? undefined : veh?.category;
-      if (!vId) continue;
-      if (vCat && vCat !== courseCategory) continue;
-      if (free.some(v => v.id === vId)) return vId;
+      const res = l.resource as any;
+      const rId = typeof res === 'number' ? res : res?.id;
+      const rCat = typeof res === 'number' ? undefined : res?.category;
+      if (!rId) continue;
+      if (rCat && rCat !== courseCategory) continue;
+      if (free.some(r => r.id === rId)) return rId;
     }
 
-    // Fallback: pick a random free vehicle
+    // Fallback: pick a random free resource
     const pick = free[Math.floor(Math.random() * free.length)];
     return pick?.id ?? null;
   };
@@ -268,8 +268,8 @@ const BookLesson: React.FC = () => {
       return;
     }
 
-    const vehicleId = pickVehicleId(start, end, enrollmentId);
-    if (vehicleId == null) {
+    const resourceId = pickResourceId(start, end, enrollmentId);
+    if (resourceId == null) {
   setError(t('portal.booking.errors.vehicleUnavailable'));
       return;
     }
@@ -281,7 +281,7 @@ const BookLesson: React.FC = () => {
         body: JSON.stringify({
           enrollment_id: enrollmentId,
           instructor_id: instructorId,
-          vehicle_id: vehicleId,
+          resource_id: resourceId,
           scheduled_time: iso,
           duration_minutes: 60,
           status: 'SCHEDULED',

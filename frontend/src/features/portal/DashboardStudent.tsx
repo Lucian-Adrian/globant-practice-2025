@@ -168,7 +168,7 @@ const DashboardStudent: React.FC = () => {
         instructor: l.instructor ? `${l.instructor.first_name} ${l.instructor.last_name}` : '—',
         date: new Date(l.scheduled_time).toLocaleDateString(),
         time: new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        vehicle: l.vehicle?.license_plate || (l.enrollment?.course?.name || '—')
+        vehicle: l.resource?.license_plate || (l.enrollment?.course?.name || '—')
       }));
   }, [lessons]);
 

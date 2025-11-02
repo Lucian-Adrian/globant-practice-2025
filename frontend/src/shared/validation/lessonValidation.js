@@ -49,7 +49,7 @@ export async function validateLesson(values, t, currentId) {
 
   const enrollmentId = values.enrollment_id ?? values.enrollment?.id;
   const instructorId = values.instructor_id ?? values.instructor?.id;
-  const vehicleId = values.vehicle_id ?? values.vehicle?.id ?? null;
+  const resourceId = values.resource_id ?? values.resource?.id ?? null;
   const scheduled = values.scheduled_time;
   const duration = Number(values.duration_minutes ?? 90);
 
@@ -73,11 +73,11 @@ export async function validateLesson(values, t, currentId) {
   const ins = await getJson(`${API_PREFIX}/instructors/${instructorId}/`);
   const instructor = ins.data || {};
 
-  // Fetch vehicle if provided
-  let vehicle = null;
-  if (vehicleId) {
-    const veh = await getJson(`${API_PREFIX}/vehicles/${vehicleId}/`);
-    vehicle = veh.data || null;
+  // Fetch resource if provided
+  let resource = null;
+  if (resourceId) {
+    const res = await getJson(`${API_PREFIX}/resources/${resourceId}/`);
+    resource = res.data || null;
   }
 
   // Availability: GET by instructor and business-local day, accept any-minute within intervals
@@ -113,8 +113,8 @@ export async function validateLesson(values, t, currentId) {
   }
 
   // Category & license checks
-  if (vehicle && courseCategory && vehicle.category !== courseCategory) {
-    errors.vehicle_id = t('validation.categoryMismatch');
+  if (resource && courseCategory && resource.category !== courseCategory) {
+    errors.resource_id = t('validation.categoryMismatch');
   }
   if (courseCategory) {
     const cats = String(instructor.license_categories || '')
@@ -152,12 +152,12 @@ export async function validateLesson(values, t, currentId) {
     if (stuHit) errors.enrollment_id = t('validation.studentConflict');
   }
 
-  // Vehicle conflict
-  if (vehicleId) {
-    // Use efficient server-side filter by vehicle id
-    const vehUrl = `${API_PREFIX}/lessons/?vehicle_id=${encodeURIComponent(vehicleId)}&${baseWin}`;
-    const vehHit = await findAnyOverlap(vehUrl, () => true);
-    if (vehHit) errors.vehicle_id = t('validation.vehicleConflict');
+  // Resource conflict
+  if (resourceId) {
+    // Use efficient server-side filter by resource id
+    const resUrl = `${API_PREFIX}/lessons/?resource_id=${encodeURIComponent(resourceId)}&${baseWin}`;
+    const resHit = await findAnyOverlap(resUrl, () => true);
+    if (resHit) errors.resource_id = t('validation.resourceConflict');
   }
 
   return errors;
