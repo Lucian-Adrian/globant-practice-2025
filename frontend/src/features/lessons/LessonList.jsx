@@ -72,18 +72,35 @@ const FilteredDatagrid = (props) => {
     });
   }, [data, location.search, isLoading]);
 
+  const getRowStyle = React.useCallback((record) => {
+    if (!record) return {};
+    const { status } = getLessonStatus(record);
+    if (status === 'COMPLETED') {
+      return {
+        backgroundColor: '#f1f8e9',
+        '--lesson-row-hover-bg': '#e8f5e8',
+      };
+    }
+    if (status === 'CANCELED') {
+      return {
+        backgroundColor: '#ffebee',
+        '--lesson-row-hover-bg': '#ffcdd2',
+      };
+    }
+    return {};
+  }, []);
+
   return (
     <Datagrid
       {...props}
       data={filteredData}
       rowClick="edit"
+      rowStyle={getRowStyle}
       sx={{
-        '& .RaDatagrid-row': {
-          '&.lesson-status-COMPLETED': { backgroundColor: '#f1f8e9', '&:hover': { backgroundColor: '#e8f5e8' } },
-          '&.lesson-status-CANCELED': { backgroundColor: '#ffebee', '&:hover': { backgroundColor: '#ffcdd2' } }
+        '& .RaDatagrid-row:hover': {
+          backgroundColor: 'var(--lesson-row-hover-bg, #f5f5f5)'
         }
       }}
-      rowClassName={(record) => record ? `lesson-status-${getLessonStatus(record).status}` : ''}
     >
       <NumberField source="id" label="ID" />
       <FunctionField

@@ -20,7 +20,19 @@ import Dashboard from './Dashboard.jsx';
 
 export default function App() {
   const [enums, setEnums] = React.useState(null);
-  React.useEffect(() => { fetchEnums().then(setEnums); }, []);
+  React.useEffect(() => {
+    let isActive = true;
+    fetchEnums()
+      .then((result) => {
+        if (isActive) setEnums(result);
+      })
+      .catch(() => {
+        // Swallow network errors here; the UI will fallback to static choices.
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
   const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
   const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
