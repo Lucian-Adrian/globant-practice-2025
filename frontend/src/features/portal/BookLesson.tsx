@@ -5,7 +5,7 @@ import { useI18nForceUpdate } from '../../i18n/index.js';
 import { useNavigate } from "react-router-dom";
 import { studentRawFetch } from "../../api/httpClient";
 import InstructorCalendarAvailability from "./InstructorCalendarAvailability";
-import { validateLesson } from '../../shared/validation/lessonValidation';
+import { validateLesson } from '../../shared/validation/lessonValidation.js';
 
 // Minimal UI primitives matching portal styling
 const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = "" }) => (
