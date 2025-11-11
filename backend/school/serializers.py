@@ -290,6 +290,32 @@ class ResourceSerializer(serializers.ModelSerializer):
     def get_resource_type(self, obj):
         return obj.resource_type
 
+    def validate_license_plate(self, value: str) -> str:
+        # Normalize value similar to model save()
+        if value is None:
+            return value
+        cleaned = (value or "").strip().upper()
+        cleaned = " ".join(cleaned.split())
+        cleaned = cleaned.replace(" ", "")
+        # Only enforce for vehicle-type resources (capacity == 2)
+        # We need the max_capacity either from incoming attrs on create/update or existing instance
+        max_cap = None
+        try:
+            max_cap = int(self.initial_data.get("max_capacity")) if self.initial_data else None
+        except Exception:
+            max_cap = None
+        if max_cap is None and getattr(self, "instance", None) is not None:
+            max_cap = getattr(self.instance, "max_capacity", None)
+
+        if max_cap == 2 and cleaned:
+            qs = Resource.objects.filter(max_capacity=2)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            # Case-insensitive compare
+            if qs.filter(license_plate__iexact=cleaned).exists():
+                raise serializers.ValidationError("License plate already exists")
+        return cleaned
+
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:

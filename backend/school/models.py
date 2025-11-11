@@ -1,6 +1,8 @@
 from django.contrib.auth.hashers import make_password
 from django.core.validators import EmailValidator
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Lower
 
 from .enums import (
     CourseType,
@@ -127,6 +129,27 @@ class Resource(models.Model):
         if self.is_classroom():
             return "Classroom"
         return "Unknown"
+
+    def save(self, *args, **kwargs):
+        # Normalize license plate for consistency and to improve uniqueness checks
+        if self.license_plate:
+            # Uppercase and strip spaces around - keep existing hyphens/dots as-is
+            cleaned = (self.license_plate or "").strip().upper()
+            # Collapse inner multiple spaces to single, then remove spaces
+            cleaned = " ".join(cleaned.split())
+            cleaned = cleaned.replace(" ", "")
+            self.license_plate = cleaned
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            # Enforce case-insensitive uniqueness of license plates for vehicle-type resources (capacity == 2)
+            models.UniqueConstraint(
+                Lower("license_plate"),
+                condition=Q(max_capacity=2, license_plate__isnull=False),
+                name="unique_vehicle_license_plate_ci",
+            )
+        ]
 
 
 class Vehicle(models.Model):
