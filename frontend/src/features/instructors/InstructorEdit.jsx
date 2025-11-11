@@ -12,7 +12,7 @@ export default function InstructorEdit(props) {
       <SimpleForm>
         <NameInput source="first_name" validate={[required()]} />
         <NameInput source="last_name" validate={[required()]} />
-        <EmailInput source="email" />
+  <EmailInput source="email" label={translate('resources.instructors.fields.email') + ' *'} validate={[required()]} />
         <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
         <DateInput source="hire_date" validate={[required()]} />
         <TextInput

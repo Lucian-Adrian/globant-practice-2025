@@ -17,7 +17,7 @@ export default function InstructorCreate(props) {
       <SimpleForm>
   <NameInput source="first_name" label={t('resources.instructors.fields.first_name')} validate={[required()]} />
   <NameInput source="last_name" label={t('resources.instructors.fields.last_name')} validate={[required()]} />
-  <EmailInput source="email" label={t('resources.instructors.fields.email')} />
+  <EmailInput source="email" label={t('resources.instructors.fields.email') + ' *'} validate={[required()]} />
         <PhoneInput source="phone_number" label={t('resources.instructors.fields.phone_number')} validate={[validatePhoneClient]} />
         <DateInput source="hire_date" label={t('resources.instructors.fields.hire_date')} validate={[required()]} />
         <TextInput
@@ -29,7 +29,7 @@ export default function InstructorCreate(props) {
         />
         <RadioButtonGroupInput
           source="car_category"
-          label={t('resources.instructors.fields.category')}
+          label={t('instructors.gearbox.label', 'Gearbox')}
           validate={[required()]}
           defaultValue="both"
           choices={choices}

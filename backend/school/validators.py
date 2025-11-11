@@ -7,6 +7,13 @@ should live in ``services.py``.
 from __future__ import annotations
 
 import re
+from typing import List
+
+try:
+    # enums used for license category validation
+    from .enums import VehicleCategory  # type: ignore
+except Exception:  # pragma: no cover
+    VehicleCategory = None  # type: ignore
 
 NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ\-\s]{1,50}$")
 PHONE_CLEAN_RE = re.compile(r"[^0-9+]")
@@ -66,6 +73,38 @@ def validate_phone(raw: str, field: str = "Phone number") -> str:
     return compact
 
 
+def normalize_license_categories(raw: str) -> str:
+    """Return comma-separated uppercase unique vehicle categories (no spaces).
+
+    Example: "b, be ,B" -> "B,BE"
+    """
+    if raw is None:
+        return ""
+    parts = [p.strip().upper() for p in str(raw).split(",")]
+    parts = [p for p in parts if p]
+    # stable de-duplication
+    seen: List[str] = []
+    for p in parts:
+        if p not in seen:
+            seen.append(p)
+    return ",".join(seen)
+
+
+def validate_license_categories(raw: str) -> str:
+    """Normalize then validate license category tokens against VehicleCategory.
+
+    Returns normalized string or raises ValueError with a helpful message.
+    """
+    normalized = normalize_license_categories(raw)
+    if not normalized:
+        raise ValueError("At least one category is required")
+    allowed = {m.value for m in (VehicleCategory or [])} if VehicleCategory else set()
+    invalid = [p for p in normalized.split(",") if allowed and p not in allowed]
+    if invalid:
+        raise ValueError(f"Invalid categories: {', '.join(invalid)}")
+    return normalized
+
+
 def canonicalize_license_categories(raw: str) -> str:
     """Return a canonical comma-separated list of vehicle license categories.
 
@@ -104,6 +143,12 @@ try:  # optional import; keeps this module reusable outside Django context
     def django_validate_phone(value: str) -> None:
         try:
             validate_phone(value, "Phone number")
+        except ValueError as e:
+            raise ValidationError(str(e))
+
+    def django_validate_license_categories(value: str) -> None:
+        try:
+            validate_license_categories(value)
         except ValueError as e:
             raise ValidationError(str(e))
 

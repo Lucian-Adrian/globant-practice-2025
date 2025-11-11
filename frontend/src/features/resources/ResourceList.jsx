@@ -7,6 +7,7 @@ import ResourceListEmpty from './ResourceListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import { Drawer, Box, Card, CardHeader, CardContent, CardActions, Typography } from '@mui/material';
 import CategoryFilterInput from '../../shared/components/CategoryFilterInput.jsx';
+import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 
 // Function to get resource availability status with color coding
 const getResourceStatus = (record) => {
@@ -60,12 +61,13 @@ const ResourceStatusField = (recordOrProps) => {
 
 export default function ResourceList(props) {
   const [selectedRecord, setSelectedRecord] = React.useState(null);
+  const { collapsed } = useAsidePanel();
   const filters = [
     <CategoryFilterInput key="category" alwaysOn />,
   ];
 
   return (
-    <List {...props} filters={filters} aside={<ResourceListAside />} actions={<ListImportActions endpoint="resources" />} empty={<ResourceListEmpty />}>
+    <List {...props} filters={filters} aside={collapsed ? null : <ResourceListAside />} actions={<ListImportActions endpoint="resources" />} empty={<ResourceListEmpty />}>
       <FilteredResourceDatagrid setSelectedRecord={setSelectedRecord} />
       <ResourceDetailPanel
        record={selectedRecord}

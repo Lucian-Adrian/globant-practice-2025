@@ -105,7 +105,7 @@ const languageData = {
       unknown: 'Unknown',
      hide_filters: 'Hide Filters',
      show_filters: 'Show Filters',
-      instructors: { free_instructors: 'Free instructors', gearbox: { manual: 'Manual', automatic: 'Automatic', both: 'Both' } },
+  instructors: { free_instructors: 'Free instructors', gearbox: { label: 'Gearbox', manual: 'Manual', automatic: 'Automatic', both: 'Both' } },
       filters_extra: { new: 'New', experienced: 'Experienced', senior: 'Senior' },
       vehicles: { filters: { ok:'OK', due:'Due', overdue:'Overdue' } },
       students: {
@@ -226,7 +226,7 @@ const languageData = {
       unknown: 'Necunoscut',
       hide_filters: 'Ascunde filtrele',
       show_filters: 'Arată filtrele',
-      instructors: { free_instructors: 'Instructori disponibili', gearbox: { manual: 'Manual', automatic: 'Automat', both: 'Ambele' } },
+  instructors: { free_instructors: 'Instructori disponibili', gearbox: { label: 'Cutie de viteze', manual: 'Manual', automatic: 'Automat', both: 'Ambele' } },
       filters_extra: { new: 'Nou', experienced: 'Cu experiență', senior: 'Senior' },
       vehicles: { filters: { ok:'OK', due:'Scadent', overdue:'Depășit' } },
       students: {
@@ -348,7 +348,7 @@ const languageData = {
       unknown: 'Неизвестно',
       hide_filters: 'Скрыть фильтры',
       show_filters: 'Показать фильтры',
-      instructors: { free_instructors: 'Свободные инструкторы', gearbox: { manual: 'Ручная', automatic: 'Автоматическая', both: 'Обе' } },
+  instructors: { free_instructors: 'Свободные инструкторы', gearbox: { label: 'Коробка передач', manual: 'Ручная', automatic: 'Автоматическая', both: 'Обе' } },
       filters_extra: { new: 'Новый', experienced: 'Опытный', senior: 'Старший' },
       vehicles: { filters: { ok:'OK', due:'Скоро сервис', overdue:'Просрочено' } },
       students: {

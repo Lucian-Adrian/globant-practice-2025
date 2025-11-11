@@ -16,7 +16,7 @@ from .models import (
     Student,
     Vehicle,
 )
-from .validators import validate_name, validate_phone
+from .validators import validate_name, validate_phone, validate_license_categories
 from .validators import canonicalize_license_categories
 
 try:
@@ -251,6 +251,12 @@ class InstructorSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError("Email already registered")
         return value.lower()
+
+    def validate_license_categories(self, value: str) -> str:
+        try:
+            return validate_license_categories(value)
+        except ValueError as e:
+            raise serializers.ValidationError(str(e))
 
     def validate_license_categories(self, value: str) -> str:
         try:
