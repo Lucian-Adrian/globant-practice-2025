@@ -12,9 +12,9 @@ const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
 // we inline minimal RA translation objects instead of importing optional packages.
 const englishMessages = {
   ra: {
-    action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', back: 'Back' },
-    navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page %{offsetBegin}-%{offsetEnd} of %{total}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
-    sort: { sort_by: 'Sort by %{field} %{order}',  ASC: 'ascending', DESC: 'descending' },
+  action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back', undo: 'Undo' },
+  navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page {{offsetBegin}}-{{offsetEnd}} of {{total}}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
+  sort: { sort_by: 'Sort by {{field}} {{order}}',  ASC: 'ascending', DESC: 'descending' },
     // Merged auth keys
     auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
     // Merged page keys
@@ -27,9 +27,9 @@ const englishMessages = {
 };
 const romanianMessages = {
   ra: {
-    action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', back: 'Înapoi' },
-    navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina %{offsetBegin}-%{offsetEnd} din %{total}', page_rows_per_page: 'Rânduri pe pagină:', no_results: 'Fără rezultate' },
-    sort: { sort_by: 'Sortează după %{field} %{order}', ASC: 'crescător', DESC: 'descrescător' },
+  action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', open: 'Deschide', close: 'Închide', back: 'Înapoi', undo: 'Anulează' },
+  navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina {{offsetBegin}}-{{offsetEnd}} din {{total}}', page_rows_per_page: 'Rânduri pe pagină:', no_results: 'Fără rezultate' },
+  sort: { sort_by: 'Sortează după {{field}} {{order}}', ASC: 'crescător', DESC: 'descrescător' },
     // Merged auth keys
     auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare', logout: 'Deconectare', user_menu: 'Utilizator' },
     // Merged page keys
@@ -42,9 +42,9 @@ const romanianMessages = {
 };
 const russianMessages = {
   ra: {
-    action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', back: 'Назад' },
-    navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница %{offsetBegin}-%{offsetEnd} из %{total}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
-    sort: { sort_by: 'Сортировать по %{field} %{order}', ASC: 'по возрастанию', DESC: 'по убыванию' },
+  action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', open: 'Открыть', close: 'Закрыть', back: 'Назад', undo: 'Отменить' },
+  navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница {{offsetBegin}}-{{offsetEnd}} из {{total}}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
+  sort: { sort_by: 'Сортировать по {{field}} {{order}}', ASC: 'по возрастанию', DESC: 'по убыванию' },
     // Merged auth keys
     auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти', logout: 'Выйти', user_menu: 'Пользователь' },
     // Merged page keys
@@ -103,7 +103,9 @@ const languageData = {
       filters: { last_activity:'Last activity', today:'Today', this_week:'This week', last_week:'Last week', this_month:'This month', last_month:'Last month', earlier:'Earlier', status:'Status', active:'Active', inactive:'Inactive', graduated:'Graduated', pending:'Pending', in_progress:'In progress', completed:'Completed', refunded:'Refunded', canceled:'Canceled', scheduled:'Scheduled', payment_method:'Payment method', cash:'Cash', card:'Card', transfer:'Transfer', processing:'Processing', verification:'Verification', failed:'Failed', type:'Type', theory:'Theory', practice:'Practice', availability:'Availability', available:'Available', unavailable:'Unavailable', category:'Category' },
       filters_extra_local: { imminent: 'Imminent', planned: 'Planned' },
       unknown: 'Unknown',
-      instructors: { free_instructors: 'Free instructors', gearbox: { manual: 'Manual', automatic: 'Automatic', both: 'Both' } },
+     hide_filters: 'Hide Filters',
+     show_filters: 'Show Filters',
+  instructors: { free_instructors: 'Free instructors', gearbox: { label: 'Gearbox', manual: 'Manual', automatic: 'Automatic', both: 'Both' } },
       filters_extra: { new: 'New', experienced: 'Experienced', senior: 'Senior' },
       vehicles: { filters: { ok:'OK', due:'Due', overdue:'Overdue' } },
       students: {
@@ -156,16 +158,27 @@ const languageData = {
       invalidEmail: 'Invalid email address',
       invalidDob: 'You cannot select a future date',
       tooYoung: 'You must be at least {{years}} years old',
+      // Admin / Backend validation keys
+      requiredField: 'This field is required',
+      instructorConflict: 'Instructor has a conflicting lesson at this time',
+      studentConflict: 'Student has a conflicting lesson at this time',
+      vehicleConflict: 'Vehicle is already booked at this time',
+      outsideAvailability: 'Selected time is outside instructor availability',
+      categoryMismatch: 'Vehicle category does not match course category',
+      instructorLicenseMismatch: 'Instructor is not licensed for this category',
+      vehicleUnavailable: 'Vehicle is unavailable',
+      vehicleResourceRequired: 'Only vehicle-type resources (max_capacity = 2) can be assigned to lessons.',
     },
     admin: {
       resources: {
   students: { name:'Students', empty:'No students yet', invite:'Create the first student', import_helper:'You can import a CSV to add multiple students at once.', import_format_hint:'Required columns: first_name,last_name,email,phone_number,date_of_birth,status (others ignored).', fields:{ id:'ID', first_name:'First name', last_name:'Last name', email:'Email', phone_number:'Phone', date_of_birth:'Date of birth', enrollment_date:'Enrollment date', status:'Status', password: 'Password', confirm_password: 'Confirm password' } },
     instructors: { name:'Instructors', empty:'No instructors yet', invite:'Create the first instructor', import_helper:'You can import a CSV to add multiple instructors at once.', import_format_hint:'Required columns: first_name,last_name,email,phone_number,hire_date,license_categories (others ignored).', fields:{ id:'ID', first_name:'First name', last_name:'Last name', email:'Email', phone_number:'Phone', hire_date:'Hire date', license_categories:'License categories', experience: 'Experience' } },
     vehicles: { name:'Vehicles', empty:'No vehicles yet', invite:'Create the first vehicle', import_helper:'You can import a CSV to add multiple vehicles at once.', import_format_hint:'Required columns: make,model,license_plate,year,category (others ignored).', fields:{ id:'ID', make:'Make', model:'Model', license_plate:'License plate', year:'Year', category:'Category', is_available:'Available', last_service:'Last service', maintenance_status:'Maintenance status' } },
+  resources: { name:'Resources', empty:'No resources yet', invite:'Create the first resource', import_helper:'You can import a CSV to add multiple resources at once.', fields:{ id:'ID', name:'Name', max_capacity:'Max Capacity', category:'Category', resource_type:'Type', is_available:'Available', make: "Make", model: "Model", year: "Year", license_plate: "License Plate", vehicle: "Vehicle", classroom: "Classroom" } },
     courses: { name:'Courses', empty:'No courses yet', invite:'Create the first course', import_helper:'You can import a CSV to add multiple courses at once.', import_format_hint:'Required columns: name,category,type,description,price,required_lessons (others ignored).', fields:{ id:'ID', name:'Name', category:'Category', type:'Type', description:'Description', price:'Price', required_lessons:'Required lessons' } },
     payments: { name:'Payments', empty:'No payments yet', invite:'Create the first payment', import_helper:'You can import a CSV to add multiple payments at once.', import_format_hint:'Required columns: enrollment_id,amount,payment_method,description (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', amount:'Amount', payment_date:'Payment date', payment_method:'Payment method', status:'Status', description:'Description' } },
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
-    lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
+  lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', resource:'Resource', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
         'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
         classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
       }
@@ -174,10 +187,11 @@ const languageData = {
   students: { name:'Students', empty:'No students yet', invite:'Create the first student', import_helper:'You can import a CSV to add multiple students at once.', import_format_hint:'Required columns: first_name,last_name,email,phone_number,date_of_birth,status (others ignored).', fields:{ id:'ID', first_name:'First name', last_name:'Last name', email:'Email', phone_number:'Phone', date_of_birth:'Date of birth', enrollment_date:'Enrollment date', status:'Status', password:'Password', confirm_password:'Confirm password' } },
     instructors: { name:'Instructors', empty:'No instructors yet', invite:'Create the first instructor', import_helper:'You can import a CSV to add multiple instructors at once.', import_format_hint:'Required columns: first_name,last_name,email,phone_number,hire_date,license_categories (others ignored).', fields:{ id:'ID', first_name:'First name', last_name:'Last name', email:'Email', phone_number:'Phone', hire_date:'Hire date', license_categories:'License categories', license_categories_hint:'Comma separated e.g., B,BE,C', experience: 'Experience' } },
     vehicles: { name:'Vehicles', empty:'No vehicles yet', invite:'Create the first vehicle', import_helper:'You can import a CSV to add multiple vehicles at once.', import_format_hint:'Required columns: make,model,license_plate,year,category (others ignored).', fields:{ id:'ID', make:'Make', model:'Model', license_plate:'License plate', year:'Year', category:'Category', is_available:'Available', last_service:'Last service', maintenance_status:'Maintenance status' } },
+  resources: { name:'Resources', empty:'No resources yet', invite:'Create the first resource', import_helper:'You can import a CSV to add multiple resources at once.', fields:{ id:'ID', name:'Name', max_capacity:'Max Capacity', category:'Category', resource_type:'Type', is_available:'Available', make: "Make", model: "Model", year: "Year", license_plate: "License Plate", vehicle: "Vehicle", classroom: "Classroom" } },
     courses: { name:'Courses', empty:'No courses yet', invite:'Create the first course', import_helper:'You can import a CSV to add multiple courses at once.', import_format_hint:'Required columns: name,category,type,description,price,required_lessons (others ignored).', fields:{ id:'ID', name:'Name', category:'Category', type:'Type', description:'Description', price:'Price', required_lessons:'Required lessons' } },
     payments: { name:'Payments', empty:'No payments yet', invite:'Create the first payment', import_helper:'You can import a CSV to add multiple payments at once.', import_format_hint:'Required columns: enrollment_id,amount,payment_method,description (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', amount:'Amount', payment_date:'Payment date', payment_method:'Payment method', status:'Status', description:'Description' } },
     enrollments: { name:'Enrollments', empty:'No enrollments yet', invite:'Create the first enrollment', import_helper:'You can import a CSV to add multiple enrollments at once.', import_format_hint:'Required columns: student_id,course_id,type,status (others ignored).', fields:{ id:'ID', student:'Student', course:'Course', enrollment_date:'Enrollment date', type:'Type', status:'Status', label:'Label' } },
-    lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
+  lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', resource:'Resource', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
       'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
       classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
     },
@@ -210,7 +224,9 @@ const languageData = {
       filters: { last_activity:'Ultima activitate', today:'Astăzi', this_week:'Săptămâna aceasta', last_week:'Săptămâna trecută', this_month:'Luna aceasta', last_month:'Luna trecută', earlier:'Anterior', status:'Statut', active:'Activ', inactive:'Inactiv', graduated:'Absolvit', pending:'În așteptare', in_progress:'În derulare', completed:'Finalizat', refunded:'Rambursat', canceled:'Anulat', scheduled:'Programat', payment_method:'Metodă plată', cash:'Numerar', card:'Card', transfer:'Transfer', processing:'În procesare', verification:'Verificare', failed:'Eșuat', type:'Tip', theory:'Teorie', practice:'Practică', availability:'Disponibilitate', available:'Disponibil', unavailable:'Indisponibil', category:'Categorie' },
       filters_extra_local: { imminent: 'Imediat', planned: 'Planificat' },
       unknown: 'Necunoscut',
-      instructors: { free_instructors: 'Instructori disponibili', gearbox: { manual: 'Manual', automatic: 'Automat', both: 'Ambele' } },
+      hide_filters: 'Ascunde filtrele',
+      show_filters: 'Arată filtrele',
+  instructors: { free_instructors: 'Instructori disponibili', gearbox: { label: 'Cutie de viteze', manual: 'Manual', automatic: 'Automat', both: 'Ambele' } },
       filters_extra: { new: 'Nou', experienced: 'Cu experiență', senior: 'Senior' },
       vehicles: { filters: { ok:'OK', due:'Scadent', overdue:'Depășit' } },
       students: {
@@ -263,6 +279,16 @@ const languageData = {
       invalidEmail: 'Adresă de email invalidă',
       invalidDob: 'Nu puteți selecta o dată din viitor',
       tooYoung: 'Trebuie să aveți cel puțin {{years}} ani',
+      // Admin / Backend validation keys
+      requiredField: 'Acest câmp este obligatoriu',
+      instructorConflict: 'Instructorul are deja o lecție în acest interval',
+      studentConflict: 'Studentul are deja o lecție în acest interval',
+      vehicleConflict: 'Vehiculul este deja rezervat în acest interval',
+      outsideAvailability: 'Ora selectată este în afara disponibilității instructorului',
+      categoryMismatch: 'Categoria vehiculului nu corespunde categoriei cursului',
+      instructorLicenseMismatch: 'Instructorul nu este licențiat pentru această categorie',
+      vehicleUnavailable: 'Vehiculul selectat este indisponibil',
+      vehicleResourceRequired: 'Doar resurse de tip vehicul (max_capacity = 2) pot fi alocate lecțiilor.',
     },
     // Duplicate resource labels under the 'admin' namespace to ensure RA menu/items resolve without falling back to EN
     admin: {
@@ -270,10 +296,11 @@ const languageData = {
   students: { name:'Studenți', empty:'Niciun student încă', invite:'Creați primul student', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai mulți studenți odată.', import_format_hint:'Coloane obligatorii: first_name,last_name,email,phone_number,date_of_birth,status (altele sunt ignorate).', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', date_of_birth:'Data nașterii', enrollment_date:'Data înscrierii', status:'Statut', password:'Parolă', confirm_password:'Confirmă parola' } },
     instructors: { name:'Instructori', empty:'Niciun instructor încă', invite:'Creați primul instructor', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai mulți instructori odată.', import_format_hint:'Coloane obligatorii: first_name,last_name,email,phone_number,hire_date,license_categories (altele sunt ignorate).', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', hire_date:'Data angajării', license_categories:'Categorii licență', license_categories_hint:'Separate prin virgulă ex.: B,BE,C', experience: 'Experiență' } },
     vehicles: { name:'Vehicule', empty:'Niciun vehicul încă', invite:'Creați primul vehicul', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe vehicule odată.', import_format_hint:'Coloane obligatorii: make,model,license_plate,year,category (altele sunt ignorate).', fields:{ id:'ID', make:'Marcă', model:'Model', license_plate:'Număr înmatriculare', year:'An', category:'Categorie', is_available:'Disponibil', last_service:'Ultimul service', maintenance_status:'Stare mentenanță' } },
+  resources: { name:'Resurse', empty:'Nicio resursă încă', invite:'Creați prima resursă', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe resurse.', fields:{ id:'ID', name:'Nume', max_capacity:'Capacitate maximă', category:'Categorie', resource_type:'Tip', is_available:'Disponibil', make: "Marcă", model: "Model", year: "An", license_plate: "Număr de înmatriculare", vehicle: "Vehicul", classroom: "Sală de curs" } },
     courses: { name:'Cursuri', empty:'Niciun curs încă', invite:'Creați primul curs', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe cursuri odată.', import_format_hint:'Coloane obligatorii: name,category,type,description,price,required_lessons (altele sunt ignorate).', fields:{ id:'ID', name:'Nume', category:'Categorie', type:'Tip', description:'Descriere', price:'Preț', required_lessons:'Lecții necesare' } },
     payments: { name:'Plăți', empty:'Nicio plată încă', invite:'Creați prima plată', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe plăți odată.', import_format_hint:'Coloane obligatorii: enrollment_id,amount,payment_method,description (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', amount:'Sumă', payment_date:'Data plății', payment_method:'Metodă plată', status:'Statut', description:'Descriere' } },
     enrollments: { name:'Înscrieri', empty:'Nicio înscriere încă', invite:'Creați prima înscriere', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe înscrieri odată.', import_format_hint:'Coloane obligatorii: student_id,course_id,type,status (altele sunt ignorate).', fields:{ id:'ID', student:'Student', course:'Curs', enrollment_date:'Data înscrierii', type:'Tip', status:'Statut', label:'Etichetă' } },
-    lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
+  lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
         'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
         classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
       }
@@ -282,10 +309,11 @@ const languageData = {
   students: { name:'Studenți', empty:'Niciun student încă', invite:'Creați primul student', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai mulți studenți odată.', import_format_hint:'Coloane obligatorii: first_name,last_name,email,phone_number,date_of_birth,status (altele sunt ignorate).', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', date_of_birth:'Data nașterii', enrollment_date:'Data înscrierii', status:'Statut', password:'Parolă', confirm_password:'Confirmă parola' } },
     instructors: { name:'Instructori', empty:'Niciun instructor încă', invite:'Creați primul instructor', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai mulți instructori odată.', import_format_hint:'Coloane obligatorii: first_name,last_name,email,phone_number,hire_date,license_categories (altele sunt ignorate).', fields:{ id:'ID', first_name:'Prenume', last_name:'Nume', email:'Email', phone_number:'Telefon', hire_date:'Data angajării', license_categories:'Categorii licență', license_categories_hint:'Separate prin virgulă ex.: B,BE,C', experience: 'Experiență' } },
     vehicles: { name:'Vehicule', empty:'Niciun vehicul încă', invite:'Creați primul vehicul', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe vehicule odată.', import_format_hint:'Coloane obligatorii: make,model,license_plate,year,category (altele sunt ignorate).', fields:{ id:'ID', make:'Marcă', model:'Model', license_plate:'Număr înmatriculare', year:'An', category:'Categorie', is_available:'Disponibil', last_service:'Ultimul service', maintenance_status:'Stare mentenanță' } },
+  resources: { name:'Resurse', empty:'Nicio resursă încă', invite:'Creați prima resursă', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe resurse.', fields:{ id:'ID', name:'Nume', max_capacity:'Capacitate maximă', category:'Categorie', resource_type:'Tip', is_available:'Disponibil', make: "Marcă", model: "Model", year: "An", license_plate: "Număr de înmatriculare", vehicle: "Vehicul", classroom: "Sală de curs" } },
     courses: { name:'Cursuri', empty:'Niciun curs încă', invite:'Creați primul curs', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe cursuri odată.', import_format_hint:'Coloane obligatorii: name,category,type,description,price,required_lessons (altele sunt ignorate).', fields:{ id:'ID', name:'Nume', category:'Categorie', type:'Tip', description:'Descriere', price:'Preț', required_lessons:'Lecții necesare' } },
     payments: { name:'Plăți', empty:'Nicio plată încă', invite:'Creați prima plată', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe plăți odată.', import_format_hint:'Coloane obligatorii: enrollment_id,amount,payment_method,description (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', amount:'Sumă', payment_date:'Data plății', payment_method:'Metodă plată', status:'Statut', description:'Descriere' } },
     enrollments: { name:'Înscrieri', empty:'Nicio înscriere încă', invite:'Creați prima înscriere', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe înscrieri odată.', import_format_hint:'Coloane obligatorii: student_id,course_id,type,status (altele sunt ignorate).', fields:{ id:'ID', student:'Student', course:'Curs', enrollment_date:'Data înscrierii', type:'Tip', status:'Statut', label:'Etichetă' } },
-    lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
+  lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
       'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
       classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
     },
@@ -318,7 +346,9 @@ const languageData = {
       filters: { last_activity:'Последняя активность', today:'Сегодня', this_week:'Эта неделя', last_week:'Прошлая неделя', this_month:'Этот месяц', last_month:'Прошлый месяц', earlier:'Ранее', status:'Статус', active:'Активный', inactive:'Неактивный', graduated:'Выпустился', pending:'В ожидании', in_progress:'В процессе', completed:'Завершено', refunded:'Возврат', canceled:'Отменено', scheduled:'Запланировано', payment_method:'Метод оплаты', cash:'Наличные', card:'Карта', transfer:'Перевод', processing:'Обработка', verification:'Проверка', failed:'Неудачно', type:'Тип', theory:'Теория', practice:'Практика', availability:'Доступность', available:'Доступен', unavailable:'Недоступен', category:'Категория' },
       filters_extra_local: { imminent: 'Скоро', planned: 'Запланировано' },
       unknown: 'Неизвестно',
-      instructors: { free_instructors: 'Свободные инструкторы', gearbox: { manual: 'Ручная', automatic: 'Автоматическая', both: 'Обе' } },
+      hide_filters: 'Скрыть фильтры',
+      show_filters: 'Показать фильтры',
+  instructors: { free_instructors: 'Свободные инструкторы', gearbox: { label: 'Коробка передач', manual: 'Ручная', automatic: 'Автоматическая', both: 'Обе' } },
       filters_extra: { new: 'Новый', experienced: 'Опытный', senior: 'Старший' },
       vehicles: { filters: { ok:'OK', due:'Скоро сервис', overdue:'Просрочено' } },
       students: {
@@ -371,29 +401,41 @@ const languageData = {
       invalidEmail: 'Неверный адрес электронной почты',
       invalidDob: 'Вы не можете выбрать дату в будущем',
       tooYoung: 'Вам должно быть не менее {{years}} лет',
+      // Admin / Backend validation keys
+      requiredField: 'Это обязательное поле',
+      instructorConflict: 'У инструктора уже есть занятие в это время',
+      studentConflict: 'У студента уже есть занятие в это время',
+      vehicleConflict: 'Транспорт уже занят в это время',
+      outsideAvailability: 'Выбранное время вне доступности инструктора',
+      categoryMismatch: 'Категория транспорта не соответствует категории курса',
+      instructorLicenseMismatch: 'Инструктор не имеет лицензии для этой категории',
+      vehicleUnavailable: 'Транспорт недоступен',
+      vehicleResourceRequired: 'К урокам можно привязывать только ресурсы типа «транспорт» (max_capacity = 2).',
     },
     // Duplicate resource labels under 'admin' for consistent RA lookups
     admin: {
       resources: {
-  students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких студентов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,date_of_birth,status (остальные игнорируются).', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
-    instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких инструкторов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,hire_date,license_categories (остальные игнорируются).', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
-    vehicles: { name:'Транспорт', empty:'Транспортных средств пока нет', invite:'Добавьте первое транспортное средство', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько транспортных средств сразу.', import_format_hint:'Обязательные колонки: make,model,license_plate,year,category (остальные игнорируются).', fields:{ id:'ID', make:'Марка', model:'Модель', license_plate:'Номер', year:'Год', category:'Категория', is_available:'Доступен', last_service:'Последний сервис', maintenance_status:'Статус обслуживания' } },
-    courses: { name:'Курсы', empty:'Курсов пока нет', invite:'Создайте первый курс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько курсов сразу.', import_format_hint:'Обязательные колонки: name,category,type,description,price,required_lessons (остальные игнорируются).', fields:{ id:'ID', name:'Название', category:'Категория', type:'Тип', description:'Описание', price:'Цена', required_lessons:'Требуемые уроки' } },
-    payments: { name:'Платежи', empty:'Платежей пока нет', invite:'Создайте первый платеж', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько платежей сразу.', import_format_hint:'Обязательные колонки: enrollment_id,amount,payment_method,description (остальные игнорируются).', fields:{ id:'ID', enrollment:'Запись', amount:'Сумма', payment_date:'Дата платежа', payment_method:'Метод платежа', status:'Статус', description:'Описание' } },
-    enrollments: { name:'Записи', empty:'Записей пока нет', invite:'Создайте первую запись', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько записей сразу.', import_format_hint:'Обязательные колонки: student_id,course_id,type,status (остальные игнорируются).', fields:{ id:'ID', student:'Студент', course:'Курс', enrollment_date:'Дата записи', type:'Тип', status:'Статус', label:'Метка' } },
-    lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько уроков сразу.', import_format_hint:'Обязательные колонки: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (остальные игнорируются).', fields:{ id:'ID', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
+  students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких студентов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,date_of_birth,status (остальные игнорируются).', fields:{ id:'ИД', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
+  instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких инструкторов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,hire_date,license_categories (остальные игнорируются).', fields:{ id:'ИД', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
+  vehicles: { name:'Транспорт', empty:'Транспортных средств пока нет', invite:'Добавьте первое транспортное средство', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько транспортных средств сразу.', import_format_hint:'Обязательные колонки: make,model,license_plate,year,category (остальные игнорируются).', fields:{ id:'ИД', make:'Марка', model:'Модель', license_plate:'Номер', year:'Год', category:'Категория', is_available:'Доступен', last_service:'Последний сервис', maintenance_status:'Статус обслуживания' } },
+  resources: { name:'Ресурсы', empty:'Ресурсов пока нет', invite:'Создайте первый ресурс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько ресурсов сразу.', fields:{ id:'ИД', name:'Название', max_capacity:'Макс. вместимость', category:'Категория', resource_type:'Тип', is_available:'Доступен', make: "Марка", model: "Модель", year: "Год", license_plate: "Номерной знак", vehicle: "Транспорт", classroom: "Аудитория" } },
+  courses: { name:'Курсы', empty:'Курсов пока нет', invite:'Создайте первый курс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько курсов сразу.', import_format_hint:'Обязательные колонки: name,category,type,description,price,required_lessons (остальные игнорируются).', fields:{ id:'ИД', name:'Название', category:'Категория', type:'Тип', description:'Описание', price:'Цена', required_lessons:'Требуемые уроки' } },
+  payments: { name:'Платежи', empty:'Платежей пока нет', invite:'Создайте первый платеж', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько платежей сразу.', import_format_hint:'Обязательные колонки: enrollment_id,amount,payment_method,description (остальные игнорируются).', fields:{ id:'ИД', enrollment:'Запись', amount:'Сумма', payment_date:'Дата платежа', payment_method:'Метод платежа', status:'Статус', description:'Описание' } },
+  enrollments: { name:'Записи', empty:'Записей пока нет', invite:'Создайте первую запись', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько записей сразу.', import_format_hint:'Обязательные колонки: student_id,course_id,type,status (остальные игнорируются).', fields:{ id:'ИД', student:'Студент', course:'Курс', enrollment_date:'Дата записи', type:'Тип', status:'Статус', label:'Метка' } },
+  lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько уроков сразу.', import_format_hint:'Обязательные колонки: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (остальные игнорируются).', fields:{ id:'ИД', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', resource:'Ресурс', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
         'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
         classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
       }
     },
     resources: {
-  students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких студентов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,date_of_birth,status (остальные игнорируются).', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
-    instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких инструкторов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,hire_date,license_categories (остальные игнорируются).', fields:{ id:'ID', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
-    vehicles: { name:'Транспорт', empty:'Транспортных средств пока нет', invite:'Добавьте первое транспортное средство', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько транспортных средств сразу.', import_format_hint:'Обязательные колонки: make,model,license_plate,year,category (остальные игнорируются).', fields:{ id:'ID', make:'Марка', model:'Модель', license_plate:'Номер', year:'Год', category:'Категория', is_available:'Доступен', last_service:'Последний сервис', maintenance_status:'Статус обслуживания' } },
-    courses: { name:'Курсы', empty:'Курсов пока нет', invite:'Создайте первый курс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько курсов сразу.', import_format_hint:'Обязательные колонки: name,category,type,description,price,required_lessons (остальные игнорируются).', fields:{ id:'ID', name:'Название', category:'Категория', type:'Тип', description:'Описание', price:'Цена', required_lessons:'Требуемые уроки' } },
-    payments: { name:'Платежи', empty:'Платежей пока нет', invite:'Создайте первый платеж', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько платежей сразу.', import_format_hint:'Обязательные колонки: enrollment_id,amount,payment_method,description (остальные игнорируются).', fields:{ id:'ID', enrollment:'Запись', amount:'Сумма', payment_date:'Дата платежа', payment_method:'Метод платежа', status:'Статус', description:'Описание' } },
-    enrollments: { name:'Записи', empty:'Записей пока нет', invite:'Создайте первую запись', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько записей сразу.', import_format_hint:'Обязательные колонки: student_id,course_id,type,status (остальные игнорируются).', fields:{ id:'ID', student:'Студент', course:'Курс', enrollment_date:'Дата записи', type:'Тип', status:'Статус', label:'Метка' } },
-    lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько уроков сразу.', import_format_hint:'Обязательные колонки: enrollment_id,instructor_id,vehicle_id,scheduled_time,duration_minutes,status (остальные игнорируются).', fields:{ id:'ID', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
+  students: { name:'Студенты', empty:'Студентов пока нет', invite:'Создайте первого студента', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких студентов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,date_of_birth,status (остальные игнорируются).', fields:{ id:'ИД', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', date_of_birth:'Дата рождения', enrollment_date:'Дата записи', status:'Статус', password:'Пароль', confirm_password:'Подтвердите пароль' } },
+  instructors: { name:'Инструкторы', empty:'Инструкторов пока нет', invite:'Создайте первого инструктора', import_helper:'Вы можете импортировать CSV, чтобы добавить нескольких инструкторов сразу.', import_format_hint:'Обязательные колонки: first_name,last_name,email,phone_number,hire_date,license_categories (остальные игнорируются).', fields:{ id:'ИД', first_name:'Имя', last_name:'Фамилия', email:'Email', phone_number:'Телефон', hire_date:'Дата найма', license_categories:'Категории лицензии', license_categories_hint:'Через запятую, например: B,BE,C', experience: 'Опыт' } },
+  vehicles: { name:'Транспорт', empty:'Транспортных средств пока нет', invite:'Добавьте первое транспортное средство', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько транспортных средств сразу.', import_format_hint:'Обязательные колонки: make,model,license_plate,year,category (остальные игнорируются).', fields:{ id:'ИД', make:'Марка', model:'Модель', license_plate:'Номер', year:'Год', category:'Категория', is_available:'Доступен', last_service:'Последний сервис', maintenance_status:'Статус обслуживания' } },
+  resources: { name:'Ресурсы', empty:'Ресурсов пока нет', invite:'Создайте первый ресурс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько ресурсов сразу.', fields:{ id:'ИД', name:'Название', max_capacity:'Макс. вместимость', category:'Категория', resource_type:'Тип', is_available:'Доступен', make: "Марка", model: "Модель", year: "Год", license_plate: "Номерной знак", vehicle: "Транспорт", classroom: "Аудитория" } },
+  courses: { name:'Курсы', empty:'Курсов пока нет', invite:'Создайте первый курс', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько курсов сразу.', import_format_hint:'Обязательные колонки: name,category,type,description,price,required_lessons (остальные игнорируются).', fields:{ id:'ИД', name:'Название', category:'Категория', type:'Тип', description:'Описание', price:'Цена', required_lessons:'Требуемые уроки' } },
+  payments: { name:'Платежи', empty:'Платежей пока нет', invite:'Создайте первый платеж', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько платежей сразу.', import_format_hint:'Обязательные колонки: enrollment_id,amount,payment_method,description (остальные игнорируются).', fields:{ id:'ИД', enrollment:'Запись', amount:'Сумма', payment_date:'Дата платежа', payment_method:'Метод платежа', status:'Статус', description:'Описание' } },
+  enrollments: { name:'Записи', empty:'Записей пока нет', invite:'Создайте первую запись', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько записей сразу.', import_format_hint:'Обязательные колонки: student_id,course_id,type,status (остальные игнорируются).', fields:{ id:'ИД', student:'Студент', course:'Курс', enrollment_date:'Дата записи', type:'Тип', status:'Статус', label:'Метка' } },
+  lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько уроков сразу.', import_format_hint:'Обязательные колонки: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (остальные игнорируются).', fields:{ id:'ИД', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', resource:'Ресурс', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
       'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
       classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
     },
@@ -412,8 +454,9 @@ const resources = Object.fromEntries(
     try {
       const key = `./locales/${lng}.json`;
       const mod = portalLocales[key];
-      if (mod && (mod.default || mod)) {
-        portalNS = mod.default || mod;
+      const candidate = mod ? (mod.default || mod) : null;
+      if (candidate && typeof candidate === 'object' && Object.keys(candidate).length > 0) {
+        portalNS = candidate;
       }
     } catch (_) {
       portalNS = portalEn;
@@ -426,18 +469,30 @@ const resources = Object.fromEntries(
 // ensure on first language change (or immediate call) we try loading the real file dynamically.
 async function ensurePortalBundle(lng) {
   try {
-    if (!i18n || !lng) return;
-    // If bundle exists and is clearly localized (different from English), skip
-    if (i18n.hasResourceBundle(lng, 'portal')) {
-      const enValue = i18n.getResource('en', 'portal', 'lessons.header.title');
-      const currentValue = i18n.getResource(lng, 'portal', 'lessons.header.title');
-      if (currentValue && enValue && currentValue !== enValue) return; // already localized
+  if (!i18n || !lng) return;
+  const base = (lng || 'en').split('-')[0];
+    // Prefer eagerly bundled locales (Vite import.meta.glob) for instant availability
+    let data = null;
+    try {
+  const key = `./locales/${base}.json`;
+      const mod = portalLocales && portalLocales[key];
+      data = mod ? (mod.default || mod) : null;
+    } catch (_) {
+      data = null;
     }
-    // Attempt dynamic import (works with Vite) – falls back silently if file absent
-    const mod = await import(`./locales/${lng}.json`).catch(() => null);
-    const data = mod && (mod.default || mod);
+    // Fallback: attempt a late dynamic import if not pre-bundled
+    if (!data) {
+      const modDyn = await import(`./locales/${base}.json`).catch(() => null);
+      data = modDyn && (modDyn.default || modDyn);
+    }
     if (data && Object.keys(data).length) {
-      i18n.addResourceBundle(lng, 'portal', data, true, true);
+      i18n.addResourceBundle(base, 'portal', data, true, true);
+      if (lng !== base) i18n.addResourceBundle(lng, 'portal', data, true, true);
+      try { await i18n.reloadResources([base, lng], ['portal']); } catch (_) {}
+    } else {
+      // If the file exists but is empty, do not overwrite the portal bundle; keep fallback
+      // Still emit a minor tick to re-render language chrome (like <html lang>)
+      i18n.emit && i18n.emit('loaded', {});
     }
   } catch (err) {
     // Ignore – fallback to English already present
@@ -451,6 +506,10 @@ export function initI18n(lang = storedLang || 'en') {
       resources,
       lng: lang,
       fallbackLng: 'en',
+  supportedLngs: ['en', 'ro', 'ru'],
+  load: 'languageOnly',
+  nonExplicitSupportedLngs: true,
+  cleanCode: true,
       ns: ['ra', 'common', 'validation', 'admin', 'portal'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
@@ -475,9 +534,14 @@ initI18n();
 export function useI18nForceUpdate() {
   const [, setTick] = React.useState(0);
   React.useEffect(() => {
-    const handler = () => setTick(t => t + 1);
-    i18n.on('languageChanged', handler);
-    return () => { i18n.off('languageChanged', handler); };
+    const bump = () => setTick(t => t + 1);
+    i18n.on('languageChanged', bump);
+    // Also react when async namespaces (like 'portal') finish loading
+    i18n.on('loaded', bump);
+    return () => {
+      i18n.off('languageChanged', bump);
+      i18n.off('loaded', bump);
+    };
   }, []);
 }
 
@@ -494,7 +558,9 @@ export const raI18nProvider = {
     if (!key) return '';
 
     const tryKey = (k, ns) => {
-      const r = i18n.t(k, { ns, defaultValue: k, ...options });
+  // react-admin often passes '_' as alias for defaultValue
+  const { _, defaultValue, ...rest } = options || {};
+  const r = i18n.t(k, { ns, defaultValue: defaultValue ?? _ ?? k, ...rest });
       return r && r !== k ? r : null;
     };
 
@@ -539,7 +605,8 @@ export const raI18nProvider = {
       if (rCommon2) return rCommon2;
     }
     // 6. Direct attempt (maybe already using internal path without prefix)
-    const direct = i18n.t(key, { ...options, defaultValue: key });
+  const { _, defaultValue, ...rest } = options || {};
+  const direct = i18n.t(key, { ...rest, defaultValue: defaultValue ?? _ ?? key });
     if (direct && direct !== key) return direct;
     return key; // fallback to raw key (helps detect missing keys in UI)
   },
@@ -550,3 +617,23 @@ export const raI18nProvider = {
 };
 
 export default i18n;
+
+// Simple app-wide locale state mirroring RA's useLocaleState for the portal
+const APP_LOCALE_KEY = 'app_lang';
+export function useAppLocaleState() {
+  const getBase = (lng) => (lng || 'en').split('-')[0];
+  const [locale, setLocaleState] = React.useState(getBase(i18n.resolvedLanguage || i18n.language));
+  React.useEffect(() => {
+    const onLang = (lng) => setLocaleState(getBase(lng));
+    i18n.on('languageChanged', onLang);
+    return () => { i18n.off('languageChanged', onLang); };
+  }, []);
+  const setLocale = React.useCallback((lng) => {
+    const base = getBase(lng);
+    const allowed = ['en','ro','ru'];
+    const next = allowed.includes(base) ? base : 'en';
+    try { window.localStorage.setItem(APP_LOCALE_KEY, next); } catch {}
+    i18n.changeLanguage(next);
+  }, []);
+  return [locale, setLocale];
+}

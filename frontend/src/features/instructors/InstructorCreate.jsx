@@ -1,7 +1,10 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, DateInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
+import { Create, SimpleForm, DateInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
+import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
-import { validateEmail, validatePhoneClient } from '../../shared/validation/validators';
+import EmailInput from '../../shared/components/EmailInput';
+import { validatePhoneClient } from '../../shared/validation/validators';
+import LicenseCategoriesInput from '../../shared/components/LicenseCategoriesInput.jsx';
 
 export default function InstructorCreate(props) {
   const t = useTranslate();
@@ -13,12 +16,12 @@ export default function InstructorCreate(props) {
   return (
     <Create {...props}>
       <SimpleForm>
-        <TextInput source="first_name" label={t('resources.instructors.fields.first_name')} validate={[required()]} />
-        <TextInput source="last_name" label={t('resources.instructors.fields.last_name')} validate={[required()]} />
-        <TextInput source="email" label={t('resources.instructors.fields.email')} validate={[validateEmail, required()]} />
+  <NameInput source="first_name" label={t('resources.instructors.fields.first_name')} validate={[required()]} />
+  <NameInput source="last_name" label={t('resources.instructors.fields.last_name')} validate={[required()]} />
+  <EmailInput source="email" label={t('resources.instructors.fields.email')} validate={[required()]} />
         <PhoneInput source="phone_number" label={t('resources.instructors.fields.phone_number')} validate={[validatePhoneClient]} />
         <DateInput source="hire_date" label={t('resources.instructors.fields.hire_date')} validate={[required()]} />
-        <TextInput
+        <LicenseCategoriesInput
           source="license_categories"
           label={t('resources.instructors.fields.license_categories')}
           helperText={t('resources.instructors.fields.license_categories_hint')}
@@ -26,7 +29,7 @@ export default function InstructorCreate(props) {
         />
         <RadioButtonGroupInput
           source="car_category"
-          label={t('resources.vehicles.fields.category')}
+          label={t('instructors.gearbox.label', 'Gearbox')}
           validate={[required()]}
           defaultValue="both"
           choices={choices}

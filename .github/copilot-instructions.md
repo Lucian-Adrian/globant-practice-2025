@@ -55,4 +55,6 @@ Notes and sources
 - This guidance reflects the `CLEAN_STRUCTURE.md` layout and the `frontend-structured-minimal` package layout (scripts: `dev`, `build`, `preview`).
 - If you need backend startup commands, look at `backend/requirements.txt` and Dockerfile; typical Django commands used here are `python manage.py runserver` or Docker Compose in root.
 
-If anything is unclear or you want more details (CI, auth, or backend-first changes), tell me which area to expand.
+ALWAYS CHECK CONTRIBUTING.md AND PROJECT-SPECIFIC GUIDELINES IF PRESENT.
+
+

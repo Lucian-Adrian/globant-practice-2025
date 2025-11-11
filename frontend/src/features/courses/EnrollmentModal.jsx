@@ -8,51 +8,12 @@ const EnrollmentModal = ({ isOpen, onClose, classData, onEnrollmentSuccess }) =>
   const [loading, setLoading] = useState(false);
   const [enrollmentType, setEnrollmentType] = useState('THEORY');
 
-  // Mock students data
   useEffect(() => {
     if (isOpen) {
       const fetchAvailableStudents = async () => {
         setLoading(true);
-        
-        // Mock available students (not already enrolled in this class)
-        /*
-        const mockStudents = [
-          {
-            id: 4,
-            first_name: "Andrei",
-            last_name: "Munteanu", 
-            email: "andrei.munteanu@email.com",
-            phone_number: "+373 69 333 444",
-            status: "ACTIVE"
-          },
-          {
-            id: 5,
-            first_name: "Elena",
-            last_name: "Georgescu",
-            email: "elena.georgescu@email.com", 
-            phone_number: "+373 69 555 666",
-            status: "ACTIVE"
-          },
-          {
-            id: 6,
-            first_name: "Mihai",
-            last_name: "Dumitrescu",
-            email: "mihai.dumitrescu@email.com",
-            phone_number: "+373 69 777 888",
-            status: "ACTIVE"
-          },
-          {
-            id: 7,
-            first_name: "Ana",
-            last_name: "Stoica",
-            email: "ana.stoica@email.com",
-            phone_number: "+373 69 999 000",
-            status: "ACTIVE"
-          }
-        ];
-        */
 
-        setStudents([]); // Set empty array instead of mock data
+        setStudents([]); 
         setLoading(false);
       };
 
@@ -81,10 +42,9 @@ const EnrollmentModal = ({ isOpen, onClose, classData, onEnrollmentSuccess }) =>
 
     setLoading(true);
     try {
-      // Mock enrollment API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulate successful enrollment
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    
       const enrolledStudentsData = students
         .filter(student => selectedStudents.includes(student.id))
         .map(student => ({
@@ -99,12 +59,11 @@ const EnrollmentModal = ({ isOpen, onClose, classData, onEnrollmentSuccess }) =>
           }
         }));
 
-      // Call success callback
+
       if (onEnrollmentSuccess) {
         onEnrollmentSuccess(enrolledStudentsData);
       }
 
-      // Reset form
       setSelectedStudents([]);
       setSearchTerm('');
       

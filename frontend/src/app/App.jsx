@@ -6,7 +6,7 @@ import dataProvider from '../api/dataProvider';
 import { authProvider } from '../auth/authProvider';
 import { fetchEnums, mapToChoices } from '../api/enumsClient';
 import { makeStudentList, makeStudentEdit, makeStudentCreate } from '../features/students';
-import { VehicleList, makeVehicleEdit, makeVehicleCreate } from '../features/vehicles';
+import { ResourceList, makeResourceEdit, makeResourceCreate } from '../features/resources';
 import { InstructorList, InstructorEdit, InstructorCreate } from '../features/instructors';
 import { InstructorAvailabilityList } from '../features/instructoravailabilities';
 import { CourseList, makeCourseEdit, makeCourseCreate } from '../features/courses';
@@ -20,7 +20,19 @@ import Dashboard from './Dashboard.jsx';
 
 export default function App() {
   const [enums, setEnums] = React.useState(null);
-  React.useEffect(() => { fetchEnums().then(setEnums); }, []);
+  React.useEffect(() => {
+    let isActive = true;
+    fetchEnums()
+      .then((result) => {
+        if (isActive) setEnums(result);
+      })
+      .catch(() => {
+        // Swallow network errors here; the UI will fallback to static choices.
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
   const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
   const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
@@ -32,7 +44,7 @@ export default function App() {
       </CustomRoutes>
       <Resource name="students" list={makeStudentList()} edit={makeStudentEdit(studentChoices)} create={makeStudentCreate()} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
-      <Resource name="vehicles" list={VehicleList} edit={makeVehicleEdit(vehicleChoices)} create={makeVehicleCreate(vehicleChoices)} />
+      <Resource name="resources" list={ResourceList} edit={makeResourceEdit(vehicleChoices)} create={makeResourceCreate(vehicleChoices)} />
       <Resource name="instructor-availabilities" list={InstructorAvailabilityList} />
       <Resource name="classes" list={CourseList} edit={makeCourseEdit(vehicleChoices, courseTypeChoices)} create={makeCourseCreate(vehicleChoices, courseTypeChoices)} />
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
-from django.urls import reverse
+
 from school.models import Student
 
 
@@ -15,6 +15,7 @@ class StudentValidationTests(TestCase):
             "phone_number": "+37360111222",
             "date_of_birth": "2000-01-01",
             "status": "ACTIVE",
+            "password": "testpass123",
         }
 
     def test_create_student_ok(self):
@@ -24,24 +25,28 @@ class StudentValidationTests(TestCase):
 
     def test_duplicate_email(self):
         self.client.post(self.url, self.payload, format="json")
-        r2 = self.client.post(self.url, {**self.payload, "phone_number": "+37360111223"}, format="json")
+        r2 = self.client.post(
+            self.url, {**self.payload, "phone_number": "+37360111223"}, format="json"
+        )
         self.assertEqual(r2.status_code, 400)
-        self.assertIn("email", r2.json().get("errors", {}))
+        self.assertIn("email", r2.json())
 
     def test_duplicate_phone(self):
         self.client.post(self.url, self.payload, format="json")
-        r2 = self.client.post(self.url, {**self.payload, "email": "other@example.com"}, format="json")
+        r2 = self.client.post(
+            self.url, {**self.payload, "email": "other@example.com"}, format="json"
+        )
         self.assertEqual(r2.status_code, 400)
-        self.assertIn("phone_number", r2.json().get("errors", {}))
+        self.assertIn("phone_number", r2.json())
 
     def test_invalid_name(self):
         bad = {**self.payload, "first_name": "Ion123"}
         r = self.client.post(self.url, bad, format="json")
         self.assertEqual(r.status_code, 400)
-        self.assertIn("first_name", r.json().get("errors", {}))
+        self.assertIn("first_name", r.json())
 
     def test_invalid_phone(self):
         bad = {**self.payload, "phone_number": "+37312"}
         r = self.client.post(self.url, bad, format="json")
         self.assertEqual(r.status_code, 400)
-        self.assertIn("phone_number", r.json().get("errors", {}))
+        self.assertIn("phone_number", r.json())

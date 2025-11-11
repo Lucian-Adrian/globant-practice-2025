@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppLocaleState } from '../../i18n/index.js';
 import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { t, i18n } = useTranslation('portal');
+  const { t } = useTranslation('portal');
+  const [locale, setLocale] = useAppLocaleState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,7 +79,7 @@ const StudentDashboard = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
   <h1>{t('portal.dashboard.welcome', 'Student Dashboard')}</h1>
         <div style={{ position: 'absolute', top: 20, right: 20 }}>
-          <select value={i18n.language} onChange={e => i18n.changeLanguage(e.target.value)}>
+          <select value={locale} onChange={e => setLocale(e.target.value)}>
             <option value="en">EN</option>
             <option value="ro">RO</option>
             <option value="ru">RU</option>
@@ -196,7 +198,7 @@ const StudentDashboard = () => {
                     <p>{t('common:time', 'Time')}: {new Date(lesson.scheduled_time).toLocaleTimeString()}</p>
                     <p>{t('common:duration', 'Duration')}: {lesson.duration_minutes} minutes</p>
                     <p>{t('common:instructor', 'Instructor')}: {lesson.instructor.first_name} {lesson.instructor.last_name}</p>
-                    <p>{t('common:vehicle', 'Vehicle')}: {lesson.vehicle.license_plate}</p>
+                    <p>{t('common:resource', 'Resource')}: {lesson.resource?.license_plate || lesson.resource?.name || 'N/A'}</p>
                     <p>{t('common:status', 'Status')}: {lesson.status}</p>
                   </div>
                 ))}

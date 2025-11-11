@@ -285,12 +285,12 @@ const Lessons: React.FC = () => {
             <div className="tw-space-y-4">
               {filteredLessons.map((lesson:any) => {
                 const statusUp = (lesson.status || '').toUpperCase();
-                const typeLabel = ((lesson?.enrollment?.course?.type || '').toUpperCase() === 'THEORY') ? 'Theory' : 'Driving';
+                const typeLabel = ((lesson?.enrollment?.course?.type || '').toUpperCase() === 'THEORY') ? t('type.theory') : t('type.driving');
                 const instructorName = lesson?.instructor ? `${lesson.instructor.first_name} ${lesson.instructor.last_name}` : '—';
                 const dt = lesson?.scheduled_time ? new Date(lesson.scheduled_time) : null;
                 const dateStr = dt ? dt.toLocaleDateString() : '—';
                 const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                const vehicleStr = lesson?.vehicle?.license_plate || (lesson?.enrollment?.course?.name || '—');
+                const vehicleStr = lesson?.resource?.license_plate || (lesson?.enrollment?.course?.name || '—');
                 return (
                 <Card
                   key={lesson.id}
@@ -319,7 +319,7 @@ const Lessons: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <h3 className="tw-text-lg tw-font-semibold tw-text-foreground">{typeLabel} Lesson</h3>
+                          <h3 className="tw-text-lg tw-font-semibold tw-text-foreground">{typeLabel} {t('lessons.word.lesson', { defaultValue: 'Lesson' })}</h3>
                           <p className="tw-text-sm tw-text-muted-foreground">{t('commonUI.with')} {instructorName}</p>
                         </div>
                       </div>
@@ -431,12 +431,12 @@ const CalendarGrid: React.FC<{ lessons: any[] }>= ({ lessons }) => {
               <div className="tw-text-xs tw-text-muted-foreground">{cell.date?.getDate() ?? ''}</div>
               <div className="tw-mt-1 tw-space-y-1">
                 {dayLessons.slice(0,3).map((l:any) => {
-                  const type = ((l?.enrollment?.course?.type||'').toUpperCase()==='THEORY')?'Theory':'Driving';
-                  const t = new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const typeLabel = ((l?.enrollment?.course?.type||'').toUpperCase()==='THEORY') ? t('type.theory') : t('type.driving');
+                  const timeStr = new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                   const statusUp = (l.status||'').toUpperCase();
                   const tone = statusUp==='COMPLETED' ? 'tw-bg-primary/15 tw-text-primary' : statusUp.includes('CANCEL') ? 'tw-bg-destructive/15 tw-text-destructive' : 'tw-bg-success/15 tw-text-success';
                   return (
-                    <div key={l.id} className={`tw-text-[11px] tw-rounded tw-px-2 tw-py-1 tw-truncate ${tone}`}>{t} · {type}</div>
+                    <div key={l.id} className={`tw-text-[11px] tw-rounded tw-px-2 tw-py-1 tw-truncate ${tone}`}>{timeStr} · {typeLabel}</div>
                   );
                 })}
                 {dayLessons.length>3 && (
