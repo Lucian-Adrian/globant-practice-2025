@@ -1260,8 +1260,6 @@ class ResourceViewSet(FullCrudViewSet):
     @decorators.action(detail=False, methods=["get"], url_path="available")
     def available_resources(self, request):
         """Get resources available for a specific time period"""
-        start_time = request.query_params.get("start_time")
-        end_time = request.query_params.get("end_time")
         resource_type = request.query_params.get("type")  # 'vehicle' or 'classroom'
 
         qs = self.get_queryset().filter(is_available=True)
@@ -1271,7 +1269,7 @@ class ResourceViewSet(FullCrudViewSet):
         elif resource_type == "classroom":
             qs = qs.filter(max_capacity__gt=2)
 
-        # TODO: Add time-based availability filtering
+        # TODO: Add time-based availability filtering using start_time and end_time query params
         # For now, just return all available resources
 
         serializer = self.get_serializer(qs, many=True)
