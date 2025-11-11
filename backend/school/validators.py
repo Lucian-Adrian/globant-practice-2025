@@ -152,7 +152,7 @@ try:  # optional import; keeps this module reusable outside Django context
         except ValueError as e:
             raise ValidationError(str(e))
 
-    def django_validate_license_categories(value: str) -> None:
+    def django_canonicalize_license_categories(value: str) -> None:
         try:
             canonicalize_license_categories(value)
         except ValueError as e:
