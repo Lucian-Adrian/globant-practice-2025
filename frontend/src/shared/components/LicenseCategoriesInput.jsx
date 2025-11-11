@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useInput } from 'react-admin';
 import TextField from '@mui/material/TextField';
-import FormHelperText from '@mui/material/FormHelperText';
 import { parseLicenseCategories, validateLicenseCategoriesClient } from '../validation/validators';
 
 // Input that allows only [A-Z0-9,], auto uppercases, and keeps trailing comma while typing.
@@ -9,6 +8,8 @@ export default function LicenseCategoriesInput({ source = 'license_categories', 
   const {
     field,
     fieldState: { error },
+    id,
+    isRequired,
   } = useInput({ source, validate: [validateLicenseCategoriesClient, ...validate], ...rest });
 
   const value = typeof field.value === 'string' ? field.value : '';
@@ -26,13 +27,12 @@ export default function LicenseCategoriesInput({ source = 'license_categories', 
     field.onBlur();
   };
 
-  const helper = error ? (typeof error.message === 'string' ? error.message : String(error.message)) : rest.helperText;
-
   return (
     <div>
       <TextField
         {...rest}
         label={label}
+        id={id}
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -40,7 +40,6 @@ export default function LicenseCategoriesInput({ source = 'license_categories', 
         placeholder="B,BE,C"
         fullWidth
       />
-      {helper ? <FormHelperText error={!!error}>{helper}</FormHelperText> : null}
     </div>
   );
 }
