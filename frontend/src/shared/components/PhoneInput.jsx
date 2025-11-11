@@ -32,7 +32,26 @@ export function PhoneInput({ source, validate = [], required: req, ...rest }) {
     setLocal(digits);
   };
 
-  const showError = error && (typeof error.message === 'string' ? error.message : String(error.message));
+  let showError = null;
+  if (error && error.message) {
+    if (typeof error.message === 'string') {
+      // React-Admin sometimes prefixes translation payloads with @@react-admin@@JSON
+      if (error.message.startsWith('@@react-admin@@')) {
+        try {
+          const payload = JSON.parse(error.message.replace('@@react-admin@@', ''));
+          showError = payload?.message || 'Invalid phone number format';
+        } catch (_) {
+          showError = 'Invalid phone number format';
+        }
+      } else {
+        showError = error.message;
+      }
+    } else if (typeof error.message?.message === 'string') {
+      showError = error.message.message;
+    } else {
+      showError = 'Invalid phone number format';
+    }
+  }
   const isValid = !local ? false : validatePhone(countryCode, local);
 
   return (

@@ -30,21 +30,23 @@ const ALLOWED_CATEGORIES = [
   'AM','A1','A2','A','B1','B','C1','C','D1','D','BE','C1E','CE','D1E','DE'
 ];
 
+// Sanitize input while typing: allow only letters, digits, commas; auto-uppercase;
+// keep a trailing comma so users can start typing the next token.
 export const parseLicenseCategories = (value) => {
   if (value == null) return '';
-  const parts = String(value)
-    .split(',')
-    .map((p) => p.trim().toUpperCase())
-    .filter(Boolean);
-  const seen = [];
-  parts.forEach((p) => { if (!seen.includes(p)) seen.push(p); });
-  return seen.join(',');
+  let s = String(value).toUpperCase();
+  s = s.replace(/[^A-Z0-9,]/g, '');         // restrict characters
+  s = s.replace(/,{2,}/g, ',');              // collapse multiple commas
+  s = s.replace(/^,/, '');                   // remove leading comma
+  // do NOT trim trailing comma
+  return s;
 };
 
 export const validateLicenseCategoriesClient = (value) => {
-  const str = parseLicenseCategories(value);
+  const sanitized = parseLicenseCategories(value);
+  const str = sanitized.endsWith(',') ? sanitized.slice(0, -1) : sanitized;
   if (!str) return 'At least one category is required';
-  const invalid = str.split(',').filter((p) => !ALLOWED_CATEGORIES.includes(p));
+  const invalid = str.split(',').filter((p) => p && !ALLOWED_CATEGORIES.includes(p));
   if (invalid.length) return `Invalid categories: ${invalid.join(', ')}`;
   return undefined;
 };

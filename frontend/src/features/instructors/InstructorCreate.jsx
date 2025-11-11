@@ -17,15 +17,16 @@ export default function InstructorCreate(props) {
       <SimpleForm>
   <NameInput source="first_name" label={t('resources.instructors.fields.first_name')} validate={[required()]} />
   <NameInput source="last_name" label={t('resources.instructors.fields.last_name')} validate={[required()]} />
-  <EmailInput source="email" label={t('resources.instructors.fields.email') + ' *'} validate={[required()]} />
+  <EmailInput source="email" label={t('resources.instructors.fields.email')} validate={[required()]} />
         <PhoneInput source="phone_number" label={t('resources.instructors.fields.phone_number')} validate={[validatePhoneClient]} />
         <DateInput source="hire_date" label={t('resources.instructors.fields.hire_date')} validate={[required()]} />
         <TextInput
           source="license_categories"
-          label={t('resources.instructors.fields.license_categories')}
+          label={t('resources.instructors.fields.license_categories') + ' *'}
           helperText={t('resources.instructors.fields.license_categories_hint')}
           parse={parseLicenseCategories}
           validate={[required(), validateLicenseCategoriesClient]}
+          inputProps={{ inputMode: 'text', pattern: '[A-Za-z0-9,]*' }}
         />
         <RadioButtonGroupInput
           source="car_category"
