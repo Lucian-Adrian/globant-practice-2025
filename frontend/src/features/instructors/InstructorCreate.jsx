@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Create, SimpleForm, DateInput, TextInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
+import { Create, SimpleForm, DateInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';
-import { validatePhoneClient, validateLicenseCategoriesClient, parseLicenseCategories } from '../../shared/validation/validators';
+import { validatePhoneClient } from '../../shared/validation/validators';
 import LicenseCategoriesInput from '../../shared/components/LicenseCategoriesInput.jsx';
 
 export default function InstructorCreate(props) {
