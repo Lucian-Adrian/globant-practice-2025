@@ -124,6 +124,44 @@ class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructor
         fields = ["id", "first_name", "last_name", "email", "phone_number", "hire_date", "license_categories"]
+        extra_kwargs = {
+            "first_name": {"error_messages": {"required": "First name is required", "blank": "First name is required"}},
+            "last_name": {"error_messages": {"required": "Last name is required", "blank": "Last name is required"}},
+            "email": {"error_messages": {"required": "Email is required", "blank": "Email is required", "invalid": "Invalid email format"}},
+            "phone_number": {"error_messages": {"required": "Phone number is required", "blank": "Phone number is required"}},
+        }
+
+    def validate_first_name(self, value: str) -> str:
+        try:
+            return validate_name(value, "First name")
+        except ValueError as e:  # noqa: BLE001
+            raise serializers.ValidationError(str(e))
+
+    def validate_last_name(self, value: str) -> str:
+        try:
+            return validate_name(value, "Last name")
+        except ValueError as e:  # noqa: BLE001
+            raise serializers.ValidationError(str(e))
+
+    def validate_phone_number(self, value: str) -> str:
+        try:
+            value = validate_phone(value)
+        except ValueError as e:  # noqa: BLE001
+            raise serializers.ValidationError(str(e))
+        qs = Instructor.objects.filter(phone_number=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Phone number already registered")
+        return value
+
+    def validate_email(self, value: str) -> str:
+        qs = Instructor.objects.filter(email__iexact=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Email already registered")
+        return value.lower()
 
 
 class InstructorAvailabilitySerializer(serializers.ModelSerializer):
