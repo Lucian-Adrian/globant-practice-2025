@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Create, SimpleForm, TextInput, DateInput, useTranslate } from 'react-admin';
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
-import { validateDOB, validateEmail, validatePhoneClient } from '../../shared/validation/validators';
+import EmailInput from '../../shared/components/EmailInput';
+import { validateDOB, validatePhoneClient } from '../../shared/validation/validators';
 
 export default function makeStudentCreate() {
   return function StudentCreate(props) {
@@ -40,10 +41,9 @@ export default function makeStudentCreate() {
             label={`${t('resources.students.fields.last_name', { defaultValue: 'Last name' })} *`} 
             validate={[v => (!v ? 'Last name is required' : undefined)]} 
           />
-          <TextInput 
+          <EmailInput 
             source="email" 
             label={`${t('resources.students.fields.email', { defaultValue: 'Email' })} *`} 
-            validate={[validateEmail]} 
           />
           <PhoneInput 
             source="phone_number" 

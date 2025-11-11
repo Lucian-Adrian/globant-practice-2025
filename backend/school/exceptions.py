@@ -9,13 +9,14 @@ Standard response format:
 
 from __future__ import annotations
 
+import logging
 from typing import Any
+
 from django.db import IntegrityError
-from rest_framework.views import exception_handler as drf_exception_handler
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-import logging
+from rest_framework.response import Response
+from rest_framework.views import exception_handler as drf_exception_handler
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,8 @@ def exception_handler(exc: Exception, context: dict[str, Any]):  # type: ignore[
     request = context.get("request")
     # Log ALL exceptions with context for debugging (safe fields only)
     logger.exception(
-        "API exception: %s view=%s method=%s path=%s", 
-        exc.__class__.__name__, 
+        "API exception: %s view=%s method=%s path=%s",
+        exc.__class__.__name__,
         getattr(view, "__class__", type(view)).__name__,
         getattr(request, "method", None),
         getattr(request, "path", None),
@@ -72,8 +73,11 @@ def exception_handler(exc: Exception, context: dict[str, Any]):  # type: ignore[
         return response
 
     # Fallback unhandled -> generic 500 style response (avoid leaking internals)
-    return Response({
-        "errors": {"non_field_errors": ["Server error"]},
-        "message": "Unexpected server error",
-        "error_code": "server_error",
-    }, status=500)
+    return Response(
+        {
+            "errors": {"non_field_errors": ["Server error"]},
+            "message": "Unexpected server error",
+            "error_code": "server_error",
+        },
+        status=500,
+    )

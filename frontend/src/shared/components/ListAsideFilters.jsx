@@ -4,6 +4,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { FilterList, FilterListItem, useTranslate } from 'react-admin';
 import { endOfYesterday, startOfWeek, subWeeks, startOfMonth, subMonths } from 'date-fns';
+import { useAsidePanel } from '../state/AsidePanelContext.jsx';
 
 /**
  * Generic reusable aside filter panel for React-Admin List pages.
@@ -26,6 +27,7 @@ export default function ListAsideFilters({
   children,
 }) {
   const t = useTranslate();
+  const { collapsed } = useAsidePanel();
 
   const dateFilters = React.useMemo(() => {
     if (!dateField) return [];
@@ -51,7 +53,7 @@ export default function ListAsideFilters({
   );
 
   return (
-    <Card sx={{ display:{ xs:'none', md:'block' }, order:-1, flex:'0 0 22em', maxWidth:'22em', mr:2, mt:6, alignSelf:'flex-start' }}>
+    <Card sx={{ display:{ xs:'none', md: collapsed ? 'none' : 'block' }, order:-1, flex:'0 0 22em', maxWidth:'22em', mr:2, mt:6, alignSelf:'flex-start' }}>
       <CardContent sx={{ pt:1 }}>
         {!hideDate && dateField && (
           <FilterList label={t(dateLabelKey, dateLabelKey)} icon={dateIcon}>

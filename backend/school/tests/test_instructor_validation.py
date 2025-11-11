@@ -1,27 +1,26 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from school.models import Student
+from school.models import Instructor
 
 
-class StudentValidationTests(TestCase):
+class InstructorValidationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.url = "/api/students/"
+        self.url = "/api/instructors/"
         self.payload = {
             "first_name": "Ion",
             "last_name": "Popescu",
-            "email": "ion@example.com",
+            "email": "instructor@example.com",
             "phone_number": "+37360111222",
-            "date_of_birth": "2000-01-01",
-            "status": "ACTIVE",
-            "password": "testpass123",
+            "hire_date": "2020-01-01",
+            "license_categories": "B,BE",
         }
 
-    def test_create_student_ok(self):
+    def test_create_instructor_ok(self):
         r = self.client.post(self.url, self.payload, format="json")
         self.assertEqual(r.status_code, 201, r.content)
-        self.assertEqual(Student.objects.count(), 1)
+        self.assertEqual(Instructor.objects.count(), 1)
 
     def test_duplicate_email(self):
         self.client.post(self.url, self.payload, format="json")

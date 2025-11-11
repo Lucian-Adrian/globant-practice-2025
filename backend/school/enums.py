@@ -15,8 +15,10 @@ from enum import Enum
 try:  # Python 3.11+
     from enum import StrEnum  # type: ignore
 except ImportError:  # Python 3.9 Docker image fallback
+
     class StrEnum(str, Enum):  # type: ignore
         """Lightweight backport so code works on Python <3.11."""
+
         pass
 
 
@@ -28,7 +30,7 @@ class _ChoiceStrEnum(StrEnum):
     @staticmethod
     def _humanize(value: str) -> str:
         # Simple title-case humanization. (Labels can be localized later.)
-        return value.replace('_', ' ').title()
+        return value.replace("_", " ").title()
 
 
 class StudentStatus(_ChoiceStrEnum):
@@ -103,7 +105,8 @@ def all_enums_for_meta() -> dict[str, list[str]]:
     The frontend can call the meta endpoint and populate select components
     dynamically instead of hardcoding strings.
     """
-    def values(enum_cls: type[_ChoiceStrEnum]) -> list[str]:  # noqa: D401
+
+    def values(enum_cls: type[_ChoiceStrEnum]) -> list[str]:
         return [m.value for m in enum_cls]
 
     return {
@@ -113,6 +116,6 @@ def all_enums_for_meta() -> dict[str, list[str]]:
         "payment_method": values(PaymentMethod),
         "payment_status": values(PaymentStatus),
         "vehicle_category": values(VehicleCategory),
-    "course_type": values(CourseType),
+        "course_type": values(CourseType),
         "day_of_week": values(DayOfWeek),
     }
