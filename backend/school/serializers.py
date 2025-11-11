@@ -551,6 +551,7 @@ class LessonSerializer(serializers.ModelSerializer):
                         mm = parts[1].zfill(2) if len(parts) > 1 else "00"
                         slots.add(f"{hh}:{mm}")
             except Exception:
+                # Skip malformed/corrupted availability records; validation below ensures at least one valid slot exists
                 pass
         if not slots:
             raise serializers.ValidationError(
