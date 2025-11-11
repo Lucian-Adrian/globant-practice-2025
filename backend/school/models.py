@@ -81,7 +81,7 @@ class Instructor(models.Model):
             try:
                 self.phone_number = normalize_phone(self.phone_number)
             except Exception:
-                pass
+                pass  # serializer/clean surface explicit validation errors
         if self.email:
             self.email = (self.email or "").strip().lower()
         if self.license_categories:
