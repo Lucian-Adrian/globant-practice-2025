@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Reusable `EmailInput` component with automatic lowercase & shared validation
+- Strict server-side validation for Student & Instructor (name, phone, email) with model-level validators
+- Unique constraint enforced for `Instructor.phone_number`
+- Shared frontend usage of `NameInput`, `PhoneInput`, `EmailInput` across student/instructor create/edit forms
 ([#60](https://github.com/Lucian-Adrian/globant-practice-2025/pull/60))
 - Manual instructor and vehicle pickers in booking interface.
 - 30-minute time slots derived from instructor availability.
@@ -96,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Translation key naming conventions unified across student-related components.
 
 ### Fixed
+- Prevent acceptance of malformed phone numbers and non-alphabetic names in admin & API layers
 ([#64](https://github.com/Lucian-Adrian/globant-practice-2025/pull/64))
 - Dropdowns in edit forms now pre-fill with current values instead of being empty
 
