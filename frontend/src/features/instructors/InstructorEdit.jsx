@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Edit, SimpleForm, DateInput, TextInput, required, useTranslate } from 'react-admin';
+import { Edit, SimpleForm, DateInput, required, useTranslate } from 'react-admin';
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';

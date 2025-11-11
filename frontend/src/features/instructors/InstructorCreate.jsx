@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Create, SimpleForm, DateInput, TextInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
+import { Create, SimpleForm, DateInput, required, RadioButtonGroupInput, useTranslate } from 'react-admin';
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';
