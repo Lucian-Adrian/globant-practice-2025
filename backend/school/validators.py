@@ -10,11 +10,14 @@ import re
 
 NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ\-\s]{1,50}$")
 PHONE_CLEAN_RE = re.compile(r"[^0-9+]")
+# Allow + followed by 8–16 digits total (international style, conservative upper bound)
+PHONE_STRICT_RE = re.compile(r"^\+\d{8,16}$")
 
 MD_COUNTRY_CODE = "+373"
 
 
 def validate_name(value: str, field: str) -> str:
+    """Basic human name validation (letters, spaces, hyphen, diacritics)."""
     if not value:
         raise ValueError(f"{field} is required")
     if not NAME_RE.match(value):
@@ -27,13 +30,12 @@ def validate_name(value: str, field: str) -> str:
 def normalize_phone(raw: str) -> str:
     """Return a normalised E.164-like phone number with +373 default.
 
-    Rules:
-    * Strip spaces, parentheses, dashes and dots.
-    * If starts with '00', replace with '+'.
-    * If starts with '+', keep country code as is.
-    * If starts with a digit and length >= 8, prefix +373 (Moldova) by default.
-    * Remove any leading 0 after adding country code.
-    * Does minimal validation (ensures at least 8 national digits).
+    Steps:
+    - Strip spaces, parentheses, dashes and dots.
+    - Convert leading "00" to "+".
+    - If no leading '+', assume Moldova +373 and strip local leading zeros.
+    - Perform a minimal digit length check (>= 8 national digits total).
+    NOTE: Further strict format enforcement happens in ``validate_phone``.
     """
     if not raw:
         return raw
@@ -43,12 +45,40 @@ def normalize_phone(raw: str) -> str:
     if cleaned.startswith("+"):
         base = cleaned
     else:
-        # Assume Moldova if no country code provided.
-        # Drop leading zeros before concatenation.
         local = cleaned.lstrip("0")
         base = MD_COUNTRY_CODE + local
-    # Basic length check (country code + 8 digits minimum)
     digits = re.sub(r"[^0-9]", "", base)
-    if len(digits) < 8:  # very lenient; can tighten later
+    if len(digits) < 8:
         raise ValueError("Phone number appears too short")
     return base
+
+
+def validate_phone(raw: str, field: str = "Phone number") -> str:
+    """Normalize then strictly validate phone number format.
+
+    Returns the normalized value if valid, raises ValueError otherwise.
+    Strict rule: final value must match ``+<8-16 digits>``.
+    """
+    value = normalize_phone(raw)
+    compact = value.replace(" ", "")
+    if not PHONE_STRICT_RE.match(compact):
+        raise ValueError(f"{field} must be in international format +<country><digits> (8-16 digits total)")
+    return compact
+
+# Django validator adapters (so we can reuse same logic at model field level)
+try:  # optional import; keeps this module reusable outside Django context
+    from django.core.exceptions import ValidationError  # type: ignore
+
+    def django_validate_name(value: str) -> None:  # noqa: D401
+        try:
+            validate_name(value, "Name")
+        except ValueError as e:  # noqa: BLE001
+            raise ValidationError(str(e))
+
+    def django_validate_phone(value: str) -> None:  # noqa: D401
+        try:
+            validate_phone(value, "Phone number")
+        except ValueError as e:  # noqa: BLE001
+            raise ValidationError(str(e))
+except Exception:  # pragma: no cover - Django might not be installed in certain contexts
+    pass

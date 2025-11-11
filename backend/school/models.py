@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from django.core.validators import EmailValidator
+from .validators import django_validate_name, django_validate_phone, normalize_phone
 from .enums import (
     StudentStatus, EnrollmentStatus, LessonStatus,
     PaymentMethod, PaymentStatus, VehicleCategory, CourseType, DayOfWeek,
@@ -7,10 +9,10 @@ from .enums import (
 
 
 class Student(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20, unique=True)
+    first_name = models.CharField(max_length=50, validators=[django_validate_name])
+    last_name = models.CharField(max_length=50, validators=[django_validate_name])
+    email = models.EmailField(unique=True, validators=[EmailValidator()])
+    phone_number = models.CharField(max_length=20, unique=True, validators=[django_validate_phone])
     date_of_birth = models.DateField()
     enrollment_date = models.DateTimeField(auto_now_add=True)
     password = models.CharField(max_length=128, null=True, blank=True)  # hashed password
@@ -31,21 +33,22 @@ class Student(models.Model):
         from django.contrib.auth.hashers import check_password
         return check_password(raw_password, self.password)
 
-    def save(self, *args, **kwargs):  # centralize phone normalization
+    def save(self, *args, **kwargs):  # centralize phone normalization + email lowercase
         if self.phone_number:
             try:
-                from .validators import normalize_phone
                 self.phone_number = normalize_phone(self.phone_number)
             except Exception:  # noqa: BLE001
-                pass  # serializer layer surfaces explicit validation errors
+                pass  # serializer/clean surface explicit validation errors
+        if self.email:
+            self.email = (self.email or "").strip().lower()
         super().save(*args, **kwargs)
 
 
 class Instructor(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20)
+    first_name = models.CharField(max_length=50, validators=[django_validate_name])
+    last_name = models.CharField(max_length=50, validators=[django_validate_name])
+    email = models.EmailField(unique=True, validators=[EmailValidator()])
+    phone_number = models.CharField(max_length=20, unique=True, validators=[django_validate_phone])
     hire_date = models.DateField()
     # Store multiple categories as a comma separated list (e.g. "B,BE,C").
     # Simpler than a separate M2M for current scope and easy to expose as multi-checkbox in the UI.
@@ -53,6 +56,16 @@ class Instructor(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def save(self, *args, **kwargs):
+        if self.phone_number:
+            try:
+                self.phone_number = normalize_phone(self.phone_number)
+            except Exception:  # noqa: BLE001
+                pass
+        if self.email:
+            self.email = (self.email or "").strip().lower()
+        super().save(*args, **kwargs)
 
 
 class InstructorAvailability(models.Model):

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Student, Instructor, Vehicle, Course, Enrollment, Lesson, Payment, InstructorAvailability, Resource, ScheduledClass
 from .enums import CourseType
-from .validators import validate_name, normalize_phone
+from .validators import validate_name, normalize_phone, validate_phone
 from django.utils.translation import gettext as _
 from datetime import timedelta
 from django.conf import settings
@@ -45,13 +45,9 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def validate_phone_number(self, value: str) -> str:
         try:
-            value = normalize_phone(value)
+            value = validate_phone(value)
         except ValueError as e:  # noqa: BLE001
             raise serializers.ValidationError(str(e))
-        # Stronger post-normalisation validation: + followed by 8-16 digits total
-        import re  # local import keeps module top clean
-        if not re.match(r"^\+\d{8,16}$", value.replace(" ", "")):
-            raise serializers.ValidationError("Invalid phone number format. Expect +<country><digits> (8-16 total).")
     # Soft uniqueness check (also enforced by DB unique constraint)
         qs = Student.objects.filter(phone_number=value)
         if self.instance:
