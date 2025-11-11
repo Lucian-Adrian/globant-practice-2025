@@ -137,7 +137,7 @@ export async function validateLesson(values, t, currentId) {
     });
   }
 
-  // Narrow window payload; we only need to know if any exists
+  // Narrow time window for payload; we only need to know if any exists
   const baseWin = `scheduled_time__lt=${encodeURIComponent(end.toISOString())}&scheduled_time__gte=${encodeURIComponent(windowStart.toISOString())}&page_size=1`;
 
   // Instructor conflict
