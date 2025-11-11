@@ -22,7 +22,7 @@ export const validateEmail = (value) => {
 
 export const validatePhoneClient = (value) => {
   if (!value) return 'Phone number is required';
-  if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number format';
+  if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number';
 };
 
 // Allowed vehicle categories – keep in sync with backend VehicleCategory
@@ -30,23 +30,27 @@ const ALLOWED_CATEGORIES = [
   'AM','A1','A2','A','B1','B','C1','C','D1','D','BE','C1E','CE','D1E','DE'
 ];
 
-// Sanitize input while typing: allow only letters, digits, commas; auto-uppercase;
-// keep a trailing comma so users can start typing the next token.
 export const parseLicenseCategories = (value) => {
   if (value == null) return '';
-  let s = String(value).toUpperCase();
-  s = s.replace(/[^A-Z0-9,]/g, '');         // restrict characters
-  s = s.replace(/,{2,}/g, ',');              // collapse multiple commas
-  s = s.replace(/^,/, '');                   // remove leading comma
-  // do NOT trim trailing comma
-  return s;
+  // Keep only letters, numbers and commas, make uppercase
+  const cleaned = String(value).toUpperCase().replace(/[^A-Z0-9,]/g, '');
+  // Allow trailing comma while typing; normalize only tokens
+  const rawParts = cleaned.endsWith(',') ? cleaned.slice(0, -1) : cleaned;
+  const parts = rawParts
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const seen = [];
+  parts.forEach((p) => { if (!seen.includes(p)) seen.push(p); });
+  const normalized = seen.join(',');
+  // Preserve trailing comma to not block typing the next token
+  return cleaned.endsWith(',') ? (normalized ? normalized + ',' : ',') : normalized;
 };
 
 export const validateLicenseCategoriesClient = (value) => {
-  const sanitized = parseLicenseCategories(value);
-  const str = sanitized.endsWith(',') ? sanitized.slice(0, -1) : sanitized;
+  const str = parseLicenseCategories(value);
   if (!str) return 'At least one category is required';
-  const invalid = str.split(',').filter((p) => p && !ALLOWED_CATEGORIES.includes(p));
+  const invalid = str.split(',').filter((p) => !ALLOWED_CATEGORIES.includes(p));
   if (invalid.length) return `Invalid categories: ${invalid.join(', ')}`;
   return undefined;
 };

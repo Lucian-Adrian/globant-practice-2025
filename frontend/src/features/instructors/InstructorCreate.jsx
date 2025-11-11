@@ -4,6 +4,7 @@ import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';
 import { validatePhoneClient, validateLicenseCategoriesClient, parseLicenseCategories } from '../../shared/validation/validators';
+import LicenseCategoriesInput from '../../shared/components/LicenseCategoriesInput.jsx';
 
 export default function InstructorCreate(props) {
   const t = useTranslate();
@@ -20,13 +21,11 @@ export default function InstructorCreate(props) {
   <EmailInput source="email" label={t('resources.instructors.fields.email')} validate={[required()]} />
         <PhoneInput source="phone_number" label={t('resources.instructors.fields.phone_number')} validate={[validatePhoneClient]} />
         <DateInput source="hire_date" label={t('resources.instructors.fields.hire_date')} validate={[required()]} />
-        <TextInput
+        <LicenseCategoriesInput
           source="license_categories"
-          label={t('resources.instructors.fields.license_categories') + ' *'}
+          label={t('resources.instructors.fields.license_categories')}
           helperText={t('resources.instructors.fields.license_categories_hint')}
-          parse={parseLicenseCategories}
-          validate={[required(), validateLicenseCategoriesClient]}
-          inputProps={{ inputMode: 'text', pattern: '[A-Za-z0-9,]*' }}
+          validate={[required()]}
         />
         <RadioButtonGroupInput
           source="car_category"
