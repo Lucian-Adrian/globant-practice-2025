@@ -21,9 +21,7 @@ def validate_name(value: str, field: str) -> str:
     if not value:
         raise ValueError(f"{field} is required")
     if not NAME_RE.match(value):
-        raise ValueError(
-            f"{field} may contain only letters, spaces or '-' (max 50 chars)."
-        )
+        raise ValueError(f"{field} may contain only letters, spaces or '-' (max 50 chars).")
     return value
 
 
@@ -62,23 +60,27 @@ def validate_phone(raw: str, field: str = "Phone number") -> str:
     value = normalize_phone(raw)
     compact = value.replace(" ", "")
     if not PHONE_STRICT_RE.match(compact):
-        raise ValueError(f"{field} must be in international format +<country><digits> (8-16 digits total)")
+        raise ValueError(
+            f"{field} must be in international format +<country><digits> (8-16 digits total)"
+        )
     return compact
+
 
 # Django validator adapters (so we can reuse same logic at model field level)
 try:  # optional import; keeps this module reusable outside Django context
     from django.core.exceptions import ValidationError  # type: ignore
 
-    def django_validate_name(value: str) -> None:  # noqa: D401
+    def django_validate_name(value: str) -> None:
         try:
             validate_name(value, "Name")
-        except ValueError as e:  # noqa: BLE001
+        except ValueError as e:
             raise ValidationError(str(e))
 
-    def django_validate_phone(value: str) -> None:  # noqa: D401
+    def django_validate_phone(value: str) -> None:
         try:
             validate_phone(value, "Phone number")
-        except ValueError as e:  # noqa: BLE001
+        except ValueError as e:
             raise ValidationError(str(e))
+
 except Exception:  # pragma: no cover - Django might not be installed in certain contexts
     pass

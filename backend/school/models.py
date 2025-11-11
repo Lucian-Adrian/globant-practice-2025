@@ -1,11 +1,18 @@
-from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.core.validators import EmailValidator
-from .validators import django_validate_name, django_validate_phone, normalize_phone
+from django.db import models
+
 from .enums import (
-    StudentStatus, EnrollmentStatus, LessonStatus,
-    PaymentMethod, PaymentStatus, VehicleCategory, CourseType, DayOfWeek,
+    CourseType,
+    DayOfWeek,
+    EnrollmentStatus,
+    LessonStatus,
+    PaymentMethod,
+    PaymentStatus,
+    StudentStatus,
+    VehicleCategory,
 )
+from .validators import django_validate_name, django_validate_phone, normalize_phone
 
 
 class Student(models.Model):
@@ -31,13 +38,14 @@ class Student(models.Model):
 
     def check_password(self, raw_password):
         from django.contrib.auth.hashers import check_password
+
         return check_password(raw_password, self.password)
 
     def save(self, *args, **kwargs):  # centralize phone normalization + email lowercase
         if self.phone_number:
             try:
                 self.phone_number = normalize_phone(self.phone_number)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass  # serializer/clean surface explicit validation errors
         if self.email:
             self.email = (self.email or "").strip().lower()
@@ -52,7 +60,9 @@ class Instructor(models.Model):
     hire_date = models.DateField()
     # Store multiple categories as a comma separated list (e.g. "B,BE,C").
     # Simpler than a separate M2M for current scope and easy to expose as multi-checkbox in the UI.
-    license_categories = models.CharField(max_length=200, help_text="Comma separated categories: e.g. 'B,BE,C' ")
+    license_categories = models.CharField(
+        max_length=200, help_text="Comma separated categories: e.g. 'B,BE,C' "
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -61,7 +71,7 @@ class Instructor(models.Model):
         if self.phone_number:
             try:
                 self.phone_number = normalize_phone(self.phone_number)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
         if self.email:
             self.email = (self.email or "").strip().lower()
@@ -69,12 +79,17 @@ class Instructor(models.Model):
 
 
 class InstructorAvailability(models.Model):
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='availabilities')
+    instructor = models.ForeignKey(
+        Instructor, on_delete=models.CASCADE, related_name="availabilities"
+    )
     day = models.CharField(max_length=10, choices=DayOfWeek.choices())
-    hours = models.JSONField(default=list, help_text="List of available start times in HH:MM format, e.g. ['08:00', '09:30']")
+    hours = models.JSONField(
+        default=list,
+        help_text="List of available start times in HH:MM format, e.g. ['08:00', '09:30']",
+    )
 
     class Meta:
-        unique_together = ('instructor', 'day')
+        unique_together = ("instructor", "day")
 
     def __str__(self):
         return f"{self.instructor} - {self.day}: {self.hours}"
@@ -109,7 +124,7 @@ class Resource(models.Model):
         """Return human-readable resource type"""
         if self.is_vehicle():
             return "Vehicle"
-        elif self.is_classroom():
+        if self.is_classroom():
             return "Classroom"
         return "Unknown"
 
@@ -129,7 +144,9 @@ class Vehicle(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=5, choices=VehicleCategory.choices())
-    type = models.CharField(max_length=10, choices=CourseType.choices(), default=CourseType.THEORY.value)
+    type = models.CharField(
+        max_length=10, choices=CourseType.choices(), default=CourseType.THEORY.value
+    )
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
     required_lessons = models.IntegerField()
@@ -139,13 +156,17 @@ class Course(models.Model):
 
 
 class ScheduledClass(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='scheduled_classes')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="scheduled_classes")
     name = models.CharField(max_length=100, help_text="e.g., 'Monday Theory Class'")
     scheduled_time = models.DateTimeField()
     duration_minutes = models.IntegerField(default=60)
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='scheduled_classes')
-    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='scheduled_classes')
-    students = models.ManyToManyField(Student, related_name='scheduled_classes', blank=True)
+    instructor = models.ForeignKey(
+        Instructor, on_delete=models.CASCADE, related_name="scheduled_classes"
+    )
+    resource = models.ForeignKey(
+        Resource, on_delete=models.CASCADE, related_name="scheduled_classes"
+    )
+    students = models.ManyToManyField(Student, related_name="scheduled_classes", blank=True)
     max_students = models.IntegerField()
     status = models.CharField(
         max_length=20,
@@ -169,15 +190,19 @@ class ScheduledClass(models.Model):
         return self.current_enrollment() >= self.max_students
 
     class Meta:
-        ordering = ['scheduled_time']
+        ordering = ["scheduled_time"]
 
 
 class Enrollment(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="enrollments")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     enrollment_date = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=10, choices=CourseType.choices(), default=CourseType.THEORY.value,
-                             help_text="Copied from course for quick filtering; can be overridden if both.")
+    type = models.CharField(
+        max_length=10,
+        choices=CourseType.choices(),
+        default=CourseType.THEORY.value,
+        help_text="Copied from course for quick filtering; can be overridden if both.",
+    )
     status = models.CharField(
         max_length=20,
         choices=EnrollmentStatus.choices(),
@@ -192,9 +217,11 @@ class Enrollment(models.Model):
 
 
 class Lesson(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='lessons')
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='lessons')
-    resource = models.ForeignKey(Resource, on_delete=models.SET_NULL, null=True, blank=True, related_name='lessons')
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name="lessons")
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name="lessons")
+    resource = models.ForeignKey(
+        Resource, on_delete=models.SET_NULL, null=True, blank=True, related_name="lessons"
+    )
     scheduled_time = models.DateTimeField()
     duration_minutes = models.IntegerField(default=60)
     status = models.CharField(
@@ -205,22 +232,24 @@ class Lesson(models.Model):
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-scheduled_time']
+        ordering = ["-scheduled_time"]
 
     def __str__(self):
         return f"Lecție pentru {self.enrollment.student} ({self.enrollment.course})"
 
 
 class Payment(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='payments')
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     payment_date = models.DateTimeField(auto_now_add=True)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices())
-    status = models.CharField(max_length=20, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING.value)
+    status = models.CharField(
+        max_length=20, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING.value
+    )
     description = models.CharField(max_length=255)
 
     class Meta:
-        ordering = ['-payment_date']
+        ordering = ["-payment_date"]
 
     def __str__(self):
         return f"Plată de {self.amount} MDL pentru {self.enrollment}"

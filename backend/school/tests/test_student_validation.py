@@ -1,6 +1,6 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
-from django.urls import reverse
+
 from school.models import Student
 
 
@@ -15,7 +15,7 @@ class StudentValidationTests(TestCase):
             "phone_number": "+37360111222",
             "date_of_birth": "2000-01-01",
             "status": "ACTIVE",
-            "password": "testpass123"
+            "password": "testpass123",
         }
 
     def test_create_student_ok(self):
@@ -25,13 +25,17 @@ class StudentValidationTests(TestCase):
 
     def test_duplicate_email(self):
         self.client.post(self.url, self.payload, format="json")
-        r2 = self.client.post(self.url, {**self.payload, "phone_number": "+37360111223"}, format="json")
+        r2 = self.client.post(
+            self.url, {**self.payload, "phone_number": "+37360111223"}, format="json"
+        )
         self.assertEqual(r2.status_code, 400)
         self.assertIn("email", r2.json())
 
     def test_duplicate_phone(self):
         self.client.post(self.url, self.payload, format="json")
-        r2 = self.client.post(self.url, {**self.payload, "email": "other@example.com"}, format="json")
+        r2 = self.client.post(
+            self.url, {**self.payload, "email": "other@example.com"}, format="json"
+        )
         self.assertEqual(r2.status_code, 400)
         self.assertIn("phone_number", r2.json())
 

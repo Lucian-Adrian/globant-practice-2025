@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
-from school.models import Resource, ScheduledClass, Course, Instructor, Student
-from school.enums import VehicleCategory, CourseType
+
+from school.models import Course, Instructor, Resource, ScheduledClass, Student
 
 
 class ResourceModelTest(TestCase):
@@ -14,13 +14,10 @@ class ResourceModelTest(TestCase):
             license_plate="AA123BB",
             make="Toyota",
             model="Corolla",
-            year=2020
+            year=2020,
         )
         self.classroom_resource = Resource.objects.create(
-            name="Classroom A",
-            max_capacity=30,
-            category="B",
-            is_available=True
+            name="Classroom A", max_capacity=30, category="B", is_available=True
         )
 
     def test_vehicle_resource(self):
@@ -44,7 +41,7 @@ class ScheduledClassModelTest(TestCase):
             email="john@example.com",
             phone_number="+37360111222",
             hire_date="2020-01-01",
-            license_categories="B"
+            license_categories="B",
         )
         self.course = Course.objects.create(
             name="Category B Course",
@@ -52,13 +49,10 @@ class ScheduledClassModelTest(TestCase):
             type="THEORY",
             description="Basic driving course",
             price=1000.00,
-            required_lessons=20
+            required_lessons=20,
         )
         self.resource = Resource.objects.create(
-            name="Classroom A",
-            max_capacity=30,
-            category="B",
-            is_available=True
+            name="Classroom A", max_capacity=30, category="B", is_available=True
         )
         self.scheduled_class = ScheduledClass.objects.create(
             course=self.course,
@@ -68,7 +62,7 @@ class ScheduledClassModelTest(TestCase):
             instructor=self.instructor,
             resource=self.resource,
             max_students=25,
-            status="SCHEDULED"
+            status="SCHEDULED",
         )
 
     def test_scheduled_class_creation(self):
@@ -84,7 +78,7 @@ class ScheduledClassModelTest(TestCase):
             last_name="Smith",
             email="jane@example.com",
             phone_number="+37360111223",
-            date_of_birth="1990-01-01"
+            date_of_birth="1990-01-01",
         )
 
         # Enroll student
@@ -106,7 +100,7 @@ class ScheduledClassModelTest(TestCase):
                 last_name="Test",
                 email=f"student{i}@example.com",
                 phone_number=f"+37360111{i:03d}",
-                date_of_birth="1990-01-01"
+                date_of_birth="1990-01-01",
             )
             students.append(student)
 

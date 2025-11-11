@@ -6,8 +6,8 @@ from django.db import migrations, models
 
 def migrate_vehicles_to_resources(apps, schema_editor):
     """Migrate existing Vehicle data to Resource model."""
-    Vehicle = apps.get_model('school', 'Vehicle')
-    Resource = apps.get_model('school', 'Resource')
+    Vehicle = apps.get_model("school", "Vehicle")
+    Resource = apps.get_model("school", "Resource")
 
     for vehicle in Vehicle.objects.all():
         Resource.objects.create(
@@ -24,26 +24,24 @@ def migrate_vehicles_to_resources(apps, schema_editor):
 
 def update_lessons_to_use_resources(apps, schema_editor):
     """Update existing Lessons to reference Resources instead of Vehicles."""
-    Lesson = apps.get_model('school', 'Lesson')
-    Resource = apps.get_model('school', 'Resource')
+    Lesson = apps.get_model("school", "Lesson")
+    Resource = apps.get_model("school", "Resource")
 
     for lesson in Lesson.objects.filter(vehicle__isnull=False):
         # Find the corresponding resource for this vehicle
         try:
-            resource = Resource.objects.get(
-                license_plate=lesson.vehicle.license_plate
-            )
+            resource = Resource.objects.get(license_plate=lesson.vehicle.license_plate)
             lesson.resource = resource
-            lesson.save(update_fields=['resource'])
+            lesson.save(update_fields=["resource"])
         except Resource.DoesNotExist:
             # If no matching resource found, set to None
             lesson.resource = None
-            lesson.save(update_fields=['resource'])
+            lesson.save(update_fields=["resource"])
 
 
 def create_default_classrooms(apps, schema_editor):
     """Create some default classroom resources."""
-    Resource = apps.get_model('school', 'Resource')
+    Resource = apps.get_model("school", "Resource")
 
     # Create default classrooms
     classrooms = [
@@ -65,61 +63,129 @@ def create_default_classrooms(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('school', '0008_payment_status'),
+        ("school", "0008_payment_status"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Resource',
+            name="Resource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('max_capacity', models.IntegerField(help_text='2=vehicle, 30+=classroom')),
-                ('category', models.CharField(choices=[('AM', 'Am'), ('A1', 'A1'), ('A2', 'A2'), ('A', 'A'), ('B1', 'B1'), ('B', 'B'), ('C1', 'C1'), ('C', 'C'), ('D1', 'D1'), ('D', 'D'), ('BE', 'Be'), ('C1E', 'C1E'), ('CE', 'Ce'), ('D1E', 'D1E'), ('DE', 'De')], max_length=5)),
-                ('is_available', models.BooleanField(default=True)),
-                ('license_plate', models.CharField(blank=True, max_length=15, null=True)),
-                ('make', models.CharField(blank=True, max_length=50, null=True)),
-                ('model', models.CharField(blank=True, max_length=50, null=True)),
-                ('year', models.IntegerField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("max_capacity", models.IntegerField(help_text="2=vehicle, 30+=classroom")),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("AM", "Am"),
+                            ("A1", "A1"),
+                            ("A2", "A2"),
+                            ("A", "A"),
+                            ("B1", "B1"),
+                            ("B", "B"),
+                            ("C1", "C1"),
+                            ("C", "C"),
+                            ("D1", "D1"),
+                            ("D", "D"),
+                            ("BE", "Be"),
+                            ("C1E", "C1E"),
+                            ("CE", "Ce"),
+                            ("D1E", "D1E"),
+                            ("DE", "De"),
+                        ],
+                        max_length=5,
+                    ),
+                ),
+                ("is_available", models.BooleanField(default=True)),
+                ("license_plate", models.CharField(blank=True, max_length=15, null=True)),
+                ("make", models.CharField(blank=True, max_length=50, null=True)),
+                ("model", models.CharField(blank=True, max_length=50, null=True)),
+                ("year", models.IntegerField(blank=True, null=True)),
             ],
         ),
-        migrations.RunPython(
-            migrate_vehicles_to_resources,
-            reverse_code=migrations.RunPython.noop
-        ),
-        migrations.RunPython(
-            create_default_classrooms,
-            reverse_code=migrations.RunPython.noop
-        ),
+        migrations.RunPython(migrate_vehicles_to_resources, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(create_default_classrooms, reverse_code=migrations.RunPython.noop),
         migrations.AddField(
-            model_name='lesson',
-            name='resource',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lessons', to='school.resource'),
+            model_name="lesson",
+            name="resource",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="lessons",
+                to="school.resource",
+            ),
         ),
         migrations.RunPython(
-            update_lessons_to_use_resources,
-            reverse_code=migrations.RunPython.noop
+            update_lessons_to_use_resources, reverse_code=migrations.RunPython.noop
         ),
         migrations.RemoveField(
-            model_name='lesson',
-            name='vehicle',
+            model_name="lesson",
+            name="vehicle",
         ),
         migrations.CreateModel(
-            name='ScheduledClass',
+            name="ScheduledClass",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text="e.g., 'Monday Theory Class'", max_length=100)),
-                ('scheduled_time', models.DateTimeField()),
-                ('duration_minutes', models.IntegerField(default=60)),
-                ('max_students', models.IntegerField()),
-                ('status', models.CharField(choices=[('SCHEDULED', 'Scheduled'), ('COMPLETED', 'Completed'), ('CANCELED', 'Canceled')], default='SCHEDULED', max_length=20)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scheduled_classes', to='school.course')),
-                ('instructor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scheduled_classes', to='school.instructor')),
-                ('resource', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scheduled_classes', to='school.resource')),
-                ('students', models.ManyToManyField(blank=True, related_name='scheduled_classes', to='school.student')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(help_text="e.g., 'Monday Theory Class'", max_length=100)),
+                ("scheduled_time", models.DateTimeField()),
+                ("duration_minutes", models.IntegerField(default=60)),
+                ("max_students", models.IntegerField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("SCHEDULED", "Scheduled"),
+                            ("COMPLETED", "Completed"),
+                            ("CANCELED", "Canceled"),
+                        ],
+                        default="SCHEDULED",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="scheduled_classes",
+                        to="school.course",
+                    ),
+                ),
+                (
+                    "instructor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="scheduled_classes",
+                        to="school.instructor",
+                    ),
+                ),
+                (
+                    "resource",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="scheduled_classes",
+                        to="school.resource",
+                    ),
+                ),
+                (
+                    "students",
+                    models.ManyToManyField(
+                        blank=True, related_name="scheduled_classes", to="school.student"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['scheduled_time'],
+                "ordering": ["scheduled_time"],
             },
         ),
     ]
