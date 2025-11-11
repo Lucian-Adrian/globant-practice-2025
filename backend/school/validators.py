@@ -66,6 +66,31 @@ def validate_phone(raw: str, field: str = "Phone number") -> str:
     return compact
 
 
+def canonicalize_license_categories(raw: str) -> str:
+    """Return a canonical comma-separated list of vehicle license categories.
+
+    - Uppercase, trim items
+    - Remove duplicates while preserving the first-seen order
+    - Validate each token against VehicleCategory enum
+    - Join with commas without spaces
+    """
+    if raw is None:
+        return ""
+    from .enums import VehicleCategory
+
+    allowed = {m.value for m in VehicleCategory}
+    parts = [p.strip().upper() for p in str(raw).split(",") if p.strip()]
+    if not parts:
+        return ""
+    seen: list[str] = []
+    for p in parts:
+        if p not in allowed:
+            raise ValueError(f"Invalid category '{p}'. Allowed: {', '.join(sorted(allowed))}")
+        if p not in seen:
+            seen.append(p)
+    return ",".join(seen)
+
+
 # Django validator adapters (so we can reuse same logic at model field level)
 try:  # optional import; keeps this module reusable outside Django context
     from django.core.exceptions import ValidationError  # type: ignore
@@ -79,6 +104,12 @@ try:  # optional import; keeps this module reusable outside Django context
     def django_validate_phone(value: str) -> None:
         try:
             validate_phone(value, "Phone number")
+        except ValueError as e:
+            raise ValidationError(str(e))
+
+    def django_validate_license_categories(value: str) -> None:
+        try:
+            canonicalize_license_categories(value)
         except ValueError as e:
             raise ValidationError(str(e))
 

@@ -17,6 +17,7 @@ from .models import (
     Vehicle,
 )
 from .validators import validate_name, validate_phone
+from .validators import canonicalize_license_categories
 
 try:
     from zoneinfo import ZoneInfo  # Python 3.9+
@@ -251,6 +252,12 @@ class InstructorSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email already registered")
         return value.lower()
 
+    def validate_license_categories(self, value: str) -> str:
+        try:
+            return canonicalize_license_categories(value)
+        except ValueError as e:
+            raise serializers.ValidationError(str(e))
+
 
 class InstructorAvailabilitySerializer(serializers.ModelSerializer):
     instructor = InstructorSerializer(read_only=True)
@@ -306,9 +313,9 @@ class ResourceSerializer(serializers.ModelSerializer):
             max_cap = None
         if max_cap is None and getattr(self, "instance", None) is not None:
             max_cap = getattr(self.instance, "max_capacity", None)
-
-        if max_cap == 2 and cleaned:
-            qs = Resource.objects.filter(max_capacity=2)
+        # Treat capacity <= 2 as vehicle (covers 1-seat edge case)
+        if (max_cap is not None and max_cap <= 2) and cleaned:
+            qs = Resource.objects.filter(max_capacity__lte=2)
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
             # Case-insensitive compare

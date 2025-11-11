@@ -14,7 +14,12 @@ from .enums import (
     StudentStatus,
     VehicleCategory,
 )
-from .validators import django_validate_name, django_validate_phone, normalize_phone
+from .validators import (
+    django_validate_name,
+    django_validate_phone,
+    django_validate_license_categories,
+    normalize_phone,
+)
 
 
 class Student(models.Model):
@@ -63,7 +68,9 @@ class Instructor(models.Model):
     # Store multiple categories as a comma separated list (e.g. "B,BE,C").
     # Simpler than a separate M2M for current scope and easy to expose as multi-checkbox in the UI.
     license_categories = models.CharField(
-        max_length=200, help_text="Comma separated categories: e.g. 'B,BE,C' "
+        max_length=200,
+        validators=[django_validate_license_categories],
+        help_text="Comma separated categories: e.g. 'B,BE,C' ",
     )
 
     def __str__(self):
@@ -77,6 +84,21 @@ class Instructor(models.Model):
                 pass
         if self.email:
             self.email = (self.email or "").strip().lower()
+        if self.license_categories:
+            # Normalise: uppercase, split, strip, dedupe, validate against enum, keep order stable
+            from .enums import VehicleCategory
+
+            raw = self.license_categories
+            parts = [p.strip().upper() for p in str(raw).split(",") if p.strip()]
+            seen = []
+            valid_set = {m.value for m in VehicleCategory}
+            for p in parts:
+                if p not in valid_set:
+                    # Skip invalid tokens entirely (could alternatively raise ValidationError)
+                    continue
+                if p not in seen:
+                    seen.append(p)
+            self.license_categories = ",".join(seen)
         super().save(*args, **kwargs)
 
 
@@ -143,10 +165,10 @@ class Resource(models.Model):
 
     class Meta:
         constraints = [
-            # Enforce case-insensitive uniqueness of license plates for vehicle-type resources (capacity == 2)
+            # Enforce case-insensitive uniqueness for vehicles (capacity <= 2; covers 1 or 2 seats)
             models.UniqueConstraint(
                 Lower("license_plate"),
-                condition=Q(max_capacity=2, license_plate__isnull=False),
+                condition=Q(max_capacity__lte=2, license_plate__isnull=False),
                 name="unique_vehicle_license_plate_ci",
             )
         ]

@@ -3,7 +3,7 @@ import { Create, SimpleForm, DateInput, TextInput, required, RadioButtonGroupInp
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';
-import { validatePhoneClient } from '../../shared/validation/validators';
+import { validatePhoneClient, validateLicenseCategoriesClient, parseLicenseCategories } from '../../shared/validation/validators';
 
 export default function InstructorCreate(props) {
   const t = useTranslate();
@@ -24,7 +24,8 @@ export default function InstructorCreate(props) {
           source="license_categories"
           label={t('resources.instructors.fields.license_categories')}
           helperText={t('resources.instructors.fields.license_categories_hint')}
-          validate={[required()]}
+          parse={parseLicenseCategories}
+          validate={[required(), validateLicenseCategoriesClient]}
         />
         <RadioButtonGroupInput
           source="car_category"

@@ -24,3 +24,27 @@ export const validatePhoneClient = (value) => {
   if (!value) return 'Phone number is required';
   if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number format';
 };
+
+// Allowed vehicle categories – keep in sync with backend VehicleCategory
+const ALLOWED_CATEGORIES = [
+  'AM','A1','A2','A','B1','B','C1','C','D1','D','BE','C1E','CE','D1E','DE'
+];
+
+export const parseLicenseCategories = (value) => {
+  if (value == null) return '';
+  const parts = String(value)
+    .split(',')
+    .map((p) => p.trim().toUpperCase())
+    .filter(Boolean);
+  const seen = [];
+  parts.forEach((p) => { if (!seen.includes(p)) seen.push(p); });
+  return seen.join(',');
+};
+
+export const validateLicenseCategoriesClient = (value) => {
+  const str = parseLicenseCategories(value);
+  if (!str) return 'At least one category is required';
+  const invalid = str.split(',').filter((p) => !ALLOWED_CATEGORIES.includes(p));
+  if (invalid.length) return `Invalid categories: ${invalid.join(', ')}`;
+  return undefined;
+};

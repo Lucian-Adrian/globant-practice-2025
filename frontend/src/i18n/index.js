@@ -12,7 +12,7 @@ const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
 // we inline minimal RA translation objects instead of importing optional packages.
 const englishMessages = {
   ra: {
-  action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back' },
+  action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back', undo: 'Undo' },
   navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page {{offsetBegin}}-{{offsetEnd}} of {{total}}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
   sort: { sort_by: 'Sort by {{field}} {{order}}',  ASC: 'ascending', DESC: 'descending' },
     // Merged auth keys
@@ -27,7 +27,7 @@ const englishMessages = {
 };
 const romanianMessages = {
   ra: {
-  action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', open: 'Deschide', close: 'Închide', back: 'Înapoi' },
+  action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', open: 'Deschide', close: 'Închide', back: 'Înapoi', undo: 'Anulează' },
   navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina {{offsetBegin}}-{{offsetEnd}} din {{total}}', page_rows_per_page: 'Rânduri pe pagină:', no_results: 'Fără rezultate' },
   sort: { sort_by: 'Sortează după {{field}} {{order}}', ASC: 'crescător', DESC: 'descrescător' },
     // Merged auth keys
@@ -42,7 +42,7 @@ const romanianMessages = {
 };
 const russianMessages = {
   ra: {
-  action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', open: 'Открыть', close: 'Закрыть', back: 'Назад' },
+  action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', open: 'Открыть', close: 'Закрыть', back: 'Назад', undo: 'Отменить' },
   navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница {{offsetBegin}}-{{offsetEnd}} из {{total}}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
   sort: { sort_by: 'Сортировать по {{field}} {{order}}', ASC: 'по возрастанию', DESC: 'по убыванию' },
     // Merged auth keys

@@ -3,7 +3,7 @@ import { Edit, SimpleForm, DateInput, TextInput, required, useTranslate } from '
 import NameInput from '../../shared/components/NameInput';
 import PhoneInput from '../../shared/components/PhoneInput';
 import EmailInput from '../../shared/components/EmailInput';
-import { validatePhoneClient } from '../../shared/validation/validators';
+import { validatePhoneClient, validateLicenseCategoriesClient, parseLicenseCategories } from '../../shared/validation/validators';
 
 export default function InstructorEdit(props) {
   const translate = useTranslate();
@@ -15,7 +15,12 @@ export default function InstructorEdit(props) {
         <EmailInput source="email" />
         <PhoneInput source="phone_number" validate={[validatePhoneClient]} />
         <DateInput source="hire_date" validate={[required()]} />
-        <TextInput source="license_categories" helperText={translate('helpers.license_categories', { defaultValue: 'Comma separated e.g. B,BE,C' })} />
+        <TextInput
+          source="license_categories"
+          helperText={translate('helpers.license_categories', { defaultValue: 'Comma separated e.g. B,BE,C' })}
+          parse={parseLicenseCategories}
+          validate={[validateLicenseCategoriesClient]}
+        />
       </SimpleForm>
     </Edit>
   );
