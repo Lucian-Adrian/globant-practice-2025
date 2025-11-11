@@ -27,6 +27,27 @@ export default function LicenseCategoriesInput({ source = 'license_categories', 
     field.onBlur();
   };
 
+  // Normalize RA error payloads into plain strings
+  let errorText = null;
+  if (error && error.message) {
+    if (typeof error.message === 'string') {
+      if (error.message.startsWith('@@react-admin@@')) {
+        try {
+          const payload = JSON.parse(error.message.replace('@@react-admin@@', ''));
+          errorText = payload?.message || String(payload) || 'Invalid value';
+        } catch {
+          errorText = error.message.replace('@@react-admin@@', '');
+        }
+      } else {
+        errorText = error.message;
+      }
+    } else if (typeof error.message?.message === 'string') {
+      errorText = error.message.message;
+    } else {
+      errorText = 'Invalid value';
+    }
+  }
+
   return (
     <div>
       <TextField
@@ -38,6 +59,8 @@ export default function LicenseCategoriesInput({ source = 'license_categories', 
         onBlur={handleBlur}
         inputProps={{ pattern: '[A-Z0-9,]*' }}
         placeholder="B,BE,C"
+        error={!!errorText}
+        helperText={errorText || rest.helperText}
         fullWidth
       />
     </div>
