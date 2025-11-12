@@ -85,7 +85,7 @@ const dataProvider = {
     return dataProvider.getList(resource, { ...params, filter });
   },
   update: async (resource, params) => {
-    if (resource === 'lessons') {
+    if (resource === 'lessons' || resource === 'scheduled-classes') {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:update] lessons payload', params.data); } catch (_) {}
@@ -116,7 +116,7 @@ const dataProvider = {
     return { data: results };
   },
   create: async (resource, params) => {
-    if (resource === 'lessons') {
+    if (resource === 'lessons' || resource === 'scheduled-classes') {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:create] lessons payload', params.data); } catch (_) {}
