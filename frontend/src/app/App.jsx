@@ -51,13 +51,7 @@ export default function App() {
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
       <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-      <Resource
-        name="scheduled-classes"
-        list={ScheduledClassList}
-        create={ScheduledClassCreate}
-        edit={ScheduledClassEdit}
-        options={{ label: 'Scheduled Classes' }}
-      />
+      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit}/>
     </Admin>
   );
 }

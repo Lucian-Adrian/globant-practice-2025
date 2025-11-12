@@ -6,7 +6,7 @@ import { raI18nProvider } from '../i18n/index.js';
 const baseApi = API_PREFIX; // consistent single source
 
 const mapResource = (resource) => {
-  const mapping = { classes: 'courses' };
+  const mapping = { classes: 'courses', scheduledclasses: 'scheduled-classes', };
   const name = mapping[resource] || resource;
   return `${name}/`;
 };

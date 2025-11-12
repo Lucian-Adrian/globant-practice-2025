@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { List, Datagrid, TextField, NumberField, DateField, useTranslate } from 'react-admin';
+import { List, Datagrid, TextField,  FunctionField, NumberField, DateField, useTranslate } from 'react-admin';
 import ScheduledClassListEmpty from './ScheduledClassListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions.jsx';
 
@@ -26,7 +26,14 @@ export default function ScheduledClassList(props) {
         <NumberField source="current_enrollment" label={t('resources.scheduledclasses.fields.current_enrollment', 'Current enrollment')} />
         <NumberField source="available_spots" label={t('resources.scheduledclasses.fields.available_spots', 'Available spots')} />
         <NumberField source="max_students" label={t('resources.scheduledclasses.fields.max_students', 'Max students')} />
-        <TextField source="status" label={t('filters.status', 'Status')} />
+        <FunctionField
+            label={t('filters.status', { defaultValue: 'Status' })}
+            render={(record) => {
+                if (!record) return '';
+                const key = (record.status || '').toLowerCase();
+                return t(`filters.${key}`, { defaultValue: record.status });
+            }}
+            />
       </Datagrid>
     </List>
   );
