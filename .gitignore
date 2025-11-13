@@ -29,6 +29,7 @@ media/
 
 # Environment
 .env
+.env.production
 .venv
 env/
 venv/
@@ -64,6 +65,17 @@ Thumbs.db
 
 # Docker
 .dockerignore
+
+# Backups
+backups/
+*.sql
+*.sql.gz
+
+# SSL Certificates
+nginx/ssl/
+*.pem
+*.key
+*.crt
 
 # AI
 implementation.md
