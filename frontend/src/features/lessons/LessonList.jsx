@@ -7,7 +7,7 @@ import LessonListEmpty from './LessonListEmpty.jsx';
 import ListImportActions from '../../shared/components/ListImportActions';
 import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
-import VehicleFilterInput from '../../shared/components/VehicleFilterInput.jsx';
+import ResourceFilterInput from '../../shared/components/ResourceFilterInput.jsx';
 import TypeFilterInput from '../../shared/components/TypeFilterInput.jsx';
 
 // Function to determine lesson status based solely on backend status
@@ -56,9 +56,9 @@ const FilteredDatagrid = (props) => {
       const { status: derivedStatus } = getLessonStatus(record);
       if (filterValues.status && derivedStatus !== filterValues.status) return false;
       if (filterValues.instructor_id && String(record.instructor.id) !== String(filterValues.instructor_id)) return false;
-      if (filterValues.resource) {
-        const plate = record?.resource?.license_plate || record?.resource?.name || '';
-        if (String(plate) !== String(filterValues.resource)) return false;
+      if (filterValues.resource_id) {
+        const rid = record?.resource?.id;
+        if (String(rid) !== String(filterValues.resource_id)) return false;
       }
       // Lesson type filter (client-side): supports 'Theory' and 'Driving' values
       if (filterValues.lesson_type) {
@@ -141,7 +141,7 @@ export default function LessonList(props) {
   const { collapsed } = useAsidePanel();
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
-    <VehicleFilterInput key="resource" source="resource" alwaysOn />,
+  <ResourceFilterInput key="resource_id" source="resource_id" alwaysOn />,
     <TypeFilterInput key="lesson_type" source="lesson_type" alwaysOn />,
   ];
   return (

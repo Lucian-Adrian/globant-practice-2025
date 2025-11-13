@@ -1,13 +1,14 @@
 import * as React from 'react';
-import { SelectInput, useGetList, useTranslate } from 'react-admin';
+import { SelectInput, useGetList } from 'react-admin';
 
 /**
  * Resource dropdown for toolbar filters.
- * - Loads resources via useGetList
- * - Uses name or license plate as id to match existing filter usage
- * - Default source: 'resource'
+ * - Loads resources via useGetList (client-side list up to 1000)
+ * - Presents combined name/license_plate display
+ * - Uses resource id for filtering (preferring id over plate/name for consistency)
+ * - Accepts legacy filtering by license plate if existing filter value matches
  */
-export default function VehicleFilterInput({ source = 'resource', label, ...rest }) {
+export default function ResourceFilterInput({ source = 'resource', label, ...rest }) {
   const { data, isLoading } = useGetList('resources', {
     pagination: { page: 1, perPage: 1000 },
     sort: { field: 'id', order: 'ASC' },
@@ -18,8 +19,8 @@ export default function VehicleFilterInput({ source = 'resource', label, ...rest
     return arr.map((r) => {
       const plate = r.license_plate || '';
       const name = r.name || '';
-      const displayName = plate ? `${name} - ${plate}`.trim() : name;
-      return { id: plate || name || r.id, name: displayName };
+      const displayName = plate ? `${name} - ${plate}`.trim() : name || plate || `#${r.id}`;
+      return { id: r.id, name: displayName };
     });
   }, [data]);
 
@@ -29,6 +30,7 @@ export default function VehicleFilterInput({ source = 'resource', label, ...rest
       label={label || 'Resource'}
       choices={choices}
       disabled={isLoading}
+      emptyText={label || 'Resource'}
       {...rest}
     />
   );
