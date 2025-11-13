@@ -85,7 +85,7 @@ const dataProvider = {
     return dataProvider.getList(resource, { ...params, filter });
   },
   update: async (resource, params) => {
-    if (resource === 'lessons' || resource === 'scheduled-classes') {
+    if (resource === 'lessons' || resource === 'scheduledclasses') {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:update] lessons payload', params.data); } catch (_) {}

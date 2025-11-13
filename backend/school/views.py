@@ -1552,10 +1552,9 @@ class ScheduledClassViewSet(FullCrudViewSet):
             "resource_id",
             "scheduled_time",
             "status",
-            "max_students",
         }
         # Optional columns
-        optional = {"duration_minutes", "student_ids"}
+        optional = {"duration_minutes", "student_ids", "max_students"}
 
         header = set([c.strip() for c in (reader.fieldnames or [])])
         missing = required - header
