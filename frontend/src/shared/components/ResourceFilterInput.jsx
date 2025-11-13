@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SelectInput, useGetList } from 'react-admin';
+import { ReferenceInput, SelectInput } from 'react-admin';
 
 /**
  * Resource dropdown for toolbar filters.
@@ -8,30 +8,25 @@ import { SelectInput, useGetList } from 'react-admin';
  * - Uses resource id for filtering (preferring id over plate/name for consistency)
  * - Accepts legacy filtering by license plate if existing filter value matches
  */
-export default function ResourceFilterInput({ source = 'resource', label, ...rest }) {
-  const { data, isLoading } = useGetList('resources', {
-    pagination: { page: 1, perPage: 1000 },
-    sort: { field: 'id', order: 'ASC' },
-  });
-
-  const choices = React.useMemo(() => {
-    const arr = Array.isArray(data) ? data : Object.values(data || {});
-    return arr.map((r) => {
-      const plate = r.license_plate || '';
-      const name = r.name || '';
-      const displayName = plate ? `${name} - ${plate}`.trim() : name || plate || `#${r.id}`;
-      return { id: r.id, name: displayName };
-    });
-  }, [data]);
+export default function ResourceFilterInput({ source = 'resource_id', label, onlyVehicles = false, ...rest }) {
+  const baseFilter = rest.filter || {};
+  const filter = onlyVehicles ? { ...baseFilter, max_capacity: 2 } : baseFilter;
 
   return (
-    <SelectInput
+    <ReferenceInput
       source={source}
-      label={label || 'Resource'}
-      choices={choices}
-      disabled={isLoading}
-      emptyText={label || 'Resource'}
+      reference="resources"
+      filter={filter}
+      perPage={200}
+      sort={{ field: 'license_plate', order: 'ASC' }}
       {...rest}
-    />
+    >
+      <SelectInput
+        label={label || 'Resource'}
+        optionText={(r) => r.license_plate || r.name || '—'}
+        optionValue="id"
+        emptyText={label || 'Resource'}
+      />
+    </ReferenceInput>
   );
 }

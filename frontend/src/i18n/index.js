@@ -168,6 +168,7 @@ const languageData = {
       instructorLicenseMismatch: 'Instructor is not licensed for this category',
       vehicleUnavailable: 'Vehicle is unavailable',
       vehicleResourceRequired: 'Only vehicle-type resources (max_capacity = 2) can be assigned to lessons.',
+      practiceEnrollmentRequired: 'Lessons can only be created for practice enrollments.',
     },
     admin: {
       resources: {
@@ -291,6 +292,7 @@ const languageData = {
       instructorLicenseMismatch: 'Instructorul nu este licențiat pentru această categorie',
       vehicleUnavailable: 'Vehiculul selectat este indisponibil',
       vehicleResourceRequired: 'Doar resurse de tip vehicul (max_capacity = 2) pot fi alocate lecțiilor.',
+      practiceEnrollmentRequired: 'Lessons can only be created for practice enrollments.',
     },
     // Duplicate resource labels under the 'admin' namespace to ensure RA menu/items resolve without falling back to EN
     admin: {
@@ -415,6 +417,7 @@ const languageData = {
       instructorLicenseMismatch: 'Инструктор не имеет лицензии для этой категории',
       vehicleUnavailable: 'Транспорт недоступен',
       vehicleResourceRequired: 'К урокам можно привязывать только ресурсы типа «транспорт» (max_capacity = 2).',
+      practiceEnrollmentRequired: 'Lessons can only be created for practice enrollments.',
     },
     // Duplicate resource labels under 'admin' for consistent RA lookups
     admin: {

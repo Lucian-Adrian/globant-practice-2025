@@ -69,6 +69,14 @@ export async function validateLesson(values, t, currentId) {
   const courseCategory = course.category;
   const studentId = enrollment?.student?.id ?? enrollment?.student_id;
 
+  // Practice-only: lessons must be created for practice enrollments
+  const courseType = String(
+    course.type || enrollment.type || ''
+  ).toUpperCase();
+  if (courseType && courseType !== 'PRACTICE') {
+    errors.enrollment_id = t('validation.practiceEnrollmentRequired');
+  }
+
   // Fetch instructor for license categories
   const ins = await getJson(`${API_PREFIX}/instructors/${instructorId}/`);
   const instructor = ins.data || {};

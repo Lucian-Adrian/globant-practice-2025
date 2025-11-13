@@ -441,6 +441,16 @@ class LessonSerializer(serializers.ModelSerializer):
         if not (enrollment and instructor and start):
             return attrs
 
+        # Enforce: Lessons must be tied to PRACTICE enrollments only
+        course = getattr(enrollment, "course", None)
+        course_type = (
+            (getattr(enrollment, "type", None) or getattr(course, "type", None) or "")
+        ).upper()
+        if course_type and course_type != "PRACTICE":
+            raise serializers.ValidationError(
+                {"enrollment_id": [_("validation.practiceEnrollmentRequired")]}
+            )
+
         # Enforce: Lessons must use a vehicle-type resource (capacity == 2)
         if resource is not None:
             cap = getattr(resource, "max_capacity", None)
