@@ -13,6 +13,7 @@ from .models import (
     Payment,
     Resource,
     ScheduledClass,
+    ScheduledClassPattern,
     Student,
     Vehicle,
 )
@@ -648,21 +649,19 @@ class PaymentSerializer(serializers.ModelSerializer):
         }
 
 
-class ScheduledClassSerializer(serializers.ModelSerializer):
+class ScheduledClassPatternSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
     instructor = InstructorSerializer(read_only=True)
     resource = ResourceSerializer(read_only=True)
     course_id = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), source="course", 
+        queryset=Course.objects.all(), source="course"
     )
     instructor_id = serializers.PrimaryKeyRelatedField(
-        queryset=Instructor.objects.all(), source="instructor",
+        queryset=Instructor.objects.all(), source="instructor"
     )
     resource_id = serializers.PrimaryKeyRelatedField(
-        queryset=Resource.objects.all(), source="resource",
+        queryset=Resource.objects.all(), source="resource"
     )
-    current_enrollment = serializers.SerializerMethodField(read_only=True)
-    available_spots = serializers.SerializerMethodField(read_only=True)
     students = StudentSerializer(many=True, read_only=True)
     student_ids = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(),
@@ -672,20 +671,46 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = ScheduledClass
+        model = ScheduledClassPattern
         fields = [
             "id",
+            "name",
             "course",
             "course_id",
-            "name",
-            "scheduled_time",
-            "duration_minutes",
             "instructor",
             "instructor_id",
             "resource",
             "resource_id",
             "students",
             "student_ids",
+            "recurrence_days",
+            "times",
+            "start_date",
+            "num_lessons",
+            "duration_minutes",
+            "max_students",
+            "status",
+            "created_at",
+        ]
+
+
+class ScheduledClassSerializer(serializers.ModelSerializer):
+    pattern = ScheduledClassPatternSerializer(read_only=True)
+    pattern_id = serializers.PrimaryKeyRelatedField(
+        queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
+    )
+    current_enrollment = serializers.SerializerMethodField(read_only=True)
+    available_spots = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = ScheduledClass
+        fields = [
+            "id",
+            "pattern",
+            "pattern_id",
+            "name",
+            "scheduled_time",
+            "duration_minutes",
             "max_students",
             "status",
             "current_enrollment",

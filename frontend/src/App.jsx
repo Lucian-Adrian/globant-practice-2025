@@ -6,6 +6,8 @@ import InstructorDetails from './instructors/InstructorDetails';
 import InstructorCalendar from './instructors/InstructorCalendar';
 import { ClassDetails, CourseList as CourseListComponent } from './features/courses';
 import { InstructorAvailabilityList, InstructorAvailabilityEdit } from './features/instructoravailabilities';
+import { ScheduledClassList, ScheduledClassEdit, ScheduledClassCreate } from './features/scheduledclasses';
+import { ScheduledClassPatternList, ScheduledClassPatternEdit, ScheduledClassPatternCreate } from './features/scheduledclasspatterns';
 
 import * as React from 'react';
 import {
@@ -280,7 +282,8 @@ export default function App() {
     {/* <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
       <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
       <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} /> */}
-      <Resource name="instructor-availabilities" list={InstructorAvailabilityList} edit={InstructorAvailabilityEdit} />
+      <Resource name="scheduledclasspatterns" list={ScheduledClassPatternList} edit={ScheduledClassPatternEdit} create={ScheduledClassPatternCreate} />
+      <Resource name="scheduledclasses" list={ScheduledClassList} edit={ScheduledClassEdit} create={ScheduledClassCreate} />
     </Admin>
   );
 }

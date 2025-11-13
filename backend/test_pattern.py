@@ -1,0 +1,28 @@
+from school.models import ScheduledClassPattern, ScheduledClass
+
+# Get the pattern
+pattern = ScheduledClassPattern.objects.first()
+print('Pattern:', pattern)
+print('Recurrence days:', pattern.recurrence_days)
+print('Times:', pattern.times)
+print('Start date:', pattern.start_date, type(pattern.start_date))
+
+# Generate
+classes = pattern.generate_scheduled_classes()
+print(f'Generated {len(classes)} classes')
+for cls in classes:
+    print(f'  {cls.name} at {cls.scheduled_time}')
+
+# Bulk create
+ScheduledClass.objects.bulk_create(classes)
+print('Bulk created')
+
+# Set students
+for cls in classes:
+    cls.students.set(pattern.students.all())
+print('Students set')
+
+# Check
+for cls in ScheduledClass.objects.filter(pattern=pattern):
+    students_names = list(cls.students.values_list('first_name', flat=True))
+    print(f'Created: {cls.name} at {cls.scheduled_time}, students: {students_names}')

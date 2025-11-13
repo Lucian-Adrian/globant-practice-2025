@@ -64,17 +64,24 @@ class PaymentAdmin(admin.ModelAdmin):
     search_fields = ("enrollment__student__first_name", "enrollment__student__last_name")
 
 
+@admin.register(models.ScheduledClassPattern)
+class ScheduledClassPatternAdmin(admin.ModelAdmin):
+    list_display = ("name", "course", "instructor", "start_date", "num_lessons", "status")
+    list_filter = ("status", "course__category", "instructor")
+    search_fields = ("name", "course__name", "instructor__first_name", "instructor__last_name")
+    date_hierarchy = "start_date"
+
+
 @admin.register(models.ScheduledClass)
 class ScheduledClassAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "course",
-        "instructor",
+        "pattern",
         "scheduled_time",
         "current_enrollment",
         "max_students",
         "status",
     )
-    list_filter = ("status", "course__category", "instructor")
-    search_fields = ("name", "course__name", "instructor__first_name", "instructor__last_name")
+    list_filter = ("status", "pattern__course__category", "pattern__instructor")
+    search_fields = ("name", "pattern__course__name", "pattern__instructor__first_name", "pattern__instructor__last_name")
     date_hierarchy = "scheduled_time"

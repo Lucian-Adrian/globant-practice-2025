@@ -27,6 +27,7 @@ from .models import (
     Payment,
     Resource,
     ScheduledClass,
+    ScheduledClassPattern,
     Student,
     Vehicle,
 )
@@ -39,6 +40,7 @@ from .serializers import (
     PaymentSerializer,
     ResourceSerializer,
     ScheduledClassSerializer,
+    ScheduledClassPatternSerializer,
     StudentSerializer,
     VehicleSerializer,
 )
@@ -1420,14 +1422,36 @@ class ResourceViewSet(FullCrudViewSet):
         )
 
 
-class ScheduledClassViewSet(FullCrudViewSet):
-    queryset = ScheduledClass.objects.all().order_by("scheduled_time")
-    serializer_class = ScheduledClassSerializer
+class ScheduledClassPatternViewSet(FullCrudViewSet):
+    queryset = ScheduledClassPattern.objects.all().order_by("-created_at")
+    serializer_class = ScheduledClassPatternSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         "course": ["exact"],
         "instructor": ["exact"],
         "resource": ["exact"],
+        "status": ["exact"],
+        "start_date": ["gte", "lte", "date"],
+    }
+
+    @decorators.action(detail=True, methods=["post"], url_path="generate-classes")
+    def generate_classes(self, request, pk=None):
+        """Generate ScheduledClass instances for this pattern."""
+        pattern = self.get_object()
+        classes = pattern.generate_scheduled_classes()
+        ScheduledClass.objects.bulk_create(classes)
+        serializer = ScheduledClassSerializer(classes, many=True)
+        return response.Response(serializer.data)
+
+
+class ScheduledClassViewSet(FullCrudViewSet):
+    queryset = ScheduledClass.objects.all().order_by("scheduled_time")
+    serializer_class = ScheduledClassSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        "pattern__course": ["exact"],
+        "pattern__instructor": ["exact"],
+        "pattern__resource": ["exact"],
         "status": ["exact"],
         "scheduled_time": ["gte", "lte", "date"],
     }

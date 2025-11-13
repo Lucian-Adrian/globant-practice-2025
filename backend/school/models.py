@@ -200,18 +200,83 @@ class Course(models.Model):
         return self.name
 
 
+class ScheduledClassPattern(models.Model):
+    name = models.CharField(max_length=100, help_text="e.g., 'Theory Mondays/Wednesdays'")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="scheduled_class_patterns")
+    instructor = models.ForeignKey(
+        Instructor, on_delete=models.CASCADE, related_name="scheduled_class_patterns"
+    )
+    resource = models.ForeignKey(
+        Resource, on_delete=models.CASCADE, related_name="scheduled_class_patterns"
+    )
+    students = models.ManyToManyField(Student, related_name="scheduled_class_patterns", blank=True)
+    recurrence_days = models.JSONField(
+        default=list,
+        help_text="List of days: e.g. ['MONDAY', 'WEDNESDAY']",
+    )
+    times = models.JSONField(
+        default=list,
+        help_text="List of start times: e.g. ['10:00', '11:00']",
+    )
+    start_date = models.DateField(help_text="Start date for the recurrence")
+    num_lessons = models.IntegerField(help_text="Total number of lessons to generate")
+    duration_minutes = models.IntegerField(default=60)
+    max_students = models.IntegerField()
+    status = models.CharField(
+        max_length=20,
+        choices=LessonStatus.choices(),
+        default=LessonStatus.SCHEDULED.value,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.course.name}"
+
+    def generate_scheduled_classes(self):
+        """Generate ScheduledClass instances based on recurrence."""
+        from datetime import datetime, timedelta, date
+        classes = []
+        current_date = self.start_date
+        if isinstance(current_date, str):
+            current_date = date.fromisoformat(current_date)
+        count = 0
+        day_map = {day.value: i for i, day in enumerate(DayOfWeek)}  # MONDAY: 0, etc.
+        recurrence_day_indices = [day_map[day] for day in self.recurrence_days if day in day_map]
+
+        while count < self.num_lessons:
+            if current_date.weekday() in recurrence_day_indices:
+                for time_obj in self.times:
+                    if count >= self.num_lessons:
+                        break
+                    if isinstance(time_obj, str):
+                        from datetime import time
+                        time_obj = time.fromisoformat(time_obj)
+                    scheduled_time = datetime.combine(current_date, time_obj)
+                    # Create ScheduledClass
+                    scheduled_class = ScheduledClass(
+                        pattern=self,
+                        name=f"{self.name} - {current_date.strftime('%Y-%m-%d')} {time_obj.strftime('%H:%M')}",
+                        scheduled_time=scheduled_time,
+                        duration_minutes=self.duration_minutes,
+                        max_students=self.max_students,
+                        status=self.status,
+                    )
+                    classes.append(scheduled_class)
+                    count += 1
+            current_date += timedelta(days=1)
+        return classes
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class ScheduledClass(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="scheduled_classes")
+    pattern = models.ForeignKey(
+        ScheduledClassPattern, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
     name = models.CharField(max_length=100, help_text="e.g., 'Monday Theory Class'")
     scheduled_time = models.DateTimeField()
     duration_minutes = models.IntegerField(default=60)
-    instructor = models.ForeignKey(
-        Instructor, on_delete=models.CASCADE, related_name="scheduled_classes"
-    )
-    resource = models.ForeignKey(
-        Resource, on_delete=models.CASCADE, related_name="scheduled_classes"
-    )
-    students = models.ManyToManyField(Student, related_name="scheduled_classes", blank=True)
     max_students = models.IntegerField()
     status = models.CharField(
         max_length=20,
@@ -220,11 +285,14 @@ class ScheduledClass(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name} - {self.course.name}"
+        pattern_name = self.pattern.name if self.pattern else "No Pattern"
+        return f"{self.name} - {pattern_name}"
 
     def current_enrollment(self):
-        """Return current number of enrolled students"""
-        return self.students.count()
+        """Return current number of enrolled students from pattern"""
+        if self.pattern:
+            return self.pattern.students.count()
+        return 0
 
     def available_spots(self):
         """Return number of available spots"""
