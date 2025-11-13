@@ -177,13 +177,13 @@ git clone https://github.com/Lucian-Adrian/globant-practice-2025.git
 cd globant-practice-2025
 
 # Create production environment file
-copy .env.production.example .env.production
+copy deployment/.env.production.example deployment/.env.production
 
-# Edit .env.production
-notepad .env.production
+# Edit deployment/.env.production
+notepad deployment/.env.production
 ```
 
-**Update .env.production:**
+**Update deployment/.env.production:**
 ```bash
 DJANGO_SECRET_KEY=<generate-strong-key>
 DJANGO_DEBUG=0
@@ -197,13 +197,13 @@ DISABLE_CSRF=0
 
 ```powershell
 # Build and start services
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f deployment/docker/docker-compose.prod.yml up -d --build
 
 # Check status
-docker compose -f docker-compose.prod.yml ps
+docker compose -f deployment/docker/docker-compose.prod.yml ps
 
 # View logs
-docker compose -f docker-compose.prod.yml logs -f
+docker compose -f deployment/docker/docker-compose.prod.yml logs -f
 ```
 
 ### Step 6: Test Local Access
@@ -275,7 +275,7 @@ Start-Sleep -Seconds 30
 cd C:\Users\YourUsername\globant-practice-2025
 
 # Start services
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f deployment/docker/docker-compose.prod.yml up -d
 ```
 
 **Add to Task Scheduler:**
@@ -349,8 +349,8 @@ git clone https://github.com/Lucian-Adrian/globant-practice-2025.git
 cd globant-practice-2025
 
 # Setup environment
-cp .env.production.example .env.production
-nano .env.production
+cp deployment/.env.production.example deployment/.env.production
+nano deployment/.env.production
 
 # Deploy
 ./scripts/deploy.sh
@@ -426,13 +426,13 @@ Same as Linux/Ubuntu! See the main guide: [HOME_SERVER_DEPLOYMENT.md](HOME_SERVE
 sudo apt-get install certbot
 
 # Stop nginx
-docker compose -f docker-compose.prod.yml stop nginx
+docker compose -f deployment/docker/docker-compose.prod.yml stop nginx
 
 # Get certificate
 sudo certbot certonly --standalone -d myschool.duckdns.org
 
 # Certificates saved to /etc/letsencrypt/
-# Mount in docker-compose.prod.yml
+# Mount in deployment/docker/docker-compose.prod.yml
 ```
 
 ### Option 2: Win-ACME (Windows Native)
@@ -542,17 +542,17 @@ Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
 **Check logs:**
 ```powershell
 # View all logs
-docker compose -f docker-compose.prod.yml logs
+docker compose -f deployment/docker/docker-compose.prod.yml logs
 
 # View specific service
-docker compose -f docker-compose.prod.yml logs backend
-docker compose -f docker-compose.prod.yml logs frontend
-docker compose -f docker-compose.prod.yml logs db
+docker compose -f deployment/docker/docker-compose.prod.yml logs backend
+docker compose -f deployment/docker/docker-compose.prod.yml logs frontend
+docker compose -f deployment/docker/docker-compose.prod.yml logs db
 ```
 
 **Common issues:**
 - Port already in use (close other apps using port 80/443)
-- Environment variables missing (check .env.production)
+- Environment variables missing (check deployment/.env.production)
 - Docker out of disk space (clean with `docker system prune -a`)
 
 ## Performance Considerations
@@ -606,7 +606,7 @@ docker compose -f docker-compose.prod.yml logs db
 Create `C:\backup-app.ps1`:
 ```powershell
 cd C:\Users\YourUsername\globant-practice-2025
-docker compose -f docker-compose.prod.yml exec -T db pg_dump -U drivingschool_prod drivingschool_prod > backups\backup-$(Get-Date -Format yyyy-MM-dd-HHmm).sql
+docker compose -f deployment/docker/docker-compose.prod.yml exec -T db pg_dump -U drivingschool_prod drivingschool_prod > backups\backup-$(Get-Date -Format yyyy-MM-dd-HHmm).sql
 
 # Keep only last 30 backups
 Get-ChildItem .\backups\*.sql | Sort-Object LastWriteTime -Descending | Select-Object -Skip 30 | Remove-Item

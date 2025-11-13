@@ -36,9 +36,13 @@ A full-stack web application for managing a driving school, including students, 
    - API Docs: http://localhost:8000/api/docs/swagger/
    - Database: localhost:5432
 
-### For Production Deployment
+### For Windows Local Deployment
 
-See [PRODUCTION_QUICKSTART.md](PRODUCTION_QUICKSTART.md) for a 5-minute production setup guide.
+**See [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md)** - Deploy on Windows with Docker Desktop (no dual boot needed!)
+
+### For Cloud/Production Deployment
+
+See the **[deployment/](deployment/)** folder for all production deployment resources.
 
 ## 💻 Development
 
@@ -110,53 +114,62 @@ docker compose exec db psql -U drivingschool -d drivingschool
 
 ## 🌐 Production Deployment
 
-For production deployment:
+### 🪟 Windows Local Deployment (Recommended for Beginners)
 
-- **Quick Start**: [PRODUCTION_QUICKSTART.md](PRODUCTION_QUICKSTART.md) - 5-minute setup
-- **Cloud Deployment**: [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) - AWS, DigitalOcean, Azure
-- **Google Cloud Platform**: [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) - Detailed GCP guide
-- **Home Server (Ubuntu/Linux)**: [HOME_SERVER_DEPLOYMENT.md](HOME_SERVER_DEPLOYMENT.md) - Port forwarding guide
-- **Windows Home Server**: [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) - No dual boot needed!
-- **CI/CD Setup**: [CI_CD_SETUP.md](CI_CD_SETUP.md) - Automated deployments
+**[WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md)** - Complete guide for deploying on Windows
+- No dual boot required - use Docker Desktop!
+- Port forwarding setup
+- Dynamic DNS configuration
+- SSL certificate setup
+- **Estimated cost**: $10-20/month (electricity)
 
-### Deployment Options
+### ☁️ Cloud & Production Deployment
+
+All production deployment resources are in the **[deployment/](deployment/)** folder:
+
+**Quick Start:**
+- 📘 [deployment/docs/PRODUCTION_QUICKSTART.md](deployment/docs/PRODUCTION_QUICKSTART.md) - 5-minute setup
+- 📘 [deployment/docs/QUICK_DEPLOYMENT_GUIDE.md](deployment/docs/QUICK_DEPLOYMENT_GUIDE.md) - Decision tree
 
 **Cloud Platforms:**
-- ✅ AWS EC2 / ECS - [Guide](CLOUD_DEPLOYMENT.md#aws-deployment)
-- ✅ DigitalOcean Droplets - [Guide](CLOUD_DEPLOYMENT.md#digitalocean-deployment)
-- ✅ Azure Container Instances - [Guide](CLOUD_DEPLOYMENT.md#azure-deployment)
-- ✅ Google Cloud Platform - [Detailed Guide](GCP_DEPLOYMENT.md)
+- ✅ AWS, DigitalOcean, Azure - [deployment/docs/CLOUD_DEPLOYMENT.md](deployment/docs/CLOUD_DEPLOYMENT.md)
+- ✅ Google Cloud Platform - [deployment/docs/GCP_DEPLOYMENT.md](deployment/docs/GCP_DEPLOYMENT.md)
 
 **Self-Hosted:**
-- ✅ Ubuntu/Linux Server - [Guide](HOME_SERVER_DEPLOYMENT.md)
-- ✅ Windows Desktop (Docker Desktop) - [Guide](WINDOWS_DEPLOYMENT.md) 🪟
-- ✅ Any server with Docker support
+- ✅ Ubuntu/Linux Server - [deployment/docs/HOME_SERVER_DEPLOYMENT.md](deployment/docs/HOME_SERVER_DEPLOYMENT.md)
 
-### Production Features
-
-- ✅ Multi-stage Docker builds for optimization
-- ✅ Nginx reverse proxy with SSL support
-- ✅ Non-root containers for security
-- ✅ Health checks and monitoring
-- ✅ Automated backups
-- ✅ CI/CD with GitHub Actions
-- ✅ Redis caching support
+**Resources:**
+- 🐳 Docker configs - [deployment/docker/](deployment/docker/)
+- 🔧 Scripts - [deployment/scripts/](deployment/scripts/)
+- 📋 Checklist - [deployment/docs/DEPLOYMENT_CHECKLIST.md](deployment/docs/DEPLOYMENT_CHECKLIST.md)
+- 🔄 CI/CD - [deployment/docs/CI_CD_SETUP.md](deployment/docs/CI_CD_SETUP.md)
 
 ## 📚 Documentation
+
+### Core Documentation
 
 | Document | Description |
 |----------|-------------|
 | [README.md](README.md) | This file - overview and quick start |
-| [PRODUCTION_QUICKSTART.md](PRODUCTION_QUICKSTART.md) | 5-minute production deployment guide |
-| [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) | AWS, DigitalOcean, Azure deployment guides |
-| [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) | Google Cloud Platform deployment guide |
-| [HOME_SERVER_DEPLOYMENT.md](HOME_SERVER_DEPLOYMENT.md) | Ubuntu/Linux self-hosted deployment |
-| [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) | Windows home server (no dual boot needed!) |
-| [CI_CD_SETUP.md](CI_CD_SETUP.md) | CI/CD pipeline setup with GitHub Actions |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Docker Compose deployment guide |
-| [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Pre-deployment checklist |
+| [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) | Windows deployment guide (recommended for local) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guidelines and workflow |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and changes |
+
+### Production Deployment Documentation
+
+All deployment guides are in the **[deployment/](deployment/)** folder:
+
+| Document | Description |
+|----------|-------------|
+| [deployment/README.md](deployment/README.md) | Deployment resources overview |
+| [deployment/docs/PRODUCTION_QUICKSTART.md](deployment/docs/PRODUCTION_QUICKSTART.md) | 5-minute production setup |
+| [deployment/docs/QUICK_DEPLOYMENT_GUIDE.md](deployment/docs/QUICK_DEPLOYMENT_GUIDE.md) | Platform selection guide |
+| [deployment/docs/CLOUD_DEPLOYMENT.md](deployment/docs/CLOUD_DEPLOYMENT.md) | AWS, DigitalOcean, Azure guides |
+| [deployment/docs/GCP_DEPLOYMENT.md](deployment/docs/GCP_DEPLOYMENT.md) | Google Cloud Platform guide |
+| [deployment/docs/HOME_SERVER_DEPLOYMENT.md](deployment/docs/HOME_SERVER_DEPLOYMENT.md) | Ubuntu/Linux self-hosted |
+| [deployment/docs/DEPLOYMENT_CHECKLIST.md](deployment/docs/DEPLOYMENT_CHECKLIST.md) | Pre-deployment checklist |
+| [deployment/docs/CI_CD_SETUP.md](deployment/docs/CI_CD_SETUP.md) | GitHub Actions CI/CD |
+| [deployment/docs/DEPLOYMENT.md](deployment/docs/DEPLOYMENT.md) | Docker Compose reference |
 
 ### Technical Documentation
 
