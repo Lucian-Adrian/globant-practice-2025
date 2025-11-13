@@ -1490,3 +1490,144 @@ class ScheduledClassViewSet(FullCrudViewSet):
         scheduled_class.students.remove(student)
         serializer = self.get_serializer(scheduled_class)
         return response.Response(serializer.data)
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export all scheduled classes to CSV (no pagination)."""
+        fields = [
+            "id",
+            "name",
+            "course_id",
+            "instructor_id",
+            "resource_id",
+            "scheduled_time",
+            "duration_minutes",
+            "max_students",
+            "status",
+            "student_ids",
+        ]
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            students_csv = ",".join(str(sid) for sid in obj.students.values_list("id", flat=True))
+            writer.writerow(
+                [
+                    obj.id,
+                    obj.name,
+                    obj.course_id,
+                    obj.instructor_id,
+                    obj.resource_id,
+                    obj.scheduled_time.isoformat() if obj.scheduled_time else "",
+                    obj.duration_minutes,
+                    obj.max_students if obj.max_students is not None else "",
+                    obj.status,
+                    students_csv,
+                ]
+            )
+        resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
+        resp["Content-Disposition"] = "attachment; filename=scheduled_classes.csv"
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        """Import scheduled classes from CSV; upsert by (course_id, instructor_id, scheduled_time)."""
+        upload = request.FILES.get("file") or request.FILES.get("csv")
+        if not upload:
+            return response.Response(
+                {"detail": "No file uploaded. Use form field 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        text_stream = (
+            TextIOWrapper(upload.file, encoding="utf-8") if hasattr(upload, "file") else upload
+        )
+        reader = csv.DictReader(text_stream)
+
+        required = {
+            "name",
+            "course_id",
+            "instructor_id",
+            "resource_id",
+            "scheduled_time",
+            "status",
+        }
+        # Optional columns
+        optional = {"duration_minutes", "student_ids", "max_students"}
+
+        header = set([c.strip() for c in (reader.fieldnames or [])])
+        missing = required - header
+        if missing:
+            return response.Response(
+                {"detail": f"Missing required columns: {', '.join(sorted(missing))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created_ids, updated_ids, errors = [], [], []
+        for idx, row in enumerate(reader, start=2):
+            # Build data dict with required fields first
+            try:
+                data = {
+                    "name": (row.get("name") or "").strip(),
+                    "course_id": (row.get("course_id") or "").strip(),
+                    "instructor_id": (row.get("instructor_id") or "").strip(),
+                    "resource_id": (row.get("resource_id") or "").strip(),
+                    "scheduled_time": (row.get("scheduled_time") or "").strip(),
+                    "status": (row.get("status") or "").strip(),
+                    "max_students": (row.get("max_students") or "").strip(),
+                }
+
+                # Apply defaults and optional fields
+                duration_val = (row.get("duration_minutes") or "").strip()
+                if duration_val:
+                    data["duration_minutes"] = duration_val
+                else:
+                    data["duration_minutes"] = 60
+
+                student_ids_raw = (row.get("student_ids") or "").strip()
+
+                # Upsert by composite key (course_id, instructor_id, scheduled_time)
+                lookup = {
+                    "course_id": data.get("course_id"),
+                    "instructor_id": data.get("instructor_id"),
+                    "scheduled_time": data.get("scheduled_time"),
+                }
+
+                existing = ScheduledClass.objects.filter(**lookup).first()
+                ser = (
+                    self.get_serializer(existing, data=data)
+                    if existing
+                    else self.get_serializer(data=data)
+                )
+                if ser.is_valid():
+                    obj = ser.save()
+                    # If student_ids provided, set M2M after save
+                    if student_ids_raw:
+                        try:
+                            ids = [int(s) for s in student_ids_raw.split(";") if s.strip()]
+                        except ValueError:
+                            ids = [int(s) for s in student_ids_raw.split(",") if s.strip()]
+                        obj.students.set(ids)
+                    (updated_ids if existing else created_ids).append(obj.id)
+                else:
+                    errors.append({"row": idx, "errors": ser.errors})
+            except Course.DoesNotExist:
+                errors.append({"row": idx, "error": f"Course with ID {data.get('course_id')} does not exist"})
+            except Instructor.DoesNotExist:
+                errors.append({"row": idx, "error": f"Instructor with ID {data.get('instructor_id')} does not exist"})
+            except Resource.DoesNotExist:
+                errors.append({"row": idx, "error": f"Resource with ID {data.get('resource_id')} does not exist"})
+            except Exception as e:
+                errors.append({"row": idx, "errors": {"general": [str(e)]}})
+
+        return response.Response(
+            {
+                "created": len(created_ids),
+                "updated": len(updated_ids),
+                "created_ids": created_ids,
+                "updated_ids": updated_ids,
+                "errors": errors,
+            },
+            status=status.HTTP_200_OK,
+        )
