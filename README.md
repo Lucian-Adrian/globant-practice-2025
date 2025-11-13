@@ -110,19 +110,27 @@ docker compose exec db psql -U drivingschool -d drivingschool
 
 ## 🌐 Production Deployment
 
-For production deployment to cloud platforms:
+For production deployment:
 
 - **Quick Start**: [PRODUCTION_QUICKSTART.md](PRODUCTION_QUICKSTART.md) - 5-minute setup
-- **Detailed Guide**: [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) - Complete deployment guide
+- **Cloud Deployment**: [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) - AWS, DigitalOcean, Azure
+- **Google Cloud Platform**: [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) - Detailed GCP guide
+- **Home Server (Ubuntu/Linux)**: [HOME_SERVER_DEPLOYMENT.md](HOME_SERVER_DEPLOYMENT.md) - Port forwarding guide
+- **Windows Home Server**: [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) - No dual boot needed!
 - **CI/CD Setup**: [CI_CD_SETUP.md](CI_CD_SETUP.md) - Automated deployments
 
-### Supported Platforms
+### Deployment Options
 
-- AWS EC2 / ECS
-- DigitalOcean Droplets
-- Azure Container Instances
-- Google Cloud Platform
-- Any server with Docker support
+**Cloud Platforms:**
+- ✅ AWS EC2 / ECS - [Guide](CLOUD_DEPLOYMENT.md#aws-deployment)
+- ✅ DigitalOcean Droplets - [Guide](CLOUD_DEPLOYMENT.md#digitalocean-deployment)
+- ✅ Azure Container Instances - [Guide](CLOUD_DEPLOYMENT.md#azure-deployment)
+- ✅ Google Cloud Platform - [Detailed Guide](GCP_DEPLOYMENT.md)
+
+**Self-Hosted:**
+- ✅ Ubuntu/Linux Server - [Guide](HOME_SERVER_DEPLOYMENT.md)
+- ✅ Windows Desktop (Docker Desktop) - [Guide](WINDOWS_DEPLOYMENT.md) 🪟
+- ✅ Any server with Docker support
 
 ### Production Features
 
@@ -140,9 +148,13 @@ For production deployment to cloud platforms:
 |----------|-------------|
 | [README.md](README.md) | This file - overview and quick start |
 | [PRODUCTION_QUICKSTART.md](PRODUCTION_QUICKSTART.md) | 5-minute production deployment guide |
-| [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) | Comprehensive cloud deployment guide |
+| [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) | AWS, DigitalOcean, Azure deployment guides |
+| [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) | Google Cloud Platform deployment guide |
+| [HOME_SERVER_DEPLOYMENT.md](HOME_SERVER_DEPLOYMENT.md) | Ubuntu/Linux self-hosted deployment |
+| [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) | Windows home server (no dual boot needed!) |
 | [CI_CD_SETUP.md](CI_CD_SETUP.md) | CI/CD pipeline setup with GitHub Actions |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Docker Compose deployment guide |
+| [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Pre-deployment checklist |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guidelines and workflow |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and changes |
 

@@ -2,6 +2,18 @@
 
 This guide covers deploying the Driving School Management System to various cloud platforms using Docker Compose.
 
+## Deployment Guides
+
+Choose your deployment platform:
+
+| Platform | Guide | Best For | Estimated Cost |
+|----------|-------|----------|----------------|
+| **AWS EC2/ECS** | [AWS Section](#aws-deployment) | Enterprise, high traffic | $35-50/month |
+| **DigitalOcean** | [DigitalOcean Section](#digitalocean-deployment) | Easiest cloud setup | $12-27/month |
+| **Azure** | [Azure Section](#azure-deployment) | Microsoft ecosystem | $35/month |
+| **Google Cloud** | [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) | Google services, scalability | $25-50/month |
+| **Home Server** | [HOME_SERVER_DEPLOYMENT.md](HOME_SERVER_DEPLOYMENT.md) | Learning, budget, full control | $5-15/month |
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -10,7 +22,8 @@ This guide covers deploying the Driving School Management System to various clou
    - [AWS EC2 / ECS](#aws-deployment)
    - [DigitalOcean Droplet](#digitalocean-deployment)
    - [Azure Container Instances](#azure-deployment)
-   - [Google Cloud Platform](#gcp-deployment)
+   - [Google Cloud Platform](GCP_DEPLOYMENT.md) - **Separate detailed guide**
+   - [Home Server Deployment](HOME_SERVER_DEPLOYMENT.md) - **Self-hosted guide**
 4. [SSL/HTTPS Setup](#ssl-https-setup)
 5. [Domain Configuration](#domain-configuration)
 6. [Monitoring & Logging](#monitoring--logging)
@@ -311,7 +324,20 @@ az container create \
 
 ### GCP Deployment
 
-**1. Create GCP Project and VM**
+**📘 For detailed Google Cloud Platform deployment, see: [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md)**
+
+The dedicated GCP guide includes:
+- Step-by-step Compute Engine VM setup
+- Cloud Run serverless deployment
+- Google Kubernetes Engine (GKE) setup
+- Cloud SQL managed database configuration
+- Static IP reservation
+- Cost optimization strategies
+- Detailed firewall configuration
+- Cloud Storage for backups
+- Monitoring with Cloud Logging
+
+**Quick Overview:**
 
 ```bash
 # Install gcloud CLI
@@ -324,24 +350,15 @@ gcloud compute instances create driving-school-vm \
   --image-project=ubuntu-os-cloud \
   --machine-type=e2-medium \
   --boot-disk-size=20GB \
-  --zone=us-central1-a
-```
+  --zone=us-central1-a \
+  --tags=http-server,https-server
 
-**2. SSH and Deploy**
-
-```bash
-# SSH into instance
+# SSH and deploy
 gcloud compute ssh driving-school-vm --zone=us-central1-a
-
-# Follow standard Docker installation and deployment steps
+# Then follow standard deployment steps
 ```
 
-**3. Configure Cloud SQL (Optional)**
-
-For managed PostgreSQL:
-- Create Cloud SQL PostgreSQL instance
-- Configure Cloud SQL Proxy for secure connections
-- Update `.env.production` with credentials
+**👉 See [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) for complete guide with screenshots and troubleshooting.**
 
 ## SSL/HTTPS Setup
 
