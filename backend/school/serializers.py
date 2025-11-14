@@ -579,7 +579,6 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         )
         start = attrs.get("scheduled_time") or (instance.scheduled_time if instance else None)
         duration = attrs.get("duration_minutes") or (instance.duration_minutes if instance else 60)
-        status = attrs.get("status") or (instance.status if instance else None)
         max_students = attrs.get("max_students") if ("max_students" in attrs) else (
             instance.max_students if instance else None
         )
