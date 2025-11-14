@@ -46,9 +46,9 @@ export default function ScheduledClassPatternEdit(props) {
         <NumberInput source="duration_minutes" label="Duration (min)" />
         <NumberInput source="max_students" label="Max Students" />
         <SelectInput source="status" label="Status" choices={statusChoices} />
-        <ReferenceInput source="student_ids" reference="students" perPage={100}>
-          <SelectInput label="Students" optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" multiple />
-        </ReferenceInput>
+        <ReferenceArrayInput source="student_ids" reference="students" perPage={100}>
+          <SelectArrayInput label="Students" optionText={(r) => `${r.first_name} ${r.last_name}`} />
+        </ReferenceArrayInput>
       </SimpleForm>
     </Edit>
   );
