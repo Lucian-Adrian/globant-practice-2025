@@ -273,17 +273,22 @@ def validate_classroom_resource_for_class(resource) -> None:
     """ScheduledClass requires classroom-type resources (not vehicles)."""
     if not resource:
         return
-    try:
-        if hasattr(resource, "is_vehicle") and callable(resource.is_vehicle):
-            if resource.is_vehicle():
-                raise serializers.ValidationError({"resource_id": [_("validation.classroomResourceRequired")]})
-        else:
-            cap = getattr(resource, "max_capacity", None)
+    if hasattr(resource, "is_vehicle") and callable(resource.is_vehicle):
+        try:
+            is_vehicle = resource.is_vehicle()
+        except (AttributeError, TypeError, ValueError):
+            # On unexpected shape, be conservative and skip
+            return
+        if is_vehicle:
+            raise serializers.ValidationError({"resource_id": [_("validation.classroomResourceRequired")]})
+    else:
+        cap = getattr(resource, "max_capacity", None)
+        try:
             if cap is not None and int(cap) <= 2:
                 raise serializers.ValidationError({"resource_id": [_("validation.classroomResourceRequired")]})
-    except Exception:
-        # On unexpected shape, be conservative and skip
-        return
+        except (TypeError, ValueError):
+            # On unexpected shape, be conservative and skip
+            return
 
 
 def validate_scheduled_class_capacity(resource, max_students, instance=None) -> None:
