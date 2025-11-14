@@ -54,3 +54,13 @@ export const validateLicenseCategoriesClient = (value) => {
   if (invalid.length) return `Invalid categories: ${invalid.join(', ')}`;
   return undefined;
 };
+
+// Validate time format (HH:MM)
+export const validateTimeFormat = (value) => {
+  if (!value) return undefined; // Allow empty values, use required() for mandatory fields
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(value)) {
+    return 'Time must be in HH:MM format (e.g., 09:30 or 14:00)';
+  }
+  return undefined;
+};

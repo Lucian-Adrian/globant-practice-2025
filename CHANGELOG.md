@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- ScheduledClassPattern model for recurring scheduled classes with recurrence fields (days, times, start_date, num_lessons)
+- Recurrence logic in generate_scheduled_classes method to create individual ScheduledClass instances
+- Frontend ScheduledClassPattern resource with create/edit/list components
+- Updated ScheduledClass model to reference pattern for data normalization, removing redundant fields
+- API endpoints for pattern CRUD and class generation action
 - Reusable `EmailInput` component with automatic lowercase & shared validation
 - Strict server-side validation for Student & Instructor (name, phone, email) with model-level validators
 - Unique constraint enforced for `Instructor.phone_number`
