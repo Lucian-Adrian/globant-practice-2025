@@ -6,7 +6,6 @@ import { ReferenceInput, SelectInput } from 'react-admin';
  * - Loads resources via useGetList (client-side list up to 1000)
  * - Presents combined name/license_plate display
  * - Uses resource id for filtering (preferring id over plate/name for consistency)
- * - Accepts legacy filtering by license plate if existing filter value matches
  */
 export default function ResourceFilterInput({ source = 'resource_id', label, onlyVehicles = false, onlyClassrooms = false, ...rest }) {
   const baseFilter = rest.filter || {};
