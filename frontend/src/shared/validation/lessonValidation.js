@@ -357,12 +357,12 @@ export async function validateScheduledClass(values, t, currentId) {
 						}
 					})
 				);
-						const names = nameResults.join(', ');
-						const key = 'validation.studentNotEnrolledToCourseNames';
-						const translated = t(key, { names });
-						errors.student_ids = translated === key
-							? `The following students are not enrolled in the chosen course: ${names}`
-							: translated;
+				const names = nameResults.join(', ');
+				const key = 'validation.studentNotEnrolledToCourseNames';
+				const translated = t(key, { names });
+				errors.student_ids = translated === key
+					? `The following students are not enrolled in the chosen course: ${names}`
+					: translated;
 			}
 		}
 
