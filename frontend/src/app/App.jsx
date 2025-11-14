@@ -51,7 +51,7 @@ export default function App() {
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
       <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit}/>
+      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
     </Admin>
   );
 }
