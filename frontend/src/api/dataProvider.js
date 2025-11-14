@@ -6,7 +6,7 @@ import { raI18nProvider } from '../i18n/index.js';
 const baseApi = API_PREFIX; // consistent single source
 
 const mapResource = (resource) => {
-  const mapping = { classes: 'courses' };
+  const mapping = { classes: 'courses', scheduledclasses: 'scheduled-classes', };
   const name = mapping[resource] || resource;
   return `${name}/`;
 };
@@ -85,7 +85,7 @@ const dataProvider = {
     return dataProvider.getList(resource, { ...params, filter });
   },
   update: async (resource, params) => {
-    if (resource === 'lessons') {
+    if (resource === 'lessons' || resource === 'scheduledclasses') {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:update] lessons payload', params.data); } catch (_) {}
@@ -116,7 +116,7 @@ const dataProvider = {
     return { data: results };
   },
   create: async (resource, params) => {
-    if (resource === 'lessons') {
+    if (resource === 'lessons' || resource === 'scheduled-classes') {
       // Debug: inspect outgoing payload to verify scheduled_time contains chosen time
       // Remove after verifying
       try { console.debug('[DP:create] lessons payload', params.data); } catch (_) {}

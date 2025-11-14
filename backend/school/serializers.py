@@ -653,13 +653,13 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     instructor = InstructorSerializer(read_only=True)
     resource = ResourceSerializer(read_only=True)
     course_id = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), source="course", write_only=True
+        queryset=Course.objects.all(), source="course", 
     )
     instructor_id = serializers.PrimaryKeyRelatedField(
-        queryset=Instructor.objects.all(), source="instructor", write_only=True
+        queryset=Instructor.objects.all(), source="instructor",
     )
     resource_id = serializers.PrimaryKeyRelatedField(
-        queryset=Resource.objects.all(), source="resource", write_only=True
+        queryset=Resource.objects.all(), source="resource",
     )
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
@@ -668,7 +668,6 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         queryset=Student.objects.all(),
         source="students",
         many=True,
-        write_only=True,
         required=False,
     )
 
