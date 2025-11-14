@@ -181,7 +181,28 @@ const languageData = {
   lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', resource:'Resource', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
         'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
         classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
-        scheduledclasses: { name: 'Scheduled Classes', empty: 'No scheduled classes yet', invite: 'Create the first scheduled class', import_helper: 'You can import a CSV to add multiple scheduled classes at once.', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', scheduled_time: 'Scheduled time', duration_minutes: 'Duration (min)', max_students: 'Max students', students: 'Students', current_enrollment: 'Current enrollment', available_spots: 'Available spots' }, helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
+        scheduledclasses: { 
+          name: 'Scheduled Classes', 
+          empty: 'No scheduled classes yet', 
+          invite: 'Create the first scheduled class', 
+          import_helper: 'You can import a CSV to add multiple scheduled classes at once.', 
+          import_format_hint: 'Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).', 
+          fields: { 
+            id: 'ID', 
+            name: 'Name', 
+            course: 'Course', 
+            instructor: 'Instructor', 
+            resource: 'Resource', 
+            scheduled_time: 'Scheduled time', 
+            duration_minutes: 'Duration (min)', 
+            max_students: 'Max students', 
+            students: 'Students', 
+            current_enrollment: 'Current enrollment', 
+            available_spots: 'Available spots' 
+          }, 
+          helper: 'Create a scheduled class to start planning lessons.', 
+          create: 'Create Scheduled Class' 
+        },
       }
     },
     resources: {
