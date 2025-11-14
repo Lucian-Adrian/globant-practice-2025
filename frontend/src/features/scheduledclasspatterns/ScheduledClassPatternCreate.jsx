@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, useTranslate, required } from 'react-admin';
+import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, TimeInput, useTranslate, required } from 'react-admin';
+import { validateTimeFormat } from '../../shared/validation/validators';
 
 export default function ScheduledClassPatternCreate(props) {
   const t = useTranslate();
@@ -37,7 +38,7 @@ export default function ScheduledClassPatternCreate(props) {
         </ArrayInput>
         <ArrayInput source="times" label="Times">
           <SimpleFormIterator>
-            <TextInput source="" placeholder="HH:MM" />
+            <TimeInput source="" label="Time" validate={[validateTimeFormat]} />
           </SimpleFormIterator>
         </ArrayInput>
         <DateInput source="start_date" label="Start Date" validate={[required()]} />
