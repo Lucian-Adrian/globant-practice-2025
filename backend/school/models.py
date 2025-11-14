@@ -3,6 +3,7 @@ from django.core.validators import EmailValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from solo.models import SingletonModel
 
 from .enums import (
     CourseType,
@@ -374,3 +375,49 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Plată de {self.amount} MDL pentru {self.enrollment}"
+
+
+class Address(models.Model):
+    """Simple address model for school locations."""
+    street = models.CharField(max_length=200)
+    city = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = "Addresses"
+
+    def __str__(self):
+        return f"{self.street}, {self.city}"
+
+
+class SchoolConfig(SingletonModel):
+    """Singleton model for school-wide configuration settings."""
+    school_name = models.CharField(max_length=200, default="Driving School")
+    school_logo = models.ImageField(upload_to="logos/", null=True, blank=True)
+    business_hours = models.CharField(max_length=200, default="Mon-Fri: 9AM-6PM")
+    email = models.EmailField(default="contact@school.com")
+    contact_phone1 = models.CharField(max_length=20, default="+37360000000")
+    contact_phone2 = models.CharField(max_length=20, null=True, blank=True)
+    landing_image = models.ImageField(upload_to="landing/", null=True, blank=True)
+    landing_text = models.JSONField(
+        default=dict,
+        help_text="Translation dictionary for landing page text, e.g., {'en': 'Welcome', 'ro': 'Bun venit'}"
+    )
+    social_links = models.JSONField(
+        default=dict,
+        help_text="Social media links, e.g., {'facebook': 'https://...', 'instagram': 'https://...'}"
+    )
+    rules = models.JSONField(
+        default=dict,
+        help_text="Business rules, e.g., {'min_theory_hours_before_practice': 20}"
+    )
+    available_categories = models.JSONField(
+        default=list,
+        help_text="Available license categories, e.g., ['A', 'B', 'C']"
+    )
+    addresses = models.ManyToManyField(Address, related_name="school_configs", blank=True)
+
+    class Meta:
+        verbose_name = "School Configuration"
+
+    def __str__(self):
+        return self.school_name

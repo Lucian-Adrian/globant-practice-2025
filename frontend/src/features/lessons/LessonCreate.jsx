@@ -24,7 +24,7 @@ export default function LessonCreate(props) {
     
     <Create {...props}>
       <SimpleForm validate={async (values) => validateLesson(values, t)}>
-        <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50}>
+        <ReferenceInput source="enrollment_id" reference="enrollments" perPage={50} filter={{ type: 'PRACTICE' }}>
           <SelectInput 
             label={t('resources.lessons.fields.enrollment', 'Enrollment')} 
             optionText={(r) => r.label || `#${r.id}`} 

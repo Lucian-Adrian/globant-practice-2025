@@ -6,7 +6,7 @@ import ScheduledClassListAside from './ScheduledClassListAside.jsx';
 import ListImportActions from '../../shared/components/ListImportActions.jsx';
 import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
-import VehicleFilterInput from '../../shared/components/VehicleFilterInput.jsx';
+import ResourceFilterInput from '../../shared/components/ResourceFilterInput.jsx';
 
 // Client-side filtered datagrid (mirrors Lessons approach, without type filter)
 const FilteredDatagrid = (props) => {
@@ -28,11 +28,9 @@ const FilteredDatagrid = (props) => {
       // instructor id match
       if (filterValues.instructor_id && String(record?.instructor?.id) !== String(filterValues.instructor_id)) return false;
       // resource license_plate OR name match
-      if (filterValues.resource) {
-        const res = record?.resource;
-        const value = String(filterValues.resource);
-        const candidate = String(res?.license_plate || res?.name || '');
-        if (candidate !== value) return false;
+      if (filterValues.resource_id) {
+        const rid = record?.resource?.id;
+        if (String(rid) !== String(filterValues.resource_id)) return false;
       }
       return true;
     });
@@ -87,7 +85,7 @@ export default function ScheduledClassList(props) {
   const { collapsed } = useAsidePanel();
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
-    <VehicleFilterInput key="resource" source="resource" alwaysOn />,
+    <ResourceFilterInput key="resource_id" source="resource_id" alwaysOn onlyClassrooms />,
   ];
 
   return (
