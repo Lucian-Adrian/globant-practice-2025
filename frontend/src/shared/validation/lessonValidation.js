@@ -375,36 +375,36 @@ export async function validateScheduledClass(values, t, currentId) {
 			errors.max_students = t('validation.capacityExceeded');
 		}
 	}
-		// Additional create-time capacity checks: ensure selected students fit and max_students is not below their count
-		const selectedCount = Array.isArray(values.student_ids) ? values.student_ids.length : 0;
-		if (!currentId) { // creation
-			if (selectedCount > 0) {
-				if (maxStudents != null && Number(maxStudents) < selectedCount) {
-					// Fallback aware translation (handles namespace variations or missing key)
-					const key = 'validation.capacityBelowSelected';
-					let msg = t(key, { count: selectedCount });
-					if (msg === key) {
-						// Try alternate key form without explicit namespace prefix
-						msg = t('capacityBelowSelected', { count: selectedCount });
-					}
-					if (msg === key || msg === 'capacityBelowSelected') {
-						msg = 'Max students cannot be lower than number of selected students.';
-					}
-					errors.max_students = msg;
+	// Additional create-time capacity checks: ensure selected students fit and max_students is not below their count
+	const selectedCount = Array.isArray(values.student_ids) ? values.student_ids.length : 0;
+	if (!currentId) { // creation
+		if (selectedCount > 0) {
+			if (maxStudents != null && Number(maxStudents) < selectedCount) {
+				// Fallback aware translation (handles namespace variations or missing key)
+				const key = 'validation.capacityBelowSelected';
+				let msg = t(key, { count: selectedCount });
+				if (msg === key) {
+					// Try alternate key form without explicit namespace prefix
+					msg = t('capacityBelowSelected', { count: selectedCount });
 				}
-				if (!Number.isNaN(rcap) && rcap < selectedCount) {
-					const key = 'validation.selectedStudentsExceedCapacity';
-					let msg = t(key, { count: selectedCount, capacity: rcap });
-					if (msg === key) msg = t('selectedStudentsExceedCapacity', { count: selectedCount, capacity: rcap });
-					if (msg === key || msg === 'selectedStudentsExceedCapacity') {
-						msg = 'Selected students exceed room capacity.';
-					}
-					errors.student_ids = msg;
+				if (msg === key || msg === 'capacityBelowSelected') {
+					msg = 'Max students cannot be lower than number of selected students.';
 				}
+				errors.max_students = msg;
 			}
-		} else { // editing: still enforce max_students >= current enrollment (below)
-			// (handled below)
+			if (!Number.isNaN(rcap) && rcap < selectedCount) {
+				const key = 'validation.selectedStudentsExceedCapacity';
+				let msg = t(key, { count: selectedCount, capacity: rcap });
+				if (msg === key) msg = t('selectedStudentsExceedCapacity', { count: selectedCount, capacity: rcap });
+				if (msg === key || msg === 'selectedStudentsExceedCapacity') {
+					msg = 'Selected students exceed room capacity.';
+				}
+				errors.student_ids = msg;
+			}
 		}
+	} else { // editing: still enforce max_students >= current enrollment (below)
+		// (handled below)
+	}
 	if (currentId) {
 		// load current to compare enrollment
 		const curr = await getJson(`${API_PREFIX}/scheduled-classes/${currentId}/`);
