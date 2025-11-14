@@ -148,16 +148,40 @@ export async function validateLesson(values, t, currentId) {
   // Narrow time window for payload; we only need to know if any exists
   const baseWin = `scheduled_time__lt=${encodeURIComponent(end.toISOString())}&scheduled_time__gte=${encodeURIComponent(windowStart.toISOString())}&page_size=1`;
 
-  // Instructor conflict
-  const instrUrl = `${API_PREFIX}/lessons/?instructor=${encodeURIComponent(instructorId)}&${baseWin}`;
-  const instrHit = await findAnyOverlap(instrUrl, () => true);
+  // Instructor conflict (cross-entity: lessons + scheduled-classes)
+  const instrLessonUrl = `${API_PREFIX}/lessons/?instructor=${encodeURIComponent(instructorId)}&${baseWin}`;
+  const instrHitLessons = await findAnyOverlap(instrLessonUrl, () => true);
+  let instrHitClasses = false;
+  {
+    const instrClassUrl = `${API_PREFIX}/scheduled-classes/?instructor=${encodeURIComponent(instructorId)}&${baseWin}`;
+    const r = await getJson(instrClassUrl);
+    const list = Array.isArray(r.data) ? r.data : [];
+    instrHitClasses = list.some((item) => {
+      const st = new Date(item.scheduled_time);
+      const en = addMinutes(st, Number(item.duration_minutes ?? 60));
+      const active = item.status === 'SCHEDULED' || item.status === 'COMPLETED';
+      return active && overlap(start, end, st, en);
+    });
+  }
+  const instrHit = instrHitLessons || instrHitClasses;
   if (instrHit) errors.instructor_id = t('validation.instructorConflict');
 
   // Student conflict
   if (studentId) {
     const stuUrl = `${API_PREFIX}/lessons/?enrollment__student=${encodeURIComponent(studentId)}&${baseWin}`;
-    const stuHit = await findAnyOverlap(stuUrl, () => true);
-    if (stuHit) errors.enrollment_id = t('validation.studentConflict');
+    const stuHitLessons = await findAnyOverlap(stuUrl, () => true);
+    // Also check scheduled-classes where this student is enrolled (no server filter for students -> filter client-side)
+    const clsUrl = `${API_PREFIX}/scheduled-classes/?${baseWin}`;
+    const r = await getJson(clsUrl);
+    const list = Array.isArray(r.data) ? r.data : [];
+    const stuHitClasses = list.some((item) => {
+      const st = new Date(item.scheduled_time);
+      const en = addMinutes(st, Number(item.duration_minutes ?? 60));
+      const active = item.status === 'SCHEDULED' || item.status === 'COMPLETED';
+      const hasStudent = Array.isArray(item.students) && item.students.some((s) => (s?.id ?? s) === studentId);
+      return active && hasStudent && overlap(start, end, st, en);
+    });
+    if (stuHitLessons || stuHitClasses) errors.enrollment_id = t('validation.studentConflict');
   }
 
   // Resource conflict
@@ -167,6 +191,151 @@ export async function validateLesson(values, t, currentId) {
     const resHit = await findAnyOverlap(resUrl, () => true);
     if (resHit) errors.resource_id = t('validation.resourceConflict');
   }
+
+  return errors;
+}
+
+export async function validateScheduledClass(values, t, currentId) {
+  const errors = {};
+
+  const courseId = values.course_id ?? values.course?.id;
+  const instructorId = values.instructor_id ?? values.instructor?.id;
+  const resourceId = values.resource_id ?? values.resource?.id;
+  const scheduled = values.scheduled_time;
+  const duration = Number(values.duration_minutes ?? 60);
+  const maxStudents = values.max_students;
+
+  if (!courseId) errors.course_id = t('validation.requiredField');
+  if (!instructorId) errors.instructor_id = t('validation.requiredField');
+  if (!resourceId) errors.resource_id = t('validation.requiredField');
+  if (!scheduled) errors.scheduled_time = t('validation.requiredField');
+  if (maxStudents == null) errors.max_students = t('validation.requiredField');
+  if (Object.keys(errors).length) return errors;
+
+  const start = new Date(scheduled);
+  const end = addMinutes(start, duration);
+  const windowStart = addMinutes(start, -480);
+  const baseWin = `scheduled_time__lt=${encodeURIComponent(end.toISOString())}&scheduled_time__gte=${encodeURIComponent(windowStart.toISOString())}&page_size=1000`;
+
+  // Load referenced entities
+  const [courseRes, instructorRes, resourceRes] = await Promise.all([
+    getJson(`${API_PREFIX}/courses/${courseId}/`),
+    getJson(`${API_PREFIX}/instructors/${instructorId}/`),
+    getJson(`${API_PREFIX}/resources/${resourceId}/`),
+  ]);
+  const course = courseRes.data || {};
+  const instructor = instructorRes.data || {};
+  const resource = resourceRes.data || {};
+
+  // Theory-only
+  const ctype = String(course?.type || '').toUpperCase();
+  if (ctype && ctype !== 'THEORY') {
+    errors.course_id = t('validation.theoryOnly');
+  }
+
+  // Classroom-only (resource not vehicle)
+  const rcap = Number(resource?.max_capacity ?? NaN);
+  if (!Number.isNaN(rcap) && rcap <= 2) {
+    errors.resource_id = t('validation.classroomResourceRequired');
+  }
+
+  // Instructor availability (business-local)
+  const { dayIndex, hhmm } = formatInBusinessTZParts(start);
+  const day = DAY_ENUM[dayIndex];
+  const avail = await getJson(`${API_PREFIX}/instructor-availabilities/?instructor_id=${encodeURIComponent(instructorId)}&day=${encodeURIComponent(day)}&page_size=50`);
+  const slots = new Set();
+  if (Array.isArray(avail.data)) {
+    for (const a of avail.data) {
+      const hours = Array.isArray(a?.hours) ? a.hours : [];
+      hours.forEach((h) => {
+        if (typeof h === 'string') {
+          const [H, M] = h.split(':');
+          const HH = String(H || '00').padStart(2, '0');
+          const MM = String(M || '00').padStart(2, '0');
+          slots.add(`${HH}:${MM}`);
+        }
+      });
+    }
+  }
+  if (slots.size > 0) {
+    const startMin = minutesOf(hhmm);
+    const sorted = Array.from(slots).sort();
+    const mins = sorted.map(minutesOf);
+    let ok = false;
+    if (startMin === mins[mins.length - 1]) ok = true;
+    else {
+      for (let i = 0; i < mins.length - 1; i++) {
+        if (mins[i] <= startMin && startMin < mins[i + 1]) { ok = true; break; }
+      }
+    }
+    if (!ok) errors.scheduled_time = t('validation.outsideAvailability');
+  }
+
+  // Category & license
+  const courseCategory = course?.category;
+  if (resource && courseCategory && resource.category !== courseCategory) {
+    errors.resource_id = t('validation.categoryMismatch');
+  }
+  if (courseCategory) {
+    const cats = String(instructor?.license_categories || '')
+      .split(',').map((c) => c.trim().toUpperCase()).filter(Boolean);
+    if (!cats.includes(String(courseCategory).toUpperCase())) {
+      errors.instructor_id = t('validation.instructorLicenseMismatch');
+    }
+  }
+
+  // Capacity
+  if (!Number.isNaN(rcap) && maxStudents != null) {
+    const m = Number(maxStudents);
+    if (!(m > 0)) {
+      errors.max_students = t('validation.capacityExceeded');
+    } else if (!Number.isNaN(rcap) && m > rcap) {
+      errors.max_students = t('validation.capacityExceeded');
+    }
+  }
+  if (currentId) {
+    // load current to compare enrollment
+    const curr = await getJson(`${API_PREFIX}/scheduled-classes/${currentId}/`);
+    const current = curr.data || {};
+    const enrolled = Number(current?.current_enrollment ?? 0);
+    if (maxStudents != null && Number(maxStudents) < enrolled) {
+      errors.max_students = t('validation.capacityBelowEnrolled');
+    }
+  }
+
+  // Instructor conflicts (cross-entity)
+  const instrLessonsUrl = `${API_PREFIX}/lessons/?instructor=${encodeURIComponent(instructorId)}&${baseWin}`;
+  const instrLessons = await getJson(instrLessonsUrl);
+  const instrHitLessons = (Array.isArray(instrLessons.data) ? instrLessons.data : []).some((item) => {
+    const st = new Date(item.scheduled_time);
+    const en = addMinutes(st, Number(item.duration_minutes ?? 60));
+    const active = item.status === 'SCHEDULED' || item.status === 'COMPLETED';
+    return active && overlap(start, end, st, en);
+  });
+  const instrClassesUrl = `${API_PREFIX}/scheduled-classes/?instructor=${encodeURIComponent(instructorId)}&${baseWin}`;
+  const instrClasses = await getJson(instrClassesUrl);
+  const instrHitClasses = (Array.isArray(instrClasses.data) ? instrClasses.data : []).some((item) => {
+    if (currentId && item.id === currentId) return false;
+    const st = new Date(item.scheduled_time);
+    const en = addMinutes(st, Number(item.duration_minutes ?? 60));
+    const active = item.status === 'SCHEDULED' || item.status === 'COMPLETED';
+    return active && overlap(start, end, st, en);
+  });
+  if (instrHitLessons || instrHitClasses) {
+    errors.instructor_id = t('validation.instructorConflict');
+  }
+
+  // Resource conflicts (classes vs classes)
+  const clsByResUrl = `${API_PREFIX}/scheduled-classes/?resource=${encodeURIComponent(resourceId)}&${baseWin}`;
+  const clsByRes = await getJson(clsByResUrl);
+  const resHit = (Array.isArray(clsByRes.data) ? clsByRes.data : []).some((item) => {
+    if (currentId && item.id === currentId) return false;
+    const st = new Date(item.scheduled_time);
+    const en = addMinutes(st, Number(item.duration_minutes ?? 60));
+    const active = item.status === 'SCHEDULED' || item.status === 'COMPLETED';
+    return active && overlap(start, end, st, en);
+  });
+  if (resHit) errors.resource_id = t('validation.resourceConflict');
 
   return errors;
 }

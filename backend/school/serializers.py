@@ -421,7 +421,11 @@ class LessonSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        """Apply server-side booking rules using helpers. Behavior unchanged."""
+        """Apply server-side booking rules using helpers.
+
+        Updated in Phase 3 to use cross-entity instructor and student conflict checks,
+        while preserving existing lesson behavior otherwise.
+        """
         instance = getattr(self, "instance", None)
         context = resolve_lesson_context(instance, attrs)
 
@@ -439,10 +443,30 @@ class LessonSerializer(serializers.ModelSerializer):
         assert context.start is not None
         end = context.start + timedelta(minutes=int(context.duration or 90))
 
-        # Conflicts (lessons only)
-        validate_lesson_conflicts(
-            context.enrollment, context.instructor, context.resource, context.start, end, instance
-        )
+        # Cross-entity instructor conflicts (lessons + scheduled classes)
+        from .validators import check_instructor_booking_conflicts, check_lesson_student_conflicts
+        check_instructor_booking_conflicts(getattr(context.instructor, "id", None), context.start, end, instance)
+
+        # Lesson-side student conflicts (lessons + scheduled classes)
+        check_lesson_student_conflicts(context.enrollment, context.start, end, instance)
+
+        # Resource conflicts remain lesson-only (vehicles)
+        # Reuse previous logic by filtering lessons with same resource
+        if context.resource is not None:
+            from .models import Lesson as LessonModel
+            ACTIVE_STATUSES = ["SCHEDULED", "COMPLETED"]
+            res_qs = LessonModel.objects.filter(
+                resource_id=getattr(context.resource, "id", None),
+                status__in=ACTIVE_STATUSES,
+                scheduled_time__lt=end,
+                scheduled_time__gte=context.start - timedelta(hours=8),
+            )
+            for other in res_qs:
+                if instance and getattr(instance, "pk", None) and other.pk == instance.pk:
+                    continue
+                other_end = other.scheduled_time + timedelta(minutes=int(getattr(other, "duration_minutes", 60) or 60))
+                if (context.start < other_end) and (other.scheduled_time < end):
+                    raise serializers.ValidationError({"resource_id": [_("validation.resourceConflict")]})
 
         # Resource availability
         validate_lesson_resource_availability(context.resource, context.status)
@@ -532,3 +556,82 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
 
     def get_available_spots(self, obj):
         return obj.available_spots()
+
+    def validate(self, attrs):
+        """Apply ScheduledClass business rules (Phase 3)."""
+        from .validators import (
+            validate_theory_only_course_for_class,
+            validate_classroom_resource_for_class,
+            validate_instructor_availability,
+            validate_category_and_license,
+            validate_scheduled_class_capacity,
+            validate_scheduled_class_students_enrolled,
+            validate_scheduled_class_students_capacity,
+            check_instructor_booking_conflicts,
+            check_scheduled_class_resource_conflicts,
+        )
+
+        instance = getattr(self, "instance", None)
+
+        course = attrs.get("course") or (instance.course if instance else None)
+        instructor = attrs.get("instructor") or (instance.instructor if instance else None)
+        resource = (
+            attrs.get("resource") if ("resource" in attrs) else (instance.resource if instance else None)
+        )
+        start = attrs.get("scheduled_time") or (instance.scheduled_time if instance else None)
+        duration = attrs.get("duration_minutes") or (instance.duration_minutes if instance else 60)
+        status = attrs.get("status") or (instance.status if instance else None)
+        max_students = attrs.get("max_students") if ("max_students" in attrs) else (
+            instance.max_students if instance else None
+        )
+
+        errors = {}
+        if not course:
+            errors["course_id"] = [_("validation.requiredField")]
+        if not instructor:
+            errors["instructor_id"] = [_("validation.requiredField")]
+        if resource is None:
+            errors["resource_id"] = [_("validation.requiredField")]
+        if not start:
+            errors["scheduled_time"] = [_("validation.requiredField")]
+        if max_students is None:
+            errors["max_students"] = [_("validation.requiredField")]
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        # Theory-only rule
+        validate_theory_only_course_for_class(course)
+
+        # Classroom resource only
+        validate_classroom_resource_for_class(resource)
+
+        # Compute end
+        assert start is not None
+        end = start + timedelta(minutes=int(duration or 60))
+
+        # Instructor availability
+        validate_instructor_availability(getattr(instructor, "id", None), start)
+
+        # Category and instructor license rules
+        validate_category_and_license(course, instructor, resource)
+
+        # Capacity rules
+        validate_scheduled_class_capacity(resource, max_students, instance)
+
+        # Students attached must be enrolled in course
+        if "students" in attrs:
+            students = attrs.get("students") or []
+        else:
+            students = list(instance.students.all()) if instance else []
+        validate_scheduled_class_students_enrolled(course, students)
+
+        # Students count must not exceed max_students or room capacity
+        validate_scheduled_class_students_capacity(resource, max_students, students)
+
+        # Cross-entity instructor conflicts
+        check_instructor_booking_conflicts(getattr(instructor, "id", None), start, end, instance)
+
+        # Resource conflicts (classrooms vs classrooms)
+        check_scheduled_class_resource_conflicts(resource, start, end, instance)
+
+        return attrs

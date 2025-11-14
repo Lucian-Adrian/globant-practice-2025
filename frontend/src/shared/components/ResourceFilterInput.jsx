@@ -8,9 +8,15 @@ import { ReferenceInput, SelectInput } from 'react-admin';
  * - Uses resource id for filtering (preferring id over plate/name for consistency)
  * - Accepts legacy filtering by license plate if existing filter value matches
  */
-export default function ResourceFilterInput({ source = 'resource_id', label, onlyVehicles = false, ...rest }) {
+export default function ResourceFilterInput({ source = 'resource_id', label, onlyVehicles = false, onlyClassrooms = false, ...rest }) {
   const baseFilter = rest.filter || {};
-  const filter = onlyVehicles ? { ...baseFilter, max_capacity: 2 } : baseFilter;
+  let filter = baseFilter;
+  if (onlyVehicles) {
+    filter = { ...filter, max_capacity: 2 };
+  } else if (onlyClassrooms) {
+    // Backend supports gte/lte, not gt; use >= 3 to select classrooms
+    filter = { ...filter, max_capacity_gte: 3 };
+  }
 
   return (
     <ReferenceInput

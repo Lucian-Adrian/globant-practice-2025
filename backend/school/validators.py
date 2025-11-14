@@ -128,6 +128,264 @@ def validate_lesson_conflicts(enrollment, instructor, resource, start, end, inst
         if has_overlap(res_qs):
             raise serializers.ValidationError({"resource_id": [_("validation.resourceConflict")]})
 
+
+# --- Phase 3: Shared booking helpers (cross-entity) ---
+def _overlaps(start: datetime, end: datetime, other_start: datetime, other_duration: Optional[int]) -> bool:
+    try:
+        odur = int(other_duration or 60)
+    except Exception:
+        odur = 60
+    other_end = other_start + timedelta(minutes=odur)
+    return (start < other_end) and (other_start < end)
+
+
+def check_instructor_booking_conflicts(instructor_id, start: datetime, end: datetime, instance=None) -> None:
+    """Cross-entity instructor overlap across Lessons and ScheduledClass.
+
+    - ACTIVE_STATUSES: SCHEDULED, COMPLETED
+    - Time window: scheduled_time__lt=end and scheduled_time__gte=start-8h
+    - Excludes the current instance by pk if provided
+    - Raises: {"instructor_id": ["validation.instructorConflict"]}
+    """
+    if not instructor_id or not start or not end:
+        return
+
+    from .models import Lesson as LessonModel, ScheduledClass as ScheduledClassModel
+
+    ACTIVE_STATUSES = ["SCHEDULED", "COMPLETED"]
+    exclude_pk = getattr(instance, "pk", None)
+
+    # Lessons for instructor
+    lesson_qs = LessonModel.objects.filter(
+        instructor_id=instructor_id,
+        status__in=ACTIVE_STATUSES,
+        scheduled_time__lt=end,
+        scheduled_time__gte=start - timedelta(hours=8),
+    )
+    for other in lesson_qs:
+        if exclude_pk and other.pk == exclude_pk:
+            continue
+        if _overlaps(start, end, other.scheduled_time, getattr(other, "duration_minutes", 60)):
+            raise serializers.ValidationError({"instructor_id": [_("validation.instructorConflict")]})
+
+    # Scheduled classes for instructor
+    class_qs = ScheduledClassModel.objects.filter(
+        instructor_id=instructor_id,
+        status__in=ACTIVE_STATUSES,
+        scheduled_time__lt=end,
+        scheduled_time__gte=start - timedelta(hours=8),
+    )
+    for other in class_qs:
+        if exclude_pk and other.pk == exclude_pk:
+            continue
+        if _overlaps(start, end, other.scheduled_time, getattr(other, "duration_minutes", 60)):
+            raise serializers.ValidationError({"instructor_id": [_("validation.instructorConflict")]})
+
+
+def check_lesson_student_conflicts(enrollment, start: datetime, end: datetime, instance=None) -> None:
+    """Cross-entity student conflict on LESSON side:
+    - Check Lessons by enrollment.student_id
+    - Check ScheduledClass where student is enrolled (M2M)
+    - Same ACTIVE_STATUSES and window; exclude instance.pk if provided
+    - Raises: {"enrollment_id": ["validation.studentConflict"]}
+    """
+    if not enrollment or not start or not end:
+        return
+    student_id = getattr(enrollment, "student_id", None)
+    if not student_id:
+        return
+
+    from .models import Lesson as LessonModel, ScheduledClass as ScheduledClassModel
+
+    ACTIVE_STATUSES = ["SCHEDULED", "COMPLETED"]
+    exclude_pk = getattr(instance, "pk", None)
+
+    # Lessons for student
+    stu_lesson_qs = LessonModel.objects.filter(
+        enrollment__student_id=student_id,
+        status__in=ACTIVE_STATUSES,
+        scheduled_time__lt=end,
+        scheduled_time__gte=start - timedelta(hours=8),
+    )
+    for other in stu_lesson_qs:
+        if exclude_pk and other.pk == exclude_pk:
+            continue
+        if _overlaps(start, end, other.scheduled_time, getattr(other, "duration_minutes", 60)):
+            raise serializers.ValidationError({"enrollment_id": [_("validation.studentConflict")]})
+
+    # Scheduled classes containing the student
+    stu_class_qs = ScheduledClassModel.objects.filter(
+        students__id=student_id,
+        status__in=ACTIVE_STATUSES,
+        scheduled_time__lt=end,
+        scheduled_time__gte=start - timedelta(hours=8),
+    ).distinct()
+    for other in stu_class_qs:
+        if exclude_pk and other.pk == exclude_pk:
+            continue
+        if _overlaps(start, end, other.scheduled_time, getattr(other, "duration_minutes", 60)):
+            raise serializers.ValidationError({"enrollment_id": [_("validation.studentConflict")]})
+
+
+def check_scheduled_class_resource_conflicts(resource, start: datetime, end: datetime, instance=None) -> None:
+    """Resource conflicts for ScheduledClass (classrooms vs classrooms only).
+    Lessons remain separate on vehicle side.
+    """
+    if not resource or not start or not end:
+        return
+    res_id = getattr(resource, "id", None)
+    if not res_id:
+        return
+
+    from .models import ScheduledClass as ScheduledClassModel
+
+    ACTIVE_STATUSES = ["SCHEDULED", "COMPLETED"]
+    exclude_pk = getattr(instance, "pk", None)
+
+    qs = ScheduledClassModel.objects.filter(
+        resource_id=res_id,
+        status__in=ACTIVE_STATUSES,
+        scheduled_time__lt=end,
+        scheduled_time__gte=start - timedelta(hours=8),
+    )
+    for other in qs:
+        if exclude_pk and other.pk == exclude_pk:
+            continue
+        if _overlaps(start, end, other.scheduled_time, getattr(other, "duration_minutes", 60)):
+            raise serializers.ValidationError({"resource_id": [_("validation.resourceConflict")]})
+
+
+def validate_theory_only_course_for_class(course) -> None:
+    """ScheduledClass may only be created for THEORY courses."""
+    if not course:
+        return
+    try:
+        from .enums import CourseType as CourseTypeEnum  # type: ignore
+        theory_val = getattr(CourseTypeEnum, "THEORY").value
+    except Exception:  # pragma: no cover
+        theory_val = "THEORY"
+    ctype = str(getattr(course, "type", "") or "").upper()
+    if ctype and ctype != str(theory_val).upper():
+        raise serializers.ValidationError({"course_id": [_("validation.theoryOnly")]})
+
+
+def validate_classroom_resource_for_class(resource) -> None:
+    """ScheduledClass requires classroom-type resources (not vehicles)."""
+    if not resource:
+        return
+    try:
+        if hasattr(resource, "is_vehicle") and callable(resource.is_vehicle):
+            if resource.is_vehicle():
+                raise serializers.ValidationError({"resource_id": [_("validation.classroomResourceRequired")]})
+        else:
+            cap = getattr(resource, "max_capacity", None)
+            if cap is not None and int(cap) <= 2:
+                raise serializers.ValidationError({"resource_id": [_("validation.classroomResourceRequired")]})
+    except Exception:
+        # On unexpected shape, be conservative and skip
+        return
+
+
+def validate_scheduled_class_capacity(resource, max_students, instance=None) -> None:
+    """Enforce positive capacity, resource capacity limit, and not below current enrollment."""
+    if max_students is None or resource is None:
+        return
+    try:
+        m = int(max_students)
+    except Exception:
+        m = None
+    if not m or m <= 0:
+        raise serializers.ValidationError({"max_students": [_("validation.capacityExceeded")]})
+
+    rcap = getattr(resource, "max_capacity", None)
+    try:
+        rcap_int = int(rcap) if rcap is not None else None
+    except Exception:
+        rcap_int = None
+    if rcap_int is not None and m > rcap_int:
+        raise serializers.ValidationError({"max_students": [_("validation.capacityExceeded")]})
+
+    if instance is not None and getattr(instance, "pk", None):
+        try:
+            current = int(instance.current_enrollment())
+        except Exception:
+            current = 0
+        if m < current:
+            raise serializers.ValidationError({"max_students": [_("validation.capacityBelowEnrolled")]})
+
+
+def validate_category_and_license(course, instructor, resource) -> None:
+    """Generic category and instructor license checks reused by Lessons/ScheduledClass.
+
+    - If resource.category != course.category -> resource_id: validation.categoryMismatch
+    - If instructor.license_categories doesn't include course.category -> instructor_id: validation.instructorLicenseMismatch
+    """
+    course_category = getattr(course, "category", None)
+    if resource and course_category:
+        if getattr(resource, "category", None) != course_category:
+            raise serializers.ValidationError({"resource_id": [_("validation.categoryMismatch")]})
+    if course_category:
+        lic_raw = getattr(instructor, "license_categories", "") or ""
+        cats = [c.strip().upper() for c in str(lic_raw).split(",") if c.strip()]
+        if str(course_category).upper() not in cats:
+            raise serializers.ValidationError({"instructor_id": [_("validation.instructorLicenseMismatch")]})
+
+    # --- New helpers: ScheduledClass student enrollment and capacity ---
+def validate_scheduled_class_students_enrolled(course, students) -> None:
+    """
+    Ensure every student attached to a scheduled class is enrolled in this course.
+
+    - Expects `course` to be a Course instance and `students` an iterable of Student instances
+    - Raises: {"student_ids": ["validation.studentNotEnrolledToCourse"]}
+    """
+    if not course or not students:
+        return
+    from .models import Enrollment
+
+    for student in students:
+        sid = getattr(student, "id", None)
+        if not sid:
+            # Skip silently if student object is malformed
+            continue
+        exists = Enrollment.objects.filter(student_id=sid, course_id=getattr(course, "id", None)).exists()
+        if not exists:
+            raise serializers.ValidationError({"student_ids": [_("validation.studentNotEnrolledToCourse")]})
+
+
+def validate_scheduled_class_students_capacity(resource, max_students, students) -> None:
+    """
+    Ensure the number of attached students does not exceed max_students or room capacity.
+
+    - Cannot exceed `max_students` if provided
+    - Cannot exceed `resource.max_capacity` if available
+    - Raises field errors on `student_ids` with i18n keys matching frontend
+    """
+    if not students:
+        return
+
+    try:
+        count = len(list(students))
+    except Exception:
+        # If students is not sized, try to iterate and count
+        count = sum(1 for _ in students)
+
+    # Business limit: max_students
+    if max_students is not None:
+        try:
+            m = int(max_students)
+        except Exception:
+            m = None
+        if m is not None and count > m:
+            raise serializers.ValidationError({"student_ids": [_("validation.capacityBelowSelected")]})
+
+    # Physical capacity: resource.max_capacity
+    cap = getattr(resource, "max_capacity", None) if resource is not None else None
+    try:
+        cap_int = int(cap) if cap is not None else None
+    except Exception:
+        cap_int = None
+    if cap_int is not None and count > cap_int:
+        raise serializers.ValidationError({"student_ids": [_("validation.selectedStudentsExceedCapacity")]})
 def validate_lesson_resource_availability(resource, status) -> None:
     if (status == "SCHEDULED") and resource is not None:
         try:

@@ -85,7 +85,7 @@ export default function ScheduledClassList(props) {
   const { collapsed } = useAsidePanel();
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
-  <ResourceFilterInput key="resource_id" source="resource_id" alwaysOn />,
+    <ResourceFilterInput key="resource_id" source="resource_id" alwaysOn onlyClassrooms />,
   ];
 
   return (
