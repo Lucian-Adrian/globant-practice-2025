@@ -330,7 +330,8 @@ def validate_category_and_license(course, instructor, resource) -> None:
         if str(course_category).upper() not in cats:
             raise serializers.ValidationError({"instructor_id": [_("validation.instructorLicenseMismatch")]})
 
-    # --- New helpers: ScheduledClass student enrollment and capacity ---
+
+# --- New helpers: ScheduledClass student enrollment and capacity ---
 def validate_scheduled_class_students_enrolled(course, students) -> None:
     """
     Ensure every student attached to a scheduled class is enrolled in this course.
