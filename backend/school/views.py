@@ -27,6 +27,7 @@ from .models import (
     Payment,
     Resource,
     ScheduledClass,
+    ScheduledClassPattern,
     Student,
     Vehicle,
 )
@@ -39,6 +40,7 @@ from .serializers import (
     PaymentSerializer,
     ResourceSerializer,
     ScheduledClassSerializer,
+    ScheduledClassPatternSerializer,
     StudentSerializer,
     VehicleSerializer,
 )
@@ -1420,14 +1422,36 @@ class ResourceViewSet(FullCrudViewSet):
         )
 
 
-class ScheduledClassViewSet(FullCrudViewSet):
-    queryset = ScheduledClass.objects.all().order_by("scheduled_time")
-    serializer_class = ScheduledClassSerializer
+class ScheduledClassPatternViewSet(FullCrudViewSet):
+    queryset = ScheduledClassPattern.objects.all().order_by("-created_at")
+    serializer_class = ScheduledClassPatternSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         "course": ["exact"],
         "instructor": ["exact"],
         "resource": ["exact"],
+        "status": ["exact"],
+        "start_date": ["gte", "lte", "date"],
+    }
+
+    @decorators.action(detail=True, methods=["post"], url_path="generate-classes")
+    def generate_classes(self, request, pk=None):
+        """Generate ScheduledClass instances for this pattern."""
+        pattern = self.get_object()
+        classes = pattern.generate_scheduled_classes()
+        ScheduledClass.objects.bulk_create(classes)
+        serializer = ScheduledClassSerializer(classes, many=True)
+        return response.Response(serializer.data)
+
+
+class ScheduledClassViewSet(FullCrudViewSet):
+    queryset = ScheduledClass.objects.all().order_by("scheduled_time")
+    serializer_class = ScheduledClassSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {
+        "pattern__course": ["exact"],
+        "pattern__instructor": ["exact"],
+        "pattern__resource": ["exact"],
         "status": ["exact"],
         "scheduled_time": ["gte", "lte", "date"],
     }
@@ -1552,9 +1576,10 @@ class ScheduledClassViewSet(FullCrudViewSet):
             "resource_id",
             "scheduled_time",
             "status",
+            "max_students",
         }
         # Optional columns
-        optional = {"duration_minutes", "student_ids", "max_students"}
+        optional = {"duration_minutes", "student_ids"}
 
         header = set([c.strip() for c in (reader.fieldnames or [])])
         missing = required - header
@@ -1575,8 +1600,10 @@ class ScheduledClassViewSet(FullCrudViewSet):
                     "resource_id": (row.get("resource_id") or "").strip(),
                     "scheduled_time": (row.get("scheduled_time") or "").strip(),
                     "status": (row.get("status") or "").strip(),
-                    "max_students": (row.get("max_students") or "").strip(),
                 }
+                max_students_val = (row.get("max_students") or "").strip()
+                if max_students_val:
+                    data["max_students"] = max_students_val
 
                 # Apply defaults and optional fields
                 duration_val = (row.get("duration_minutes") or "").strip()
@@ -1612,12 +1639,6 @@ class ScheduledClassViewSet(FullCrudViewSet):
                     (updated_ids if existing else created_ids).append(obj.id)
                 else:
                     errors.append({"row": idx, "errors": ser.errors})
-            except Course.DoesNotExist:
-                errors.append({"row": idx, "error": f"Course with ID {data.get('course_id')} does not exist"})
-            except Instructor.DoesNotExist:
-                errors.append({"row": idx, "error": f"Instructor with ID {data.get('instructor_id')} does not exist"})
-            except Resource.DoesNotExist:
-                errors.append({"row": idx, "error": f"Resource with ID {data.get('resource_id')} does not exist"})
             except Exception as e:
                 errors.append({"row": idx, "errors": {"general": [str(e)]}})
 

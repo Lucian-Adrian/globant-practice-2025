@@ -10,6 +10,7 @@ from .views import (
     PaymentViewSet,
     ResourceViewSet,
     ScheduledClassViewSet,
+    ScheduledClassPatternViewSet,
     StudentViewSet,
     UtilityViewSet,
     VehicleViewSet,
@@ -28,6 +29,7 @@ router.register(r"instructor-availabilities", InstructorAvailabilityViewSet)
 router.register(r"vehicles", VehicleViewSet)
 router.register(r"resources", ResourceViewSet)
 router.register(r"courses", CourseViewSet)
+router.register(r"scheduled-class-patterns", ScheduledClassPatternViewSet)
 router.register(r"scheduled-classes", ScheduledClassViewSet)
 router.register(r"enrollments", EnrollmentViewSet)
 router.register(r"lessons", LessonViewSet)

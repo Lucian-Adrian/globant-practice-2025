@@ -191,7 +191,28 @@ const languageData = {
   lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', resource:'Resource', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
         'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
         classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
-        scheduledclasses: { name: 'Scheduled Classes', empty: 'No scheduled classes yet', invite: 'Create the first scheduled class', import_helper: 'You can import a CSV to add multiple scheduled classes at once.', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', scheduled_time: 'Scheduled time', duration_minutes: 'Duration (min)', max_students: 'Max students', students: 'Students', current_enrollment: 'Current enrollment', available_spots: 'Available spots' }, helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
+        scheduledclasses: { 
+          name: 'Scheduled Classes', 
+          empty: 'No scheduled classes yet', 
+          invite: 'Create the first scheduled class', 
+          import_helper: 'You can import a CSV to add multiple scheduled classes at once.', 
+          import_format_hint: 'Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).', 
+          fields: { 
+            id: 'ID', 
+            name: 'Name', 
+            course: 'Course', 
+            instructor: 'Instructor', 
+            resource: 'Resource', 
+            scheduled_time: 'Scheduled time', 
+            duration_minutes: 'Duration (min)', 
+            max_students: 'Max students', 
+            students: 'Students', 
+            current_enrollment: 'Current enrollment', 
+            available_spots: 'Available spots' 
+          }, 
+          helper: 'Create a scheduled class to start planning lessons.', 
+          create: 'Create Scheduled Class' 
+        },
       }
     },
     resources: {
@@ -325,7 +346,7 @@ const languageData = {
   lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
         'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
         classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
-        scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+        scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
       }
     },
     resources: {
@@ -339,7 +360,7 @@ const languageData = {
   lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
       'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
       classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
-    scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+    scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
     },
   },
   ru: {
@@ -459,7 +480,7 @@ const languageData = {
   lessons: { name:'Уроки', empty:'Уроков пока нет', invite:'Запланируйте первый урок', import_helper:'Вы можете импортировать CSV, чтобы добавить несколько уроков сразу.', import_format_hint:'Обязательные колонки: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (остальные игнорируются).', fields:{ id:'ИД', enrollment:'Запись', instructor:'Инструктор', vehicle:'Транспорт', resource:'Ресурс', scheduled_time:'Время', duration_minutes:'Длительность (мин)', status:'Статус', notes:'Заметки' } },
         'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
         classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
-      scheduledclasses: { name: 'Запланированные занятия', empty: 'Пока нет запланированных занятий', invite: 'Создайте первое запланированное занятие', import_helper: 'Вы можете импортировать CSV, чтобы добавить несколько занятий сразу.', fields: { id: 'ИД', name: 'Название', course: 'Курс', instructor: 'Инструктор', resource: 'Ресурс', scheduled_time: 'Время', duration_minutes: 'Длительность (мин)', max_students: 'Макс. число студентов', students: 'Студенты', current_enrollment: 'Текущая запись', available_spots: 'Доступные места' }, helper: 'Создайте запланированное занятие, чтобы начать планирование уроков.', create: 'Создать запланированное занятие' },
+      scheduledclasses: { name: 'Запланированные занятия', empty: 'Пока нет запланированных занятий', invite: 'Создайте первое запланированное занятие', import_helper: 'Вы можете импортировать CSV, чтобы добавить несколько занятий сразу.', import_format_hint: 'Обязательные колонки: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (остальные игнорируются).', fields: { id: 'ИД', name: 'Название', course: 'Курс', instructor: 'Инструктор', resource: 'Ресурс', scheduled_time: 'Время', duration_minutes: 'Длительность (мин)', max_students: 'Макс. число студентов', students: 'Студенты', current_enrollment: 'Текущая запись', available_spots: 'Доступные места' }, helper: 'Создайте запланированное занятие, чтобы начать планирование уроков.', create: 'Создать запланированное занятие' },
       }
     },
     resources: {
