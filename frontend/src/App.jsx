@@ -279,9 +279,7 @@ export default function App() {
       <Resource name="vehicles" list={VehicleList} edit={VehicleEdit} create={VehicleCreate} />
       <Resource name="classes" list={CourseListComponent} edit={CourseEdit} create={CourseCreate} />
       <Resource name="payments" list={PaymentList} edit={PaymentEdit} create={PaymentCreate} />
-    {/* <Admin dataProvider={dataProvider} customRoutes={customRoutes} i18nProvider={i18nProvider} basename="/admin">
-      <Resource name="students" list={StudentList} edit={StudentEdit} create={StudentCreate} />
-      <Resource name="classes" list={CourseList} edit={CourseEdit} create={CourseCreate} /> */}
+    
       <Resource name="scheduledclasspatterns" list={ScheduledClassPatternList} edit={ScheduledClassPatternEdit} create={ScheduledClassPatternCreate} />
       <Resource name="scheduledclasses" list={ScheduledClassList} edit={ScheduledClassEdit} create={ScheduledClassCreate} />
     </Admin>
