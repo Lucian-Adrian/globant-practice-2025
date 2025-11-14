@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, useTranslate, required, ReferenceArrayInput, SelectArrayInput, useCreate, useRedirect, useNotify } from 'react-admin';
+import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateTimeInput, NumberInput, useTranslate, required, ReferenceArrayInput, SelectArrayInput } from 'react-admin';
+import { validateScheduledClass } from '../../shared/validation/lessonValidation';
 
 export default function ScheduledClassCreate(props) {
   const t = useTranslate();
@@ -51,16 +52,16 @@ export default function ScheduledClassCreate(props) {
 
   return (
     <Create {...props}>
-      <SimpleForm onSubmit={handleSubmit}>
-        <TextInput source="name" label="Pattern Name" validate={[required()]} />
-        <ReferenceInput source="course_id" reference="classes" perPage={100}>
-          <SelectInput label="Course" optionText="name" optionValue="id" validate={[required()]} />
+      <SimpleForm validate={async (values) => validateScheduledClass(values, t, values?.id)}>
+        <TextInput source="name" label={t('resources.scheduledclasses.fields.name', 'Name')} validate={[required()]} />
+        <ReferenceInput source="course_id" reference="classes" perPage={100} filter={{ type: 'THEORY' }}>
+          <SelectInput label={t('resources.scheduledclasses.fields.course', 'Course')} optionText={(r) => r.name} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
           <SelectInput label="Instructor" optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
-        <ReferenceInput source="resource_id" reference="resources" perPage={100}>
-          <SelectInput label="Resource" optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
+        <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 3 }}>
+          <SelectInput label={t('resources.scheduledclasses.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ArrayInput source="recurrence_days" label="Recurrence Days" validate={[required()]}>
           <SimpleFormIterator>
