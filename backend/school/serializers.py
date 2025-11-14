@@ -694,8 +694,15 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         ]
 
 
+class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
+    """Minimal serializer for pattern to avoid data bloat in ScheduledClass responses"""
+    class Meta:
+        model = ScheduledClassPattern
+        fields = ["id", "name", "status"]
+
+
 class ScheduledClassSerializer(serializers.ModelSerializer):
-    pattern = ScheduledClassPatternSerializer(read_only=True)
+    pattern = ScheduledClassPatternSummarySerializer(read_only=True)
     pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
     )
