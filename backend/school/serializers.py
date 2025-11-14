@@ -23,7 +23,6 @@ from .validators import (
     resolve_lesson_context,
     validate_lesson_required_fields,
     validate_lesson_practice_and_vehicle,
-    validate_lesson_conflicts,
     validate_lesson_resource_availability,
     validate_instructor_availability,
     validate_lesson_category_and_license,
