@@ -2,6 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
+    AddressViewSet,
     CourseViewSet,
     EnrollmentViewSet,
     InstructorAvailabilityViewSet,
@@ -11,6 +12,7 @@ from .views import (
     ResourceViewSet,
     ScheduledClassViewSet,
     ScheduledClassPatternViewSet,
+    SchoolConfigViewSet,
     StudentViewSet,
     UtilityViewSet,
     VehicleViewSet,
@@ -35,6 +37,8 @@ router.register(r"enrollments", EnrollmentViewSet)
 router.register(r"lessons", LessonViewSet)
 router.register(r"payments", PaymentViewSet)
 router.register(r"utils", UtilityViewSet, basename="utils")
+router.register(r"addresses", AddressViewSet)
+router.register(r"school/config", SchoolConfigViewSet, basename="school-config")
 
 urlpatterns = [
     path("", include(router.urls)),

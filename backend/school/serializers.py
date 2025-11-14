@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from .models import (
+    Address,
     Course,
     Enrollment,
     Instructor,
@@ -14,6 +15,7 @@ from .models import (
     Resource,
     ScheduledClass,
     ScheduledClassPattern,
+    SchoolConfig,
     Student,
     Vehicle,
 )
@@ -665,3 +667,84 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         check_scheduled_class_resource_conflicts(resource, start, end, instance)
 
         return attrs
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    """Serializer for Address model."""
+
+    class Meta:
+        model = Address
+        fields = ["id", "street", "city"]
+
+
+class SchoolConfigSerializer(serializers.ModelSerializer):
+    """Serializer for SchoolConfig singleton model matching Task 1 API contract."""
+
+    # Nested read-only addresses
+    addresses = AddressSerializer(many=True, read_only=True)
+    # Write-only field to set addresses by IDs
+    address_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+
+    class Meta:
+        model = SchoolConfig
+        fields = [
+            "id",
+            "school_name",
+            "school_logo",
+            "business_hours",
+            "email",
+            "contact_phone1",
+            "contact_phone2",
+            "landing_image",
+            "landing_text",
+            "social_links",
+            "rules",
+            "available_categories",
+            "addresses",
+            "address_ids",
+        ]
+        read_only_fields = ["id"]
+
+    def validate_landing_text(self, value):
+        """Validate landing_text is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("landing_text must be a dictionary")
+        return value
+
+    def validate_social_links(self, value):
+        """Validate social_links is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("social_links must be a dictionary")
+        return value
+
+    def validate_rules(self, value):
+        """Validate rules is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("rules must be a dictionary")
+        return value
+
+    def validate_available_categories(self, value):
+        """Validate available_categories is a list."""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("available_categories must be a list")
+        return value
+
+    def update(self, instance, validated_data):
+        """Handle addresses update separately due to ManyToMany."""
+        address_ids = validated_data.pop("address_ids", None)
+
+        # Update regular fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update addresses if provided
+        if address_ids is not None:
+            instance.addresses.set(address_ids)
+
+        return instance
