@@ -1615,12 +1615,6 @@ class ScheduledClassViewSet(FullCrudViewSet):
                     (updated_ids if existing else created_ids).append(obj.id)
                 else:
                     errors.append({"row": idx, "errors": ser.errors})
-            except Course.DoesNotExist:
-                errors.append({"row": idx, "error": f"Course with ID {data.get('course_id')} does not exist"})
-            except Instructor.DoesNotExist:
-                errors.append({"row": idx, "error": f"Instructor with ID {data.get('instructor_id')} does not exist"})
-            except Resource.DoesNotExist:
-                errors.append({"row": idx, "error": f"Resource with ID {data.get('resource_id')} does not exist"})
             except Exception as e:
                 errors.append({"row": idx, "errors": {"general": [str(e)]}})
 
