@@ -1576,8 +1576,10 @@ class ScheduledClassViewSet(FullCrudViewSet):
                     "resource_id": (row.get("resource_id") or "").strip(),
                     "scheduled_time": (row.get("scheduled_time") or "").strip(),
                     "status": (row.get("status") or "").strip(),
-                    "max_students": (row.get("max_students") or "").strip(),
                 }
+                max_students_val = (row.get("max_students") or "").strip()
+                if max_students_val:
+                    data["max_students"] = max_students_val
 
                 # Apply defaults and optional fields
                 duration_val = (row.get("duration_minutes") or "").strip()
