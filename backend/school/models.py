@@ -240,7 +240,15 @@ class ScheduledClassPattern(models.Model):
         if isinstance(current_date, str):
             current_date = date.fromisoformat(current_date)
         count = 0
-        day_map = {day.value: i for i, day in enumerate(DayOfWeek)}  # MONDAY: 0, etc.
+        day_map = {
+            'MONDAY': 0,
+            'TUESDAY': 1,
+            'WEDNESDAY': 2,
+            'THURSDAY': 3,
+            'FRIDAY': 4,
+            'SATURDAY': 5,
+            'SUNDAY': 6,
+        }
         recurrence_day_indices = [day_map[day] for day in self.recurrence_days if day in day_map]
 
         while count < self.num_lessons:
