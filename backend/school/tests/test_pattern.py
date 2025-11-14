@@ -18,11 +18,11 @@ ScheduledClass.objects.bulk_create(classes)
 print('Bulk created')
 
 # Set students
-for cls in classes:
-    cls.students.set(pattern.students.all())
-print('Students set')
+# Students are now set on the pattern, not on individual ScheduledClass instances.
+# If you need to set students, do so on the pattern before generating classes.
 
 # Check
 for cls in ScheduledClass.objects.filter(pattern=pattern):
-    students_names = list(cls.students.values_list('first_name', flat=True))
+    # Students are now associated with the pattern, not with individual classes.
+    students_names = list(pattern.students.values_list('first_name', flat=True))
     print(f'Created: {cls.name} at {cls.scheduled_time}, students: {students_names}')
