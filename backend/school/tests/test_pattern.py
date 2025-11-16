@@ -1,18 +1,60 @@
 from django.test import TestCase
-from school.models import ScheduledClassPattern, ScheduledClass, Student
-from datetime import date, time
+from school.models import ScheduledClassPattern, ScheduledClass, Student, Course, Instructor, Resource
+from datetime import date
 
 class ScheduledClassPatternTestCase(TestCase):
     def setUp(self):
         # Create test students
-        self.student1 = Student.objects.create(first_name="Alice", last_name="Smith")
-        self.student2 = Student.objects.create(first_name="Bob", last_name="Jones")
+        self.student1 = Student.objects.create(
+            first_name="Alice", 
+            last_name="Smith",
+            email="alice@example.com",
+            phone_number="+37360111222",
+            date_of_birth="2000-01-01"
+        )
+        self.student2 = Student.objects.create(
+            first_name="Bob", 
+            last_name="Jones",
+            email="bob@example.com",
+            phone_number="+37360111233",
+            date_of_birth="2000-01-01"
+        )
+        
+        # Create required related objects
+        self.course = Course.objects.create(
+            name="Test Course",
+            category="B",
+            type="THEORY",
+            description="Test course",
+            price=100.00,
+            required_lessons=10
+        )
+        self.instructor = Instructor.objects.create(
+            first_name="Test",
+            last_name="Instructor", 
+            email="instructor@test.com",
+            phone_number="+37360111244",
+            hire_date="2020-01-01",
+            license_categories="B"
+        )
+        self.resource = Resource.objects.create(
+            name="Test Classroom",
+            max_capacity=30,
+            category="B",
+            is_available=True
+        )
+        
         # Create a ScheduledClassPattern
         self.pattern = ScheduledClassPattern.objects.create(
             name="Test Pattern",
-            recurrence_days=[0, 2, 4],  # e.g., Monday, Wednesday, Friday
-            times=[time(9, 0), time(14, 0)],
+            course=self.course,
+            instructor=self.instructor,
+            resource=self.resource,
+            recurrence_days=['MONDAY', 'WEDNESDAY', 'FRIDAY'],  # Use string values
+            times=["09:00", "14:00"],  # Use strings, not time objects
             start_date=date.today(),
+            num_lessons=6,
+            max_students=25,
         )
         # Associate students with the pattern
         self.pattern.students.set([self.student1, self.student2])
@@ -32,10 +74,10 @@ class ScheduledClassPatternTestCase(TestCase):
         # Optionally, check class details
         for cls in created_classes:
             self.assertEqual(cls.pattern, self.pattern)
-            self.assertIn(cls.scheduled_time.time(), self.pattern.times)
+            self.assertIn(cls.scheduled_time.strftime('%H:%M'), self.pattern.times)
 
     def test_pattern_fields(self):
         self.assertEqual(self.pattern.name, "Test Pattern")
-        self.assertEqual(self.pattern.recurrence_days, [0, 2, 4])
-        self.assertEqual(self.pattern.times, [time(9, 0), time(14, 0)])
+        self.assertEqual(self.pattern.recurrence_days, ['MONDAY', 'WEDNESDAY', 'FRIDAY'])
+        self.assertEqual(self.pattern.times, ["09:00", "14:00"])
         self.assertIsInstance(self.pattern.start_date, date)

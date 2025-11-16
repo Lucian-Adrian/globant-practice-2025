@@ -29,7 +29,7 @@ class StudentValidationTests(TestCase):
             self.url, {**self.payload, "phone_number": "+37360111223"}, format="json"
         )
         self.assertEqual(r2.status_code, 400)
-        self.assertIn("email", r2.json())
+        self.assertIn("email", r2.json()['errors'])
 
     def test_duplicate_phone(self):
         self.client.post(self.url, self.payload, format="json")
@@ -37,16 +37,16 @@ class StudentValidationTests(TestCase):
             self.url, {**self.payload, "email": "other@example.com"}, format="json"
         )
         self.assertEqual(r2.status_code, 400)
-        self.assertIn("phone_number", r2.json())
+        self.assertIn("phone_number", r2.json()['errors'])
 
     def test_invalid_name(self):
         bad = {**self.payload, "first_name": "Ion123"}
         r = self.client.post(self.url, bad, format="json")
         self.assertEqual(r.status_code, 400)
-        self.assertIn("first_name", r.json())
+        self.assertIn("first_name", r.json()['errors'])
 
     def test_invalid_phone(self):
         bad = {**self.payload, "phone_number": "+37312"}
         r = self.client.post(self.url, bad, format="json")
         self.assertEqual(r.status_code, 400)
-        self.assertIn("phone_number", r.json())
+        self.assertIn("phone_number", r.json()['errors'])

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from school.models import Course, Instructor, Resource, ScheduledClass, Student
+from school.models import Course, Instructor, Resource, ScheduledClass, ScheduledClassPattern, Student
 
 
 class ResourceModelTest(TestCase):
@@ -54,13 +54,26 @@ class ScheduledClassModelTest(TestCase):
         self.resource = Resource.objects.create(
             name="Classroom A", max_capacity=30, category="B", is_available=True
         )
-        self.scheduled_class = ScheduledClass.objects.create(
+        # Create pattern first
+        self.pattern = ScheduledClassPattern.objects.create(
+            name="Monday Theory Pattern",
             course=self.course,
+            instructor=self.instructor,
+            resource=self.resource,
+            recurrence_days=['MONDAY'],
+            times=['10:00'],
+            start_date=timezone.now().date(),
+            num_lessons=1,
+            duration_minutes=60,
+            max_students=25,
+            status="SCHEDULED",
+        )
+        # Create scheduled class from pattern
+        self.scheduled_class = ScheduledClass.objects.create(
+            pattern=self.pattern,
             name="Monday Theory Class",
             scheduled_time=timezone.now(),
             duration_minutes=60,
-            instructor=self.instructor,
-            resource=self.resource,
             max_students=25,
             status="SCHEDULED",
         )
@@ -81,15 +94,15 @@ class ScheduledClassModelTest(TestCase):
             date_of_birth="1990-01-01",
         )
 
-        # Enroll student
-        self.scheduled_class.students.add(student)
+        # Enroll student in the pattern (not directly in scheduled class)
+        self.pattern.students.add(student)
 
         self.assertEqual(self.scheduled_class.current_enrollment(), 1)
         self.assertEqual(self.scheduled_class.available_spots(), 24)
         self.assertFalse(self.scheduled_class.is_full())
 
-        # Check reverse relationship
-        self.assertIn(self.scheduled_class, student.scheduled_classes.all())
+        # Check reverse relationship - student should be in pattern's students
+        self.assertIn(student, self.pattern.students.all())
 
     def test_capacity_limits(self):
         # Create max_students students
@@ -104,8 +117,8 @@ class ScheduledClassModelTest(TestCase):
             )
             students.append(student)
 
-        # Enroll all students
-        self.scheduled_class.students.add(*students)
+        # Enroll all students in the pattern
+        self.pattern.students.add(*students)
 
         self.assertEqual(self.scheduled_class.current_enrollment(), 25)
         self.assertEqual(self.scheduled_class.available_spots(), 0)
