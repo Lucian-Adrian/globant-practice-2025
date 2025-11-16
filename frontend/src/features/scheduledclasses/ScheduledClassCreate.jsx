@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateTimeInput, NumberInput, useTranslate, required, ReferenceArrayInput, SelectArrayInput } from 'react-admin';
+import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, useTranslate, ReferenceArrayInput, SelectArrayInput, useCreate, useRedirect, useNotify, required } from 'react-admin';
+import { httpJson, API_PREFIX } from '../../api/httpClient';
 import { validateScheduledClass } from '../../shared/validation/lessonValidation';
 
 export default function ScheduledClassCreate(props) {
@@ -33,16 +34,16 @@ export default function ScheduledClassCreate(props) {
 
     create('scheduledclasspatterns', { data: patternData }, {
       onSuccess: (pattern) => {
-        // Generate the ScheduledClasses
-        create(`scheduledclasspatterns/${pattern.id}/generate-classes`, { data: {} }, {
-          onSuccess: () => {
+        // Generate the ScheduledClasses using direct HTTP call to action
+        const generateUrl = `${API_PREFIX}/scheduled-class-patterns/${pattern.id}/generate-classes/`;
+        httpJson(generateUrl, { method: 'POST' })
+          .then(() => {
             notify('Pattern and scheduled classes created successfully.', { type: 'success' });
             redirect('/scheduledclasses');
-          },
-          onError: (error) => {
+          })
+          .catch(() => {
             notify('Pattern created but failed to generate classes.', { type: 'error' });
-          },
-        });
+          });
       },
       onError: (error) => {
         notify('Error creating pattern', { type: 'error' });
