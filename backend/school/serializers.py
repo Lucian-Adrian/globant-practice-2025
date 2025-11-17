@@ -599,6 +599,14 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     resource = ResourceSerializer(source='pattern.resource', read_only=True)
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+    student_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        source="students",
+        many=True,
+        required=False,
+        write_only=True
+    )
 
     class Meta:
         model = ScheduledClass
@@ -616,6 +624,8 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
             "status",
             "current_enrollment",
             "available_spots",
+            "students",
+            "student_ids",
         ]
 
     def get_current_enrollment(self, obj):
