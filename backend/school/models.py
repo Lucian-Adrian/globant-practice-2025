@@ -229,12 +229,55 @@ class ScheduledClassPattern(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.name} - {self.course.name}"
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        from datetime import date
+        if not self.recurrence_days:
+            raise ValidationError("Recurrence days cannot be empty.")
+        if not self.times:
+            raise ValidationError("Times cannot be empty.")
+        if self.start_date < date.today():
+            raise ValidationError("Start date cannot be in the past.")
+        # Check for valid day names
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        if not all(day in valid_days for day in self.recurrence_days):
+            raise ValidationError("Invalid recurrence days.")
+
+    def validate_generation(self):
+        """Validate before generating classes to prevent overlaps."""
+        from django.core.exceptions import ValidationError
+        from django.db.models import Q
+        from datetime import timedelta
+        classes = self.generate_scheduled_classes()
+        for cls in classes:
+            # Check overlap with existing classes for same instructor
+            overlaps = ScheduledClass.objects.filter(
+                ~Q(pattern=self) if self.pk else Q(),  # Exclude own if updating
+                pattern__instructor=self.instructor,
+                scheduled_time__lt=cls.scheduled_time + timedelta(minutes=cls.duration_minutes),
+                scheduled_time__gte=cls.scheduled_time
+            ).exists()
+            if overlaps:
+                raise ValidationError(f"Overlap detected for instructor at {cls.scheduled_time}.")
+            # Check for resource
+            overlaps = ScheduledClass.objects.filter(
+                ~Q(pattern=self) if self.pk else Q(),
+                pattern__resource=self.resource,
+                scheduled_time__lt=cls.scheduled_time + timedelta(minutes=cls.duration_minutes),
+                scheduled_time__gte=cls.scheduled_time
+            ).exists()
+            if overlaps:
+                raise ValidationError(f"Overlap detected for resource at {cls.scheduled_time}.")
+
+    def delete(self, *args, **kwargs):
+        # Delete all generated classes before deleting the pattern
+        self.scheduled_classes.all().delete()
+        super().delete(*args, **kwargs)
 
     def generate_scheduled_classes(self):
         """Generate ScheduledClass instances based on recurrence."""
-        from datetime import datetime, timedelta, date
+        from datetime import datetime, timedelta, date, time
+        from django.utils import timezone
         classes = []
         current_date = self.start_date
         if isinstance(current_date, str):
@@ -249,17 +292,23 @@ class ScheduledClassPattern(models.Model):
             'SATURDAY': 5,
             'SUNDAY': 6,
         }
-        recurrence_day_indices = [day_map[day] for day in self.recurrence_days if day in day_map]
+        recurrence_day_indices = set(day_map[day] for day in self.recurrence_days if day in day_map)
+        
+        # Pre-calculate time objects
+        time_objs = []
+        for time_str in self.times:
+            if isinstance(time_str, str):
+                time_objs.append(time.fromisoformat(time_str))
+            else:
+                time_objs.append(time_str)
 
         while count < self.num_lessons:
             if current_date.weekday() in recurrence_day_indices:
-                for time_obj in self.times:
+                for time_obj in time_objs:
                     if count >= self.num_lessons:
                         break
-                    if isinstance(time_obj, str):
-                        from datetime import time
-                        time_obj = time.fromisoformat(time_obj)
-                    scheduled_time = datetime.combine(current_date, time_obj)
+                    naive_dt = datetime.combine(current_date, time_obj)
+                    scheduled_time = timezone.make_aware(naive_dt)
                     # Create ScheduledClass
                     scheduled_class = ScheduledClass(
                         pattern=self,
@@ -276,6 +325,14 @@ class ScheduledClassPattern(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=['start_date']),
+            models.Index(fields=['status']),
+            models.Index(fields=['course']),
+            models.Index(fields=['instructor']),
+            models.Index(fields=['resource']),
+            models.Index(fields=['start_date', 'status']),  # Composite index for common queries
+        ]
 
 
 class ScheduledClass(models.Model):
@@ -312,6 +369,12 @@ class ScheduledClass(models.Model):
 
     class Meta:
         ordering = ["scheduled_time"]
+        indexes = [
+            models.Index(fields=['pattern']),
+            models.Index(fields=['scheduled_time']),
+            models.Index(fields=['status']),
+            models.Index(fields=['scheduled_time', 'status']),  # Composite index for time range + status queries
+        ]
 
 
 class Enrollment(models.Model):
