@@ -528,6 +528,31 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    def validate_recurrence_days(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Recurrence days must be a list.")
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        for day in value:
+            if day not in valid_days:
+                raise serializers.ValidationError(f"Invalid day: {day}. Must be one of {valid_days}.")
+        return value
+
+    def validate_times(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Times must be a list.")
+        import re
+        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
+        for time_str in value:
+            if not isinstance(time_str, str) or not time_pattern.match(time_str):
+                raise serializers.ValidationError(f"Invalid time format: {time_str}. Must be HH:MM (e.g., 09:30).")
+        return value
+
+    def validate_start_date(self, value):
+        from datetime import date
+        if value < date.today():
+            raise serializers.ValidationError("Start date cannot be in the past.")
+        return value
+
     class Meta:
         model = ScheduledClassPattern
         fields = [
@@ -564,6 +589,9 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
     )
+    course = serializers.CharField(source='pattern.course.name', read_only=True)
+    instructor = InstructorSerializer(source='pattern.instructor', read_only=True)
+    resource = ResourceSerializer(source='pattern.resource', read_only=True)
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
 
@@ -574,6 +602,9 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
             "pattern",
             "pattern_id",
             "name",
+            "course",
+            "instructor",
+            "resource",
             "scheduled_time",
             "duration_minutes",
             "max_students",
