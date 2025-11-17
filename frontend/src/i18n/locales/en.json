@@ -345,17 +345,24 @@
       "due": { "today": "today", "inDays": "in {{count}} days", "daysAgo": "{{count}} days ago" }
     },
     "progress": {
-      "sections": { "milestones": "Course Milestones", "recentAchievements": "Recent Achievements" },
-      "milestones": {
-        "theory": { "title": "Theory Classes", "desc": "Complete all theory lessons" },
-        "practice": { "title": "Driving Hours", "desc": "Complete required driving practice" },
-        "theoryExam": { "title": "Theory Exam", "desc": "Pass the theoretical examination" },
-        "practicalExam": { "title": "Practical Exam", "desc": "Pass the practical driving test" }
+      "stats": {
+        "enrollments": "Enrollments",
+        "completed": "Completed",
+        "totalHours": "Total Hours",
+        "remaining": "Remaining"
       },
-      "achievements": {
-        "firstHighway": { "title": "First Highway Drive", "desc": "Successfully completed your first highway driving lesson" },
-        "parallelParking": { "title": "Parallel Parking Master", "desc": "Mastered parallel parking technique" },
-        "nightDriving": { "title": "Night Driving", "desc": "Completed your first night driving session" }
+      "overall": {
+        "title": "Overall Progress",
+        "subtitle": "You're doing great! Keep up the excellent work."
+      },
+      "enrollment": {
+        "details": "Details",
+        "completed": "{{completed}} / {{required}} completed",
+        "status": {
+          "IN_PROGRESS": "In progress",
+          "COMPLETED": "Completed",
+          "CANCELED": "Canceled"
+        }
       },
       "motivational": { "title": "You're Almost There!", "body": "With {{remaining}}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!" }
     },

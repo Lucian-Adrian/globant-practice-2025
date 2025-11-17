@@ -290,17 +290,24 @@
       "due": { "today": "сегодня", "inDays": "через {{count}} дн.", "daysAgo": "{{count}} дн. назад" }
     },
     "progress": {
-      "sections": { "milestones": "Этапы курса", "recentAchievements": "Недавние достижения" },
-      "milestones": {
-        "theory": { "title": "Теоретические занятия", "desc": "Завершите все теоретические уроки" },
-        "practice": { "title": "Часы вождения", "desc": "Завершите требуемую практику" },
-        "theoryExam": { "title": "Теоретический экзамен", "desc": "Сдайте теоретический экзамен" },
-        "practicalExam": { "title": "Практический экзамен", "desc": "Сдайте практический тест" }
+      "stats": {
+        "enrollments": "Записи",
+        "completed": "Завершено",
+        "totalHours": "Всего часов",
+        "remaining": "Осталось"
       },
-      "achievements": {
-        "firstHighway": { "title": "Первый выезд на трассу", "desc": "Вы успешно завершили первый урок на трассе" },
-        "parallelParking": { "title": "Мастер параллельной парковки", "desc": "Освоили параллельную парковку" },
-        "nightDriving": { "title": "Ночное вождение", "desc": "Первое занятие по ночному вождению" }
+      "overall": {
+        "title": "Общий прогресс",
+        "subtitle": "Вы отлично справляетесь! Продолжайте в том же духе."
+      },
+      "enrollment": {
+        "details": "Подробнее",
+        "completed": "{{completed}} / {{required}} завершено",
+        "status": {
+          "IN_PROGRESS": "В процессе",
+          "COMPLETED": "Завершено",
+          "CANCELED": "Отменено"
+        }
       },
       "motivational": { "title": "Вы почти у цели!", "body": "Осталось {{remaining}}% — вы на верном пути к правам. Продолжайте!" }
     },

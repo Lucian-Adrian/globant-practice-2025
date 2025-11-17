@@ -33,6 +33,18 @@ const AwardIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
   </svg>
 );
+const GraduationCapIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+    <path d="M22 10l-10-5-10 5 10 5 10-5z" />
+    <path d="M6 12v5a6 6 0 0 0 12 0v-5" />
+  </svg>
+);
+const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" />
+  </svg>
+);
 const TargetIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <circle cx="12" cy="12" r="10" />
@@ -105,6 +117,7 @@ const Progress: React.FC = () => {
   }, []);
 
   const lessons = useMemo(() => (data?.lessons ?? []), [data]);
+  const scheduledClasses = useMemo(() => (data?.scheduled_classes ?? data?.scheduledclasses ?? []), [data]);
   const courses = useMemo(() => (data?.courses ?? []), [data]);
   const enrollments = useMemo(() => (data?.enrollments ?? []), [data]);
   const payments = useMemo(() => (data?.payments ?? []), [data]);
@@ -121,70 +134,42 @@ const Progress: React.FC = () => {
     }
     return map;
   }, [enrollments, lessons, payments, courses]);
+  
+  // Aggregates for new requirements
+  const stats = useMemo(() => {
+    const enrollmentsCount = Array.isArray(enrollments) ? enrollments.length : 0;
+    const completedLessons = lessons.filter((l:any) => (l?.status || '').toUpperCase() === 'COMPLETED').length;
+    const completedScheduled = scheduledClasses.filter((sc:any) => (sc?.status || '').toUpperCase() === 'COMPLETED').length;
+    const totalCompleted = completedLessons + completedScheduled;
+    // Sum required lessons across all enrollments
+    const totalRequired = (enrollments || []).reduce((sum:number, e:any) => sum + (Number(e?.course?.required_lessons) || 0), 0);
 
-  // Overall totals
-  const { requiredAll, completedAll, percentAll } = useMemo(() => {
-    const courseList = Array.from(studentCourseMap.values());
-    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredAll: required, completedAll: completed, percentAll: pct };
-  }, [studentCourseMap, lessons]);
+    // Remaining per enrollment based on type (THEORY uses scheduled classes; PRACTICE uses lessons)
+    const completedByEnrollment: Record<number, number> = {};
+    (enrollments || []).forEach((e:any) => {
+      const eid = e?.id;
+      const etype = (e?.type || '').toUpperCase();
+      let completedForE = 0;
+      if (etype === 'PRACTICE') {
+        completedForE = lessons.filter((l:any) => (l?.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.id === eid || l?.enrollment_id === eid)).length;
+      } else if (etype === 'THEORY') {
+        // Best-effort: if scheduled classes present, count COMPLETED ones (no per-enrollment link available here)
+        completedForE = scheduledClasses.filter((sc:any) => (sc?.status || '').toUpperCase() === 'COMPLETED').length;
+      }
+      completedByEnrollment[eid] = completedForE;
+    });
+    const totalRemaining = (enrollments || []).reduce((sum:number, e:any) => {
+      const req = Number(e?.course?.required_lessons) || 0;
+      const done = completedByEnrollment[e?.id] || 0;
+      return sum + Math.max(0, req - done);
+    }, 0);
 
-  // Theory
-  const { requiredTheory, completedTheory, percentTheory } = useMemo(() => {
-    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'THEORY');
-    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'THEORY').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredTheory: required, completedTheory: completed, percentTheory: pct };
-  }, [studentCourseMap, lessons]);
+    const percentage = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 0;
+    return { enrollmentsCount, totalCompleted, totalRequired, totalRemaining, percentage };
+  }, [enrollments, lessons, scheduledClasses]);
 
-  // Practice
-  const { requiredPractice, completedPractice, percentPractice } = useMemo(() => {
-    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'PRACTICE');
-    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'PRACTICE').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredPractice: required, completedPractice: completed, percentPractice: pct };
-  }, [studentCourseMap, lessons]);
-
-  // Build milestones using real data for theory/practice lessons
-  const milestones = [
-    { id: 1, title: t('portal.progress.milestones.theory.title'), description: t('portal.progress.milestones.theory.desc'), progress: completedTheory, total: requiredTheory || 0, completed: (requiredTheory || 0) > 0 && completedTheory >= (requiredTheory || 0), icon: BookOpenIcon, color: "success" },
-    { id: 2, title: t('portal.progress.milestones.practice.title'), description: t('portal.progress.milestones.practice.desc'), progress: completedPractice, total: requiredPractice || 0, completed: (requiredPractice || 0) > 0 && completedPractice >= (requiredPractice || 0), icon: CarIcon, color: "primary" },
-    { id: 3, title: t('portal.progress.milestones.theoryExam.title'), description: t('portal.progress.milestones.theoryExam.desc'), progress: 0, total: 1, completed: false, icon: AwardIcon, color: "warning" },
-    { id: 4, title: t('portal.progress.milestones.practicalExam.title'), description: t('portal.progress.milestones.practicalExam.desc'), progress: 0, total: 1, completed: false, icon: TargetIcon, color: "warning" },
-  ];
-
-  const recentAchievements = [
-    { id: 1, title: t('portal.progress.achievements.firstHighway.title'), date: "2 days ago", description: t('portal.progress.achievements.firstHighway.desc'), icon: "🛣️" },
-    { id: 2, title: t('portal.progress.achievements.parallelParking.title'), date: "1 week ago", description: t('portal.progress.achievements.parallelParking.desc'), icon: "🅿️" },
-    { id: 3, title: t('portal.progress.achievements.nightDriving.title'), date: "2 weeks ago", description: t('portal.progress.achievements.nightDriving.desc'), icon: "🌙" },
-  ];
-
-  const skillsProgress = [
-    { skill: "Traffic Rules", progress: 95 },
-    { skill: "Vehicle Control", progress: 70 },
-    { skill: "Parking", progress: 85 },
-    { skill: "Highway Driving", progress: 45 },
-    { skill: "City Navigation", progress: 60 },
-    { skill: "Emergency Procedures", progress: 30 },
-  ];
-
+  // Milestones/Achievements/Skills were removed per new spec; cleaning leftover data/functions to avoid unused or undefined refs.
   const getProgressTone = (value: number) => (value >= 80 ? "tw-text-success" : value >= 50 ? "tw-text-primary" : "tw-text-warning");
-  const getMilestoneColor = (tone: string) => {
-    switch (tone) {
-      case "success":
-        return "tw-bg-success tw-text-success-foreground";
-      case "primary":
-        return "tw-bg-primary tw-text-primary-foreground";
-      case "warning":
-        return "tw-bg-warning tw-text-warning-foreground";
-      default:
-        return "tw-bg-secondary tw-text-secondary-foreground";
-    }
-  };
 
   if (loading) {
     return <div className="tw-min-h-screen tw-bg-background tw-text-foreground tw-flex tw-items-center tw-justify-center"><span>{t('commonUI.loading')}</span></div>;
@@ -199,157 +184,178 @@ const Progress: React.FC = () => {
     );
   }
 
+  // Helpers for enrollment card
+  const enrollmentProgress = (e:any) => {
+    const etype = (e?.type || '').toUpperCase();
+    const required = Number(e?.course?.required_lessons) || 0;
+    let completed = 0;
+    if (etype === 'PRACTICE') {
+      completed = lessons.filter((l:any) => (l?.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.id === e?.id || l?.enrollment_id === e?.id)).length;
+    } else if (etype === 'THEORY') {
+      // Best-effort without per-enrollment linkage
+      completed = scheduledClasses.filter((sc:any) => (sc?.status || '').toUpperCase() === 'COMPLETED').length;
+    }
+    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
+    return { completed, required, pct };
+  };
+
   return (
     <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
       <PortalNavBar />
-      <Container className="tw-py-8 tw-space-y-8">
-        {/* Header */}
-        <div className="tw-text-center tw-space-y-4 tw-animate-fade-in">
-          <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-to-primary">
-            {t('progress.header.title')}
-          </h1>
-          <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">
-            {t('progress.header.subtitle')}
-          </p>
-        </div>
 
-        {/* Overall Progress */}
-  <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow tw-animate-fade-in-up">
-          <CardContent className="tw-p-8 tw-text-center">
-            <div className="tw-space-y-4">
-              <div className="tw-w-24 tw-h-24 tw-mx-auto tw-bg-white/20 tw-rounded-full tw-flex tw-items-center tw-justify-center">
-                <span className="tw-text-3xl tw-font-bold">{percentAll}%</span>
+      {/* Top Stats Section (exact navbar container width) */}
+      <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-py-6">
+        <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-4">
+          {/* Card 1: Enrollments count */}
+          <div className="tw-rounded-2xl tw-border tw-border-border tw-bg-background tw-shadow-card tw-p-5 tw-min-w-[220px] tw-h-24">
+            <div className="tw-h-full tw-flex tw-items-center tw-justify-start tw-gap-4">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-muted tw-flex tw-items-center tw-justify-center">
+                <GraduationCapIcon className="tw-w-5 tw-h-5 tw-text-primary" />
               </div>
               <div>
-                <h2 className="tw-text-2xl tw-font-bold tw-mb-2">{t('progress.courseCompletion.title')}</h2>
-                <p className="tw-opacity-90">{t('progress.courseCompletion.encouraging')}</p>
+                <span className="tw-text-2xl tw-font-bold">{stats.enrollmentsCount}</span>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('portal.progress.stats.enrollments')}</p>
               </div>
-              <ProgressBar value={percentAll} className="tw-h-3" />
-              <p className="tw-text-sm tw-opacity-75">{t('progress.courseCompletion.completedOf', { completed: completedAll, required: requiredAll || 0 })}</p>
+            </div>
+          </div>
+          {/* Card 2: Completed lessons + scheduled classes */}
+          <div className="tw-rounded-2xl tw-border tw-border-border tw-bg-background tw-shadow-card tw-p-5 tw-min-w-[220px] tw-h-24">
+            <div className="tw-h-full tw-flex tw-items-center tw-justify-start tw-gap-4">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-muted tw-flex tw-items-center tw-justify-center">
+                <AwardIcon className="tw-w-5 tw-h-5 tw-text-success" />
+              </div>
+              <div>
+                <span className="tw-text-2xl tw-font-bold">{stats.totalCompleted}</span>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('portal.progress.stats.completed')}</p>
+              </div>
+            </div>
+          </div>
+          {/* Card 3: Total Hours (sum required lessons) */}
+          <div className="tw-rounded-2xl tw-border tw-border-border tw-bg-background tw-shadow-card tw-p-5 tw-min-w-[220px] tw-h-24">
+            <div className="tw-h-full tw-flex tw-items-center tw-justify-start tw-gap-4">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-muted tw-flex tw-items-center tw-justify-center">
+                <ClockIcon className="tw-w-5 tw-h-5 tw-text-warning" />
+              </div>
+              <div>
+                <span className="tw-text-2xl tw-font-bold">{stats.totalRequired}</span>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('portal.progress.stats.totalHours')}</p>
+              </div>
+            </div>
+          </div>
+          {/* Card 4: Remaining lessons */}
+          <div className="tw-rounded-2xl tw-border tw-border-border tw-bg-background tw-shadow-card tw-p-5 tw-min-w-[220px] tw-h-24">
+            <div className="tw-h-full tw-flex tw-items-center tw-justify-start tw-gap-4">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-muted tw-flex tw-items-center tw-justify-center">
+                <BookOpenIcon className="tw-w-5 tw-h-5 tw-text-primary" />
+              </div>
+              <div>
+                <span className="tw-text-2xl tw-font-bold">{stats.totalRemaining}</span>
+                <p className="tw-text-sm tw-text-muted-foreground">{t('portal.progress.stats.remaining')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overall Progress Banner */}
+      <Container className="tw-space-y-8">
+        <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow">
+          <CardContent className="tw-p-8">
+            <div className="tw-flex tw-flex-col md:tw-flex-row tw-items-start md:tw-items-center tw-justify-between tw-gap-6">
+              <div>
+                <h2 className="tw-text-2xl tw-font-bold tw-mb-1">{t('portal.progress.overall.title')}</h2>
+                <p className="tw-opacity-90">{t('portal.progress.overall.subtitle')}</p>
+              </div>
+              <div className="tw-relative tw-w-24 tw-h-24">
+                <svg className="tw-w-full tw-h-full" viewBox="0 0 36 36">
+                  {/* Background ring */}
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    stroke="white"
+                    strokeWidth="3"
+                    fill="none"
+                    className="tw-opacity-30"
+                  />
+                  
+                  {/* Progress ring */}
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    stroke="white"
+                    strokeWidth="3"
+                    fill="none"
+                    strokeDasharray="100"
+                    strokeDashoffset={100 - stats.percentage}
+                    strokeLinecap="round"
+                    className="tw-transition-all tw-duration-500"
+                  />
+                </svg>
+
+                <div className="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center">
+                  <span className="tw-text-2xl tw-font-bold">{stats.percentage}%</span>
+                </div>
+              </div>
+
+            </div>
+            <div className="tw-mt-4">
+              <ProgressBar value={stats.percentage} className="tw-h-3" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Theory vs Practical */}
-        <div className="tw-grid md:tw-grid-cols-2 tw-gap-6">
-          <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card hover:tw-scale-105 tw-transition-transform">
-            <CardHeader>
-              <CardTitle className="tw-flex tw-items-center tw-gap-2">
-                <BookOpenIcon className={`${iconSm} tw-text-primary`} />
-                {t('progress.theory.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="tw-space-y-4">
-              <div className="tw-text-center">
-                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentTheory)}`}>{percentTheory}%</div>
-                <p className="tw-text-sm tw-text-muted-foreground">{t('progress.theory.knowledge')}</p>
-              </div>
-              <ProgressBar value={percentTheory} className="tw-h-2" />
-              <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
-                <div>
-                  <p className="tw-text-muted-foreground">{t('progress.theory.lessons')}</p>
-                  <p className="tw-font-semibold">{completedTheory}/{requiredTheory || 0}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card hover:tw-scale-105 tw-transition-transform">
-            <CardHeader>
-              <CardTitle className="tw-flex tw-items-center tw-gap-2">
-                <CarIcon className={`${iconSm} tw-text-primary`} />
-                {t('progress.practical.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="tw-space-y-4">
-              <div className="tw-text-center">
-                <div className={`tw-text-4xl tw-font-bold ${getProgressTone(percentPractice)}`}>{percentPractice}%</div>
-                <p className="tw-text-sm tw-text-muted-foreground">{t('type.driving')}</p>
-              </div>
-              <ProgressBar value={percentPractice} className="tw-h-2" />
-              <div className="tw-grid tw-grid-cols-1 tw-gap-2 tw-text-sm">
-                <div>
-                  <p className="tw-text-muted-foreground">{t('progress.theory.lessons')}</p>
-                  <p className="tw-font-semibold">{completedPractice}/{requiredPractice || 0}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Enrollment Cards */}
+        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+          {(enrollments || []).map((e:any) => {
+            const { completed, required, pct } = enrollmentProgress(e);
+            const title = e?.course?.name || t('portal.booking.form.course');
+            const status = (e?.status || '').toUpperCase();
+            const statusLabel = t(`portal.progress.enrollment.status.${status}`, status);
+            const statusColor = status === 'COMPLETED'
+              ? 'tw-bg-success tw-text-success-foreground'
+              : status === 'CANCELED'
+                ? 'tw-bg-destructive tw-text-destructive-foreground'
+                : 'tw-bg-warning tw-text-warning-foreground';
+            return (
+              <Card key={e.id} className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
+                <CardHeader>
+                  <CardTitle className="tw-flex tw-items-center tw-justify-between">
+                    <span>{title}</span>
+                    <Badge variant="secondary" className={statusColor}>{statusLabel}</Badge>
+                  </CardTitle>
+                  <div className="tw-mt-1 tw-text-sm tw-text-muted-foreground">
+                    {t('portal.progress.enrollment.completed', { completed, required })}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="tw-flex tw-justify-end tw-mb-2">
+                    <span className="tw-text-sm tw-font-semibold">{pct}%</span>
+                  </div>
+                  <ProgressBar value={pct} className="tw-h-2" />
+                  <div className="tw-flex tw-justify-end tw-mt-4">
+                    <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-transition-colors tw-bg-secondary tw-text-foreground hover:tw-bg-secondary/80" onClick={() => { /* no-op */ }}>
+                      {t('portal.progress.enrollment.details')}
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Milestones */}
-  <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
-          <CardHeader>
-              <CardTitle className="tw-flex tw-items-center tw-gap-2">
-              <TargetIcon className={`${iconSm} tw-text-primary`} />
-              {t('portal.progress.sections.milestones')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="tw-grid tw-gap-4">
-              {milestones.map((m) => {
-                const Icon = m.icon as any;
-                const progressPct = (m.progress / m.total) * 100;
-                return (
-                  <div key={m.id} className="tw-flex tw-items-center tw-gap-4 tw-p-4 tw-bg-secondary/30 tw-rounded-lg tw-border tw-border-border/20 hover:tw-bg-secondary/50 tw-transition-colors">
-                    <div className={`tw-w-12 tw-h-12 tw-rounded-lg tw-flex tw-items-center tw-justify-center ${getMilestoneColor(m.color)}`}>
-                      <Icon className={iconMd} />
-                    </div>
-                    <div className="tw-flex-1 tw-space-y-2">
-                      <div className="tw-flex tw-items-center tw-justify-between">
-                        <h3 className="tw-font-semibold tw-text-foreground">{m.title}</h3>
-                        <div className="tw-flex tw-items-center tw-gap-2">
-                          {m.completed && <CheckCircleIcon className={`${iconXs} tw-text-success`} />}
-                          <Badge variant={m.completed ? "default" : "secondary"}>{m.progress}/{m.total}</Badge>
-                        </div>
-                      </div>
-                      <p className="tw-text-sm tw-text-muted-foreground">{m.description}</p>
-                      <ProgressBar value={progressPct} className="tw-h-1.5" />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Skills Development section removed as requested */}
-
-        {/* Recent Achievements */}
-  <Card className="tw-bg-gradient-card tw-border tw-border-border/50 tw-shadow-card">
-          <CardHeader>
-            <CardTitle className="tw-flex tw-items-center tw-gap-2">
-              <AwardIcon className={`${iconSm} tw-text-primary`} />
-              {t('portal.progress.sections.recentAchievements')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="tw-space-y-4">
-              {recentAchievements.map((a) => (
-                <div key={a.id} className="tw-flex tw-items-center tw-gap-4 tw-p-4 tw-bg-secondary/30 tw-rounded-lg tw-border tw-border-border/20 hover:tw-bg-secondary/50 tw-transition-colors">
-                  <div className="tw-text-2xl">{a.icon}</div>
-                  <div className="tw-flex-1">
-                    <h3 className="tw-font-semibold tw-text-foreground">{a.title}</h3>
-                    <p className="tw-text-sm tw-text-muted-foreground">{a.description}</p>
-                    <p className="tw-text-xs tw-text-muted-foreground/75 tw-mt-1">{a.date}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Motivational */}
+        {/* CTA (Book a lesson) */}
         <Card className="tw-bg-gradient-primary tw-text-primary-foreground tw-shadow-glow">
           <CardContent className="tw-p-8 tw-text-center">
             <div className="tw-space-y-4">
               <div className="tw-text-4xl">🎯</div>
               <h3 className="tw-text-2xl tw-font-bold">{t('portal.progress.motivational.title')}</h3>
               <p className="tw-opacity-90 tw-max-w-md tw-mx-auto">
-                {t('portal.progress.motivational.body', { remaining: Math.max(0, 100 - (percentAll || 0)) })}
+                {t('portal.progress.motivational.body', { remaining: Math.max(0, 100 - (stats.percentage || 0)) })}
               </p>
               <button onClick={() => navigate('/book-lesson')} className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-11 tw-px-6 tw-text-sm tw-font-medium tw-transition-colors tw-bg-primary tw-text-primary-foreground hover:tw-bg-primary/90 tw-animate-bounce-gentle">
-                {t('dashboard.bookLesson')}
+                {t('portal:dashboard.bookLesson')}
               </button>
             </div>
           </CardContent>

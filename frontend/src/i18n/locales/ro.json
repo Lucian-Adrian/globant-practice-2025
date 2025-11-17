@@ -290,17 +290,24 @@
       "due": { "today": "astăzi", "inDays": "în {{count}} zile", "daysAgo": "acum {{count}} zile" }
     },
     "progress": {
-      "sections": { "milestones": "Repere curs", "recentAchievements": "Realizări recente" },
-      "milestones": {
-        "theory": { "title": "Lecții teorie", "desc": "Finalizează toate lecțiile teoretice" },
-        "practice": { "title": "Ore conducere", "desc": "Finalizează practica necesară" },
-        "theoryExam": { "title": "Examen teoretic", "desc": "Promovează examenul teoretic" },
-        "practicalExam": { "title": "Examen practic", "desc": "Promovează testul practic" }
+      "stats": {
+        "enrollments": "Înscrieri",
+        "completed": "Finalizate",
+        "totalHours": "Ore totale",
+        "remaining": "Rămase"
       },
-      "achievements": {
-        "firstHighway": { "title": "Prima autostradă", "desc": "Ai finalizat primul curs pe autostradă" },
-        "parallelParking": { "title": "Parcare laterală", "desc": "Ai stăpânit parcarea laterală" },
-        "nightDriving": { "title": "Condus noaptea", "desc": "Ai finalizat prima lecție de condus pe timp de noapte" }
+      "overall": {
+        "title": "Progres general",
+        "subtitle": "Te descurci grozav! Continuă în același ritm."
+      },
+      "enrollment": {
+        "details": "Detalii",
+        "completed": "{{completed}} / {{required}} finalizate",
+        "status": {
+          "IN_PROGRESS": "În derulare",
+          "COMPLETED": "Finalizat",
+          "CANCELED": "Anulat"
+        }
       },
       "motivational": { "title": "Ești aproape!", "body": "Cu {{remaining}}% rămas, ești pe drumul cel bun către permis. Continuă!" }
     },
