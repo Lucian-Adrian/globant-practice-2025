@@ -355,6 +355,10 @@
         "title": "Overall Progress",
         "subtitle": "You're doing great! Keep up the excellent work."
       },
+      "header": {
+        "title": "Your Progress",
+        "subtitle": "Track your journey to becoming a licensed driver. Every lesson brings you closer to success! 🚗"
+      },
       "enrollment": {
         "details": "Details",
         "completed": "{{completed}} / {{required}} completed",

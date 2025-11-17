@@ -146,6 +146,16 @@ const Progress: React.FC = () => {
 
     // Remaining per enrollment based on type (THEORY uses scheduled classes; PRACTICE uses lessons)
     const completedByEnrollment: Record<number, number> = {};
+    const linkScheduledToEnrollment = (sc:any, e:any) => {
+      const eid = e?.id;
+      if (!sc) return false;
+      const statusOk = (sc?.status || '').toUpperCase() === 'COMPLETED';
+      if (!statusOk) return false;
+      if (sc?.enrollment?.id === eid || sc?.enrollment_id === eid) return true;
+      if (Array.isArray(sc?.enrollments) && sc.enrollments.some((en:any) => en?.id === eid)) return true;
+      if (sc?.course?.id && sc.course.id === e?.course?.id) return true; // course-level fallback
+      return false;
+    };
     (enrollments || []).forEach((e:any) => {
       const eid = e?.id;
       const etype = (e?.type || '').toUpperCase();
@@ -153,8 +163,7 @@ const Progress: React.FC = () => {
       if (etype === 'PRACTICE') {
         completedForE = lessons.filter((l:any) => (l?.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.id === eid || l?.enrollment_id === eid)).length;
       } else if (etype === 'THEORY') {
-        // Best-effort: if scheduled classes present, count COMPLETED ones (no per-enrollment link available here)
-        completedForE = scheduledClasses.filter((sc:any) => (sc?.status || '').toUpperCase() === 'COMPLETED').length;
+        completedForE = scheduledClasses.filter((sc:any) => linkScheduledToEnrollment(sc, e)).length;
       }
       completedByEnrollment[eid] = completedForE;
     });
@@ -192,8 +201,15 @@ const Progress: React.FC = () => {
     if (etype === 'PRACTICE') {
       completed = lessons.filter((l:any) => (l?.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.id === e?.id || l?.enrollment_id === e?.id)).length;
     } else if (etype === 'THEORY') {
-      // Best-effort without per-enrollment linkage
-      completed = scheduledClasses.filter((sc:any) => (sc?.status || '').toUpperCase() === 'COMPLETED').length;
+      const eid = e?.id;
+      completed = scheduledClasses.filter((sc:any) => {
+        const statusOk = (sc?.status || '').toUpperCase() === 'COMPLETED';
+        if (!statusOk) return false;
+        if (sc?.enrollment?.id === eid || sc?.enrollment_id === eid) return true;
+        if (Array.isArray(sc?.enrollments) && sc.enrollments.some((en:any) => en?.id === eid)) return true;
+        if (sc?.course?.id && sc.course.id === e?.course?.id) return true;
+        return false;
+      }).length;
     }
     const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
     return { completed, required, pct };
@@ -202,6 +218,18 @@ const Progress: React.FC = () => {
   return (
     <div className="tw-min-h-screen tw-bg-background tw-text-foreground">
       <PortalNavBar />
+
+      {/* Header (Your Progress + subtitle) placed above stat cards */}
+      <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-pt-8 tw-pb-2">
+        <div className="tw-text-center tw-space-y-4 tw-animate-fade-in">
+          <h1 className="tw-text-4xl tw-font-bold tw-bg-clip-text tw-text-transparent tw-bg-gradient-to-r tw-from-primary tw-to-primary">
+            {t('portal.progress.header.title', t('progress.header.title'))}
+          </h1>
+          <p className="tw-text-xl tw-text-muted-foreground tw-max-w-2xl tw-mx-auto">
+            {t('portal.progress.header.subtitle', t('progress.header.subtitle'))}
+          </p>
+        </div>
+      </div>
 
       {/* Top Stats Section (exact navbar container width) */}
       <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-py-6">
@@ -323,7 +351,7 @@ const Progress: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="tw-flex tw-items-center tw-justify-between">
                     <span>{title}</span>
-                    <Badge variant="secondary" className={statusColor}>{statusLabel}</Badge>
+                    <Badge variant="secondary" className={statusColor}>{String(statusLabel)}</Badge>
                   </CardTitle>
                   <div className="tw-mt-1 tw-text-sm tw-text-muted-foreground">
                     {t('portal.progress.enrollment.completed', { completed, required })}

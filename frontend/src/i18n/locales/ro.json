@@ -300,6 +300,10 @@
         "title": "Progres general",
         "subtitle": "Te descurci grozav! Continuă în același ritm."
       },
+      "header": {
+        "title": "Progresul tău",
+        "subtitle": "Urmărește parcursul către obținerea permisului. Fiecare lecție te apropie de succes! 🚗"
+      },
       "enrollment": {
         "details": "Detalii",
         "completed": "{{completed}} / {{required}} finalizate",
