@@ -553,6 +553,11 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Start date cannot be in the past.")
         return value
 
+    def validate_num_lessons(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Number of lessons must be positive.")
+        return value
+
     class Meta:
         model = ScheduledClassPattern
         fields = [
