@@ -57,8 +57,11 @@
   "email": "Email",
   "type": { "theory": "Теория", "driving": "Практика" },
   "filters": {
-    "available": "Доступен",
-    "unavailable": "Недоступен"
+    "available": "Доступно",
+    "unavailable": "Недоступно",
+    "scheduled": "Запланирован",
+    "completed": "Завершен",
+    "canceled": "Отменен"
   },
   "resources": {
     "students": {
@@ -125,6 +128,46 @@
       "fields": {
         "enrollment": "Запись"
       }
+    },
+    "scheduledclasses": {
+      "name": "Запланированные Классы",
+      "fields": {
+        "name": "Название",
+        "course": "Курс",
+        "instructor": "Инструктор",
+        "resource": "Ресурс",
+        "pattern": "Шаблон",
+        "scheduled_time": "Запланированное время",
+        "duration_minutes": "Длительность (мин)",
+        "current_enrollment": "Текущая запись",
+        "available_spots": "Доступные места",
+        "max_students": "Макс студентов",
+        "recurrences": "Повторения",
+        "num_lessons": "Количество уроков",
+        "day": "День",
+        "time": "Время",
+        "status": "Статус",
+        "students": "Студенты"
+      }
+    },
+    "scheduledclasspatterns": {
+      "name": "Шаблоны Запланированных Классов",
+      "fields": {
+        "start_date": "Дата Начала Шаблона"
+      },
+      "bulk": {
+        "generate": "Создать Классы",
+        "regenerate": "Пересоздать Классы",
+        "generate_success": "Классы успешно созданы для {{count}} шаблон(ов). Создано {{classes}} класс(ов).",
+        "regenerate_success": "Классы успешно пересозданы для {{count}} шаблон(ов). Удалено {{deleted}} класс(ов), создано {{generated}} новых класс(ов).",
+        "generate_error": "Не удалось создать классы: {{error}}",
+        "regenerate_error": "Не удалось пересоздать классы: {{error}}",
+        "generate_confirm_title": "Создать Классы",
+        "generate_confirm_content": "Вы уверены, что хотите создать классы для {{count}} шаблон(ов)? Это может занять некоторое время.",
+        "regenerate_confirm_title": "Пересоздать Классы",
+        "regenerate_confirm_content": "Вы уверены, что хотите пересоздать классы для {{count}} шаблон(ов)? Это удалит существующие классы и создаст новые."
+      },
+      "viewClasses": "Посмотреть Классы"
     }
   },
   "lessons": {
@@ -326,5 +369,12 @@
     "action": {
       "back": "Назад"
     }
+  },
+  "validation": {
+    "timeFormat": "Время должно быть в формате ЧЧ:ММ (например, 09:30 или 14:00)",
+    "requiredField": "Это поле обязательно для заполнения",
+    "invalidEmail": "Пожалуйста, введите действительный адрес электронной почты",
+    "invalidPhone": "Пожалуйста, введите действительный номер телефона",
+    "atLeastOneRecurrence": "Требуется хотя бы одно повторение"
   }
 }
