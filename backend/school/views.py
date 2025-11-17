@@ -1452,33 +1452,86 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
     @decorators.action(detail=True, methods=["post"], url_path="generate-classes")
     def generate_classes(self, request, pk=None):
         """Generate ScheduledClass instances for this pattern."""
+        import time
+        import logging
+        from django.conf import settings
+        from .notifications import (
+            notification_service,
+            ClassGenerationNotificationTemplate,
+            StudentEnrollmentNotificationTemplate
+        )
+        
+        logger = logging.getLogger(__name__)
+        start_time = time.time()
+        
         pattern = self.get_object()
+        
+        if settings.DEBUG:
+            logger.info(f"Starting generate-classes action for pattern '{pattern.name}' (ID: {pattern.id}) by user {request.user}")
+        
         pattern.validate_generation()  # Validate for overlaps
         classes = pattern.generate_scheduled_classes()
-        ScheduledClass.objects.bulk_create(classes)
+        created_classes = ScheduledClass.objects.bulk_create(classes)
+        
+        # Auto-enroll pattern students in generated classes
+        enrollment_results = self._auto_enroll_students(pattern, created_classes)
+        
+        action_time = time.time() - start_time
+        
+        if settings.DEBUG:
+            logger.info(f"Completed generate-classes action for pattern '{pattern.name}' in {action_time:.3f}s - created {len(classes)} classes")
+            logger.info(f"Auto-enrollment results: {enrollment_results}")
+        
+        # Send notifications
+        self._send_generation_notifications(pattern, created_classes, enrollment_results)
         
         # Use pagination for the response
         paginator = StandardResultsSetPagination()
-        page = paginator.paginate_queryset(classes, request)
+        page = paginator.paginate_queryset(created_classes, request)
         serializer = ScheduledClassSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     @decorators.action(detail=True, methods=["post"], url_path="regenerate-classes")
     def regenerate_classes(self, request, pk=None):
         """Delete existing generated classes and create new ones."""
+        import time
+        import logging
+        from django.conf import settings
+        
+        logger = logging.getLogger(__name__)
+        start_time = time.time()
+        
         pattern = self.get_object()
+        
+        if settings.DEBUG:
+            logger.info(f"Starting regenerate-classes action for pattern '{pattern.name}' (ID: {pattern.id}) by user {request.user}")
         
         # Delete existing classes for this pattern
         deleted_count = ScheduledClass.objects.filter(pattern=pattern).delete()[0]
         
+        if settings.DEBUG:
+            logger.info(f"Deleted {deleted_count} existing classes for pattern '{pattern.name}'")
+        
         # Generate new classes
         pattern.validate_generation()  # Validate for overlaps
         classes = pattern.generate_scheduled_classes()
-        ScheduledClass.objects.bulk_create(classes)
+        created_classes = ScheduledClass.objects.bulk_create(classes)
+        
+        # Auto-enroll pattern students in generated classes
+        enrollment_results = self._auto_enroll_students(pattern, created_classes)
+        
+        action_time = time.time() - start_time
+        
+        if settings.DEBUG:
+            logger.info(f"Completed regenerate-classes action for pattern '{pattern.name}' in {action_time:.3f}s - deleted {deleted_count}, created {len(classes)} classes")
+            logger.info(f"Auto-enrollment results: {enrollment_results}")
+        
+        # Send notifications
+        self._send_generation_notifications(pattern, created_classes, enrollment_results)
         
         # Use pagination for the response
         paginator = StandardResultsSetPagination()
-        page = paginator.paginate_queryset(classes, request)
+        page = paginator.paginate_queryset(created_classes, request)
         serializer = ScheduledClassSerializer(page, many=True)
         
         return paginator.get_paginated_response({
@@ -1486,6 +1539,123 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             "generated_count": len(classes),
             "results": serializer.data
         })
+
+    def _auto_enroll_students(self, pattern, created_classes):
+        """
+        Auto-enroll students from pattern to generated classes
+        
+        Args:
+            pattern: ScheduledClassPattern instance
+            created_classes: List of created ScheduledClass instances
+            
+        Returns:
+            Dict with enrollment statistics
+        """
+        from django.db import transaction
+        
+        results = {
+            'total_students': pattern.students.count(),
+            'enrolled': 0,
+            'failed': 0,
+            'errors': []
+        }
+        
+        if not pattern.students.exists():
+            return results
+        
+        # Get all created classes with their IDs (they should have IDs after bulk_create)
+        class_ids = [cls.id for cls in created_classes if cls.id]
+        
+        if not class_ids:
+            results['errors'].append("No class IDs available after creation")
+            return results
+        
+        try:
+            with transaction.atomic():
+                for student in pattern.students.all():
+                    enrolled_count = 0
+                    failed_count = 0
+                    
+                    for class_id in class_ids:
+                        try:
+                            scheduled_class = ScheduledClass.objects.get(id=class_id)
+                            
+                            # Check if student is already enrolled
+                            if scheduled_class.students.filter(id=student.id).exists():
+                                continue
+                            
+                            # Check if class is full
+                            if scheduled_class.is_full():
+                                failed_count += 1
+                                continue
+                            
+                            # Enroll student
+                            scheduled_class.students.add(student)
+                            enrolled_count += 1
+                            
+                        except ScheduledClass.DoesNotExist:
+                            failed_count += 1
+                            continue
+                    
+                    if enrolled_count > 0:
+                        results['enrolled'] += 1
+                    if failed_count > 0:
+                        results['failed'] += 1
+                        
+        except Exception as e:
+            results['errors'].append(f"Auto-enrollment failed: {str(e)}")
+            
+        return results
+
+    def _send_generation_notifications(self, pattern, created_classes, enrollment_results):
+        """
+        Send notifications about class generation
+        
+        Args:
+            pattern: ScheduledClassPattern instance
+            created_classes: List of created ScheduledClass instances
+            enrollment_results: Results from auto-enrollment
+        """
+        from .notifications import (
+            notification_service,
+            ClassGenerationNotificationTemplate,
+            StudentEnrollmentNotificationTemplate
+        )
+        
+        # Send notification to pattern instructor
+        instructor_template = ClassGenerationNotificationTemplate()
+        notification_service.send_notification(
+            template=instructor_template,
+            recipients=[pattern.instructor],
+            pattern_name=pattern.name,
+            class_count=len(created_classes),
+            start_date=pattern.start_date.strftime('%Y-%m-%d'),
+            enrolled_students=enrollment_results['enrolled']
+        )
+        
+        # Send enrollment notifications to auto-enrolled students
+        if enrollment_results['enrolled'] > 0:
+            student_template = StudentEnrollmentNotificationTemplate()
+            
+            # Get all enrolled students
+            enrolled_students = pattern.students.all()
+            
+            # Send notification for each generated class
+            for scheduled_class in created_classes:
+                # Only send to students who were actually enrolled in this class
+                enrolled_in_this_class = enrolled_students.filter(
+                    scheduled_classes=scheduled_class
+                )
+                
+                for student in enrolled_in_this_class:
+                    notification_service.send_notification(
+                        template=student_template,
+                        recipients=[student],
+                        class_name=scheduled_class.name,
+                        instructor_name=f"{pattern.instructor.first_name} {pattern.instructor.last_name}",
+                        scheduled_time=scheduled_class.scheduled_time.strftime('%Y-%m-%d %H:%M'),
+                        location=pattern.resource.name if pattern.resource else "TBD"
+                    )
 
     @decorators.action(detail=True, methods=["get"], url_path="statistics")
     def get_statistics(self, request, pk=None):
