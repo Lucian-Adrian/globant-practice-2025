@@ -16,14 +16,18 @@ export default function ScheduledClassCreate(props) {
   ], [t]);
 
   const handleSubmit = (data) => {
+    const recurrences = data.recurrences || [];
+    const recurrence_days = recurrences.map(r => r.day);
+    const times = recurrences.map(r => r.time);
+
     // Create the pattern
     const patternData = {
       name: data.name,
       course_id: data.course_id,
       instructor_id: data.instructor_id,
       resource_id: data.resource_id,
-      recurrence_days: data.recurrence_days || [],
-      times: data.times || [],
+      recurrence_days: recurrence_days,
+      times: times,
       start_date: data.start_date,
       num_lessons: data.num_lessons,
       duration_minutes: data.duration_minutes || 60,
@@ -53,20 +57,20 @@ export default function ScheduledClassCreate(props) {
 
   return (
     <Create {...props}>
-      <SimpleForm validate={async (values) => validateScheduledClass(values, t, values?.id)}>
+      <SimpleForm>
         <TextInput source="name" label={t('resources.scheduledclasses.fields.name', 'Name')} validate={[required()]} />
         <ReferenceInput source="course_id" reference="classes" perPage={100} filter={{ type: 'THEORY' }}>
           <SelectInput label={t('resources.scheduledclasses.fields.course', 'Course')} optionText={(r) => r.name} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
-          <SelectInput label="Instructor" optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
+          <SelectInput label={t('resources.scheduledclasses.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 3 }}>
           <SelectInput label={t('resources.scheduledclasses.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
         </ReferenceInput>
-        <ArrayInput source="recurrence_days" label="Recurrence Days" validate={[required()]}>
+        <ArrayInput source="recurrences" label={t('resources.scheduledclasses.fields.recurrences', 'Recurrences')} validate={[required()]}>
           <SimpleFormIterator>
-            <SelectInput source="" choices={[
+            <SelectInput source="day" label={t('resources.scheduledclasses.fields.day', 'Day')} choices={[
               { id: 'MONDAY', name: 'Monday' },
               { id: 'TUESDAY', name: 'Tuesday' },
               { id: 'WEDNESDAY', name: 'Wednesday' },
@@ -75,11 +79,7 @@ export default function ScheduledClassCreate(props) {
               { id: 'SATURDAY', name: 'Saturday' },
               { id: 'SUNDAY', name: 'Sunday' },
             ]} validate={[required()]} />
-          </SimpleFormIterator>
-        </ArrayInput>
-        <ArrayInput source="times" label="Times" validate={[required()]}>
-          <SimpleFormIterator>
-            <TextInput source="" placeholder="HH:MM" validate={[required()]} />
+            <TextInput source="time" label={t('resources.scheduledclasses.fields.time', 'Time')} placeholder="HH:MM" validate={[required()]} />
           </SimpleFormIterator>
         </ArrayInput>
         <DateInput source="start_date" label="Start Date" validate={[required()]} />
