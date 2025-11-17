@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Card, CardContent, Typography, Grid, Box, LinearProgress, Avatar, Chip } from '@mui/material';
 import { useTranslate } from 'react-admin';
+import QuickAddPanel from '../components/QuickAddPanel.tsx';
 import { 
   TrendingUp as TrendingUpIcon,
   School as SchoolIcon,
@@ -218,6 +219,7 @@ export default function Dashboard() {
       {error && <Typography color="error">{t('common.error_loading', 'Error loading data')}: {String(error.message || error)}</Typography>}
       
       {data && (
+        <>
         <Grid container spacing={3}>
           {/* Existing Stats */}
           <Grid item xs={12} sm={6} md={4} lg={2}>
@@ -241,6 +243,10 @@ export default function Dashboard() {
           
           {/* Lesson Statistics Widget removed as requested */}
         </Grid>
+        <Box sx={{ mt: 3, maxWidth: 520 }}>
+          <QuickAddPanel />
+        </Box>
+        </>
       )}
     </Box>
   );
