@@ -276,8 +276,19 @@ class ScheduledClassPattern(models.Model):
 
     def generate_scheduled_classes(self):
         """Generate ScheduledClass instances based on recurrence."""
+        import time
+        import logging
         from datetime import datetime, timedelta, date, time
         from django.utils import timezone
+        from django.conf import settings
+
+        logger = logging.getLogger(__name__)
+        start_time = time.time()
+        
+        if settings.DEBUG:
+            logger.info(f"Starting class generation for pattern '{self.name}' (ID: {self.id})")
+            logger.info(f"Pattern config: days={self.recurrence_days}, times={self.times}, num_lessons={self.num_lessons}")
+
         classes = []
         current_date = self.start_date
         if isinstance(current_date, str):
@@ -302,7 +313,11 @@ class ScheduledClassPattern(models.Model):
             else:
                 time_objs.append(time_str)
 
-        while count < self.num_lessons:
+        iteration_count = 0
+        max_iterations = self.num_lessons * 10  # Safety limit to prevent infinite loops
+        
+        while count < self.num_lessons and iteration_count < max_iterations:
+            iteration_count += 1
             if current_date.weekday() in recurrence_day_indices:
                 for time_obj in time_objs:
                     if count >= self.num_lessons:
@@ -321,6 +336,15 @@ class ScheduledClassPattern(models.Model):
                     classes.append(scheduled_class)
                     count += 1
             current_date += timedelta(days=1)
+        
+        generation_time = time.time() - start_time
+        
+        if settings.DEBUG:
+            logger.info(f"Class generation completed for pattern '{self.name}' in {generation_time:.3f}s")
+            logger.info(f"Generated {len(classes)} classes, iterated through {iteration_count} days")
+            if iteration_count >= max_iterations:
+                logger.warning(f"Pattern '{self.name}' hit iteration limit ({max_iterations}) - possible infinite loop")
+        
         return classes
 
     class Meta:
@@ -348,16 +372,15 @@ class ScheduledClass(models.Model):
         choices=LessonStatus.choices(),
         default=LessonStatus.SCHEDULED.value,
     )
+    students = models.ManyToManyField(Student, related_name="scheduled_classes", blank=True)
 
     def __str__(self):
         pattern_name = self.pattern.name if self.pattern else "No Pattern"
         return f"{self.name} - {pattern_name}"
 
     def current_enrollment(self):
-        """Return current number of enrolled students from pattern"""
-        if self.pattern:
-            return self.pattern.students.count()
-        return 0
+        """Return current number of enrolled students"""
+        return self.students.count()
 
     def available_spots(self):
         """Return number of available spots"""
