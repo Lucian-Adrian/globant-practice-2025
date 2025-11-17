@@ -44,6 +44,7 @@ from .serializers import (
     StudentSerializer,
     VehicleSerializer,
 )
+from .pagination import StandardResultsSetPagination
 from .validators import normalize_phone
 
 
@@ -53,6 +54,15 @@ class IsAuthenticatedStudent(BasePermission):
         if hasattr(request, "auth") and request.auth:
             return "student_id" in request.auth
         return False
+
+
+class IsAdminUser(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_staff or request.user.is_superuser)
+        )
 
 
 class StudentJWTAuthentication(JWTAuthentication):
@@ -1431,17 +1441,133 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         "instructor": ["exact"],
         "resource": ["exact"],
         "status": ["exact"],
-        "start_date": ["gte", "lte", "date"],
+        "start_date": ["gte", "lte", "gt", "lt"],
     }
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     @decorators.action(detail=True, methods=["post"], url_path="generate-classes")
     def generate_classes(self, request, pk=None):
         """Generate ScheduledClass instances for this pattern."""
         pattern = self.get_object()
+        pattern.validate_generation()  # Validate for overlaps
         classes = pattern.generate_scheduled_classes()
         ScheduledClass.objects.bulk_create(classes)
-        serializer = ScheduledClassSerializer(classes, many=True)
-        return response.Response(serializer.data)
+        
+        # Use pagination for the response
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(classes, request)
+        serializer = ScheduledClassSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    @decorators.action(detail=True, methods=["post"], url_path="regenerate-classes")
+    def regenerate_classes(self, request, pk=None):
+        """Delete existing generated classes and create new ones."""
+        pattern = self.get_object()
+        
+        # Delete existing classes for this pattern
+        deleted_count = ScheduledClass.objects.filter(pattern=pattern).delete()[0]
+        
+        # Generate new classes
+        pattern.validate_generation()  # Validate for overlaps
+        classes = pattern.generate_scheduled_classes()
+        ScheduledClass.objects.bulk_create(classes)
+        
+        # Use pagination for the response
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(classes, request)
+        serializer = ScheduledClassSerializer(page, many=True)
+        
+        return paginator.get_paginated_response({
+            "deleted_count": deleted_count,
+            "generated_count": len(classes),
+            "results": serializer.data
+        })
+
+    @decorators.action(detail=True, methods=["get"], url_path="statistics")
+    def get_statistics(self, request, pk=None):
+        """Get statistics for this pattern."""
+        pattern = self.get_object()
+        
+        # Get all classes for this pattern
+        classes = ScheduledClass.objects.filter(pattern=pattern)
+        
+        # Calculate statistics
+        total_classes = classes.count()
+        scheduled_classes = classes.filter(status=LessonStatus.SCHEDULED.value).count()
+        completed_classes = classes.filter(status=LessonStatus.COMPLETED.value).count()
+        cancelled_classes = classes.filter(status=LessonStatus.CANCELED.value).count()
+        
+        # Student enrollment statistics
+        total_enrollments = pattern.students.count()
+        
+        # Average students per class
+        avg_students_per_class = 0
+        if total_classes > 0:
+            avg_students_per_class = total_enrollments
+        
+        # Capacity utilization
+        total_capacity = sum(cls.max_students or 0 for cls in classes)
+        capacity_utilization = 0
+        if total_capacity > 0:
+            capacity_utilization = (total_enrollments / total_capacity) * 100
+        
+        return response.Response({
+            "pattern_id": pattern.id,
+            "pattern_name": pattern.name,
+            "total_classes": total_classes,
+            "scheduled_classes": scheduled_classes,
+            "completed_classes": completed_classes,
+            "cancelled_classes": cancelled_classes,
+            "total_enrolled_students": total_enrollments,
+            "average_students_per_class": round(avg_students_per_class, 2),
+            "capacity_utilization_percent": round(capacity_utilization, 2),
+        })
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Export scheduled class patterns to CSV."""
+        fields = [
+            "id",
+            "name",
+            "course_id",
+            "instructor_id",
+            "resource_id",
+            "recurrence_days",
+            "times",
+            "start_date",
+            "num_lessons",
+            "duration_minutes",
+            "max_students",
+            "status",
+            "created_at",
+        ]
+        qs = self.filter_queryset(self.get_queryset())
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            writer.writerow([
+                obj.id,
+                obj.name,
+                obj.course_id,
+                obj.instructor_id,
+                obj.resource_id,
+                ",".join(obj.recurrence_days) if obj.recurrence_days else "",
+                ",".join(obj.times) if obj.times else "",
+                obj.start_date.isoformat() if obj.start_date else "",
+                obj.num_lessons,
+                obj.duration_minutes,
+                obj.max_students,
+                obj.status,
+                obj.created_at.isoformat() if obj.created_at else "",
+            ])
+        resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
+        resp["Content-Disposition"] = "attachment; filename=scheduled-class-patterns.csv"
+        return resp
 
 
 class ScheduledClassViewSet(FullCrudViewSet):
