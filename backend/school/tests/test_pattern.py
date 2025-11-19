@@ -59,7 +59,7 @@ class ScheduledClassPatternTestCase(TestCase):
             times=["09:00", "14:00"],  # Use strings, not time objects
             start_date=date.today(),
             num_lessons=6,
-            max_students=25,
+            default_max_students=25,
         )
         # Associate students with the pattern
         self.pattern.students.set([self.student1, self.student2])
@@ -98,7 +98,7 @@ class ScheduledClassPatternTestCase(TestCase):
             times=["09:00"],
             start_date=date.today(),
             num_lessons=1,
-            max_students=10
+            default_max_students=10
         )
         with self.assertRaises(ValidationError):
             pattern.full_clean()
@@ -125,7 +125,7 @@ class ScheduledClassPatternTestCase(TestCase):
             'times': ['25:00'],  # Invalid time
             'start_date': date.today() - timedelta(days=1),  # Past date
             'num_lessons': 5,
-            'max_students': 10,
+            # Removed: 'max_students': 10 - this belongs to individual classes
         }
         serializer = ScheduledClassPatternSerializer(data=data)
         self.assertFalse(serializer.is_valid())
@@ -198,7 +198,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["09:00", "14:00"],
             start_date=date.today(),
             num_lessons=4,
-            max_students=25,
+            default_max_students=25,
         )
         self.pattern.students.set([self.student1, self.student2])
 
@@ -294,7 +294,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             'times': ['10:00'],
             'start_date': str(date.today()),
             'num_lessons': 2,
-            'max_students': 20,
+            # Removed: 'max_students': 20 - this belongs to individual classes
         }
         
         response = self.client.post(url, data, format='json')
@@ -319,7 +319,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["10:00"],
             start_date=date.today() - timedelta(days=30),
             num_lessons=2,
-            max_students=20,
+            default_max_students=20,
         )
         
         future_pattern = ScheduledClassPattern.objects.create(
@@ -331,7 +331,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["11:00"],
             start_date=date.today() + timedelta(days=30),
             num_lessons=2,
-            max_students=20,
+            default_max_students=20,
         )
         
         # Filter for patterns starting after today
@@ -359,7 +359,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["09:00"],
             start_date=timezone.now().date(),
             num_lessons=1,
-            max_students=20,
+            default_max_students=20,
         )
 
         # Generate classes
@@ -381,7 +381,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["10:00"],
             start_date=date.today(),
             num_lessons=1,
-            max_students=10
+            default_max_students=10,
         )
 
         # Should raise validation error
@@ -405,7 +405,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["10:00"],
             start_date=far_future_date,
             num_lessons=1,
-            max_students=10
+            default_max_students=10,
         )
 
         # Should still work - no validation for "too far future"
@@ -421,7 +421,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             'times': ['10:00'],
             'start_date': 'invalid-date-format',
             'num_lessons': 1,
-            'max_students': 10,
+            # Removed: 'max_students': 10 - this belongs to individual classes
         }
         serializer = ScheduledClassPatternSerializer(data=data)
         self.assertFalse(serializer.is_valid())
@@ -441,7 +441,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["11:00"],
             start_date=date.today(),
             num_lessons=2,
-            max_students=20,
+            default_max_students=20,
         )
 
         # Generate classes for first pattern
@@ -472,7 +472,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             'times': ['10:00'],
             'start_date': str(date.today()),
             'num_lessons': 1,
-            'max_students': 10,
+            # Removed: 'max_students': 10 - this belongs to individual classes
         }
         serializer = ScheduledClassPatternSerializer(data=data)
         self.assertFalse(serializer.is_valid())
@@ -506,7 +506,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             'times': ['09:00', '14:00'],
             'start_date': str(date.today()),
             'num_lessons': 3,
-            'max_students': 25,
+            # Removed: 'max_students': 25 - this belongs to individual classes
             'student_ids': [self.student1.id, self.student2.id]
         }
 
@@ -566,7 +566,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["10:00"],
             start_date=date.today(),
             num_lessons=1,
-            max_students=20,
+            default_max_students=20,
         )
 
         # Generate classes for first pattern
@@ -583,7 +583,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["10:00"],  # Same time
             start_date=date.today(),
             num_lessons=1,
-            max_students=20,
+            default_max_students=20,
         )
 
         # Should raise validation error during generation
@@ -604,7 +604,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             times=["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
             start_date=date.today(),
             num_lessons=50,  # Large number
-            max_students=30,
+            default_max_students=30,
         )
 
         # Time the generation

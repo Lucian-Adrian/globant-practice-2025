@@ -575,9 +575,9 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
             "times",
             "start_date",
             "num_lessons",
-            "duration_minutes",
-            "max_students",
-            "status",
+            "default_duration_minutes",
+            "default_max_students",
+            # Removed: status - patterns don't have status, only generated classes do
             "created_at",
         ]
 
@@ -586,7 +586,7 @@ class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
     """Minimal serializer for pattern to avoid data bloat in ScheduledClass responses"""
     class Meta:
         model = ScheduledClassPattern
-        fields = ["id", "name", "status"]
+        fields = ["id", "name"]  # Removed status - patterns don't have status
 
 
 class ScheduledClassSerializer(serializers.ModelSerializer):
@@ -594,9 +594,12 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
     )
-    course = serializers.CharField(source='pattern.course.name', read_only=True)
-    instructor = InstructorSerializer(source='pattern.instructor', read_only=True)
-    resource = ResourceSerializer(source='pattern.resource', read_only=True)
+    course = CourseSerializer(read_only=True)
+    course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), source="course")
+    instructor = InstructorSerializer(read_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor")
+    resource = ResourceSerializer(read_only=True)
+    resource_id = serializers.PrimaryKeyRelatedField(queryset=Resource.objects.all(), source="resource")
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
     students = StudentSerializer(many=True, read_only=True)
@@ -616,8 +619,11 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
             "pattern_id",
             "name",
             "course",
+            "course_id",
             "instructor",
+            "instructor_id",
             "resource",
+            "resource_id",
             "scheduled_time",
             "duration_minutes",
             "max_students",

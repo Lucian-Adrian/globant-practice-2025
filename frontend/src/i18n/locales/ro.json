@@ -153,7 +153,16 @@
     "scheduledclasspatterns": {
       "name": "Modele Clase Programate",
       "fields": {
-        "start_date": "Data Început Model"
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "day": "Zi",
+        "time": "Oră",
+        "start_date": "Data Început Model",
+        "num_lessons": "Număr de Lecții",
+        "default_duration_minutes": "Durată Implicită (min)",
+        "default_max_students": "Max Studenți Implicit"
       },
       "bulk": {
         "generate": "Generează Clase",

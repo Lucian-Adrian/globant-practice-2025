@@ -220,13 +220,9 @@ class ScheduledClassPattern(models.Model):
     )
     start_date = models.DateField(help_text="Start date for the recurrence")
     num_lessons = models.IntegerField(help_text="Total number of lessons to generate")
-    duration_minutes = models.IntegerField(default=60)
-    max_students = models.IntegerField()
-    status = models.CharField(
-        max_length=20,
-        choices=LessonStatus.choices(),
-        default=LessonStatus.SCHEDULED.value,
-    )
+    # Default values for generated classes
+    default_duration_minutes = models.IntegerField(default=60, help_text="Default duration for generated classes")
+    default_max_students = models.IntegerField(default=10, help_text="Default max students for generated classes")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
@@ -276,14 +272,14 @@ class ScheduledClassPattern(models.Model):
 
     def generate_scheduled_classes(self):
         """Generate ScheduledClass instances based on recurrence."""
-        import time
+        import time as time_module
         import logging
         from datetime import datetime, timedelta, date, time
         from django.utils import timezone
         from django.conf import settings
 
         logger = logging.getLogger(__name__)
-        start_time = time.time()
+        start_time = time_module.time()
         
         if settings.DEBUG:
             logger.info(f"Starting class generation for pattern '{self.name}' (ID: {self.id})")
@@ -324,20 +320,23 @@ class ScheduledClassPattern(models.Model):
                         break
                     naive_dt = datetime.combine(current_date, time_obj)
                     scheduled_time = timezone.make_aware(naive_dt)
-                    # Create ScheduledClass
+                    # Create ScheduledClass with default values from pattern
                     scheduled_class = ScheduledClass(
                         pattern=self,
+                        course=self.course,
+                        instructor=self.instructor,
+                        resource=self.resource,
                         name=f"{self.name} - {current_date.strftime('%Y-%m-%d')} {time_obj.strftime('%H:%M')}",
                         scheduled_time=scheduled_time,
-                        duration_minutes=self.duration_minutes,
-                        max_students=self.max_students,
-                        status=self.status,
+                        duration_minutes=self.default_duration_minutes,
+                        max_students=self.default_max_students,
+                        status=LessonStatus.SCHEDULED.value,  # Default status for generated classes
                     )
                     classes.append(scheduled_class)
                     count += 1
             current_date += timedelta(days=1)
         
-        generation_time = time.time() - start_time
+        generation_time = time_module.time() - start_time
         
         if settings.DEBUG:
             logger.info(f"Class generation completed for pattern '{self.name}' in {generation_time:.3f}s")
@@ -351,17 +350,25 @@ class ScheduledClassPattern(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=['start_date']),
-            models.Index(fields=['status']),
             models.Index(fields=['course']),
             models.Index(fields=['instructor']),
             models.Index(fields=['resource']),
-            models.Index(fields=['start_date', 'status']),  # Composite index for common queries
+            models.Index(fields=['start_date', 'course']),  # Composite index for common queries
         ]
 
 
 class ScheduledClass(models.Model):
     pattern = models.ForeignKey(
         ScheduledClassPattern, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    instructor = models.ForeignKey(
+        Instructor, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    resource = models.ForeignKey(
+        Resource, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
     )
     name = models.CharField(max_length=100, help_text="e.g., 'Monday Theory Class'")
     scheduled_time = models.DateTimeField()

@@ -66,8 +66,8 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(models.ScheduledClassPattern)
 class ScheduledClassPatternAdmin(admin.ModelAdmin):
-    list_display = ("name", "course", "instructor", "start_date", "num_lessons", "status")
-    list_filter = ("status", "course__category", "instructor")
+    list_display = ("name", "course", "instructor", "start_date", "num_lessons", "default_duration_minutes", "default_max_students")
+    list_filter = ("course__category", "instructor")
     search_fields = ("name", "course__name", "instructor__first_name", "instructor__last_name")
     date_hierarchy = "start_date"
 

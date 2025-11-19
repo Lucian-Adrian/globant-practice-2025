@@ -154,7 +154,16 @@
     "scheduledclasspatterns": {
       "name": "Scheduled Class Patterns",
       "fields": {
-        "start_date": "Pattern Start Date"
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "day": "Day",
+        "time": "Time",
+        "start_date": "Pattern Start Date",
+        "num_lessons": "Number of Lessons",
+        "default_duration_minutes": "Default Duration (min)",
+        "default_max_students": "Default Max Students"
       },
       "bulk": {
         "generate": "Generate Classes",

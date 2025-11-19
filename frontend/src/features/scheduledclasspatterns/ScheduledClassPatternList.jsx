@@ -31,6 +31,7 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
   const refresh = useRefresh();
   const unselectAll = useUnselectAll();
   const t = useTranslate();
+  const dataProvider = useDataProvider();
   const [open, setOpen] = React.useState(false);
 
   const { mutate, isLoading } = useMutation(
@@ -220,7 +221,6 @@ export default function ScheduledClassPatternList(props) {
           </ReferenceField>
           <DateField source="start_date" />
           <NumberField source="num_lessons" />
-          <TextField source="status" />
           <ViewClassesButton />
         </Datagrid>
       </List>

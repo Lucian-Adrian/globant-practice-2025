@@ -153,7 +153,16 @@
     "scheduledclasspatterns": {
       "name": "Шаблоны Запланированных Классов",
       "fields": {
-        "start_date": "Дата Начала Шаблона"
+        "name": "Название",
+        "course": "Курс",
+        "instructor": "Инструктор",
+        "resource": "Ресурс",
+        "day": "День",
+        "time": "Время",
+        "start_date": "Дата Начала Шаблона",
+        "num_lessons": "Количество Занятий",
+        "default_duration_minutes": "Длительность по умолчанию (мин)",
+        "default_max_students": "Макс Студентов по умолчанию"
       },
       "bulk": {
         "generate": "Создать Классы",

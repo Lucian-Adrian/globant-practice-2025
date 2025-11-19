@@ -1440,7 +1440,6 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         "course": ["exact"],
         "instructor": ["exact"],
         "resource": ["exact"],
-        "status": ["exact"],
         "start_date": ["gte", "lte", "gt", "lt"],
     }
 
@@ -1507,7 +1506,8 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             logger.info(f"Starting regenerate-classes action for pattern '{pattern.name}' (ID: {pattern.id}) by user {request.user}")
         
         # Delete existing classes for this pattern
-        deleted_count = ScheduledClass.objects.filter(pattern=pattern).delete()[0]
+        delete_result = ScheduledClass.objects.filter(pattern=pattern).delete()
+        deleted_count = delete_result[1].get('school.ScheduledClass', 0)  # Only count the main objects, not cascading deletes
         
         if settings.DEBUG:
             logger.info(f"Deleted {deleted_count} existing classes for pattern '{pattern.name}'")
