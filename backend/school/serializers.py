@@ -531,6 +531,8 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
     def validate_recurrence_days(self, value):
         if not isinstance(value, list):
             raise serializers.ValidationError("Recurrence days must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one recurrence day is required.")
         valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
         for day in value:
             if day not in valid_days:
@@ -540,6 +542,8 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
     def validate_times(self, value):
         if not isinstance(value, list):
             raise serializers.ValidationError("Times must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one time is required.")
         import re
         time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
         for time_str in value:
