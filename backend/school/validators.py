@@ -474,6 +474,67 @@ def validate_instructor_availability(instructor_id, start) -> None:
     if not ok:
         raise serializers.ValidationError({"scheduled_time": [_("validation.outsideAvailability")]})
 
+def validate_instructor_availability_for_pattern(instructor_id, recurrence_days, times) -> None:
+    """
+    Validates that the instructor is available for all specified days and times.
+    recurrence_days: list of day names (e.g. ['MONDAY', 'WEDNESDAY'])
+    times: list of time strings (e.g. ['09:00', '14:00'])
+    """
+    if not instructor_id or not recurrence_days or not times:
+        return
+
+    from .models import InstructorAvailability
+    
+    # We need to check every combination
+    for day in recurrence_days:
+        # Fetch availability for this day
+        avail = InstructorAvailability.objects.filter(instructor_id=instructor_id, day=day)
+        
+        # Parse slots for this day
+        slots: set[str] = set()
+        for a in avail:
+            try:
+                for h in list(a.hours or []):
+                    if isinstance(h, str):
+                        parts = h.split(":")
+                        hh = parts[0].zfill(2) if parts else "00"
+                        mm = parts[1].zfill(2) if len(parts) > 1 else "00"
+                        slots.add(f"{hh}:{mm}")
+            except Exception:
+                pass
+        
+        if not slots:
+             raise serializers.ValidationError({"instructor_id": [_("validation.outsideAvailability")]})
+
+        slot_list = sorted(slots)
+        
+        def to_minutes(hhmm: str) -> int:
+            parts = hhmm.split(":")
+            return int(parts[0]) * 60 + int(parts[1])
+
+        slot_mins = [to_minutes(s) for s in slot_list]
+
+        for time_str in times:
+            try:
+                t_mins = to_minutes(time_str)
+            except (ValueError, IndexError):
+                continue # Should be caught by field validation
+
+            ok = False
+            # Logic from validate_instructor_availability
+            if slot_mins and t_mins == slot_mins[-1]:
+                ok = True
+            elif slot_mins:
+                for i in range(len(slot_mins) - 1):
+                    if slot_mins[i] <= t_mins < slot_mins[i + 1]:
+                        ok = True
+                        break
+            
+            if not ok:
+                 raise serializers.ValidationError({
+                     "instructor_id": [_("validation.outsideAvailability")]
+                 })
+
 def validate_lesson_category_and_license(enrollment, instructor, resource) -> None:
     # Category & license checks
     course = getattr(enrollment, "course", None)

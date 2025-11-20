@@ -1266,7 +1266,7 @@ class ResourceViewSet(FullCrudViewSet):
     filterset_fields = {
         "is_available": ["exact"],
         "category": ["exact"],
-        "max_capacity": ["exact", "lte", "gte"],
+        "max_capacity": ["exact", "lte", "gte", "gt", "lt"],
     }
 
     @decorators.action(detail=False, methods=["get"], url_path="available")

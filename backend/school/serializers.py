@@ -26,6 +26,7 @@ from .validators import (
     validate_lesson_practice_and_vehicle,
     validate_lesson_resource_availability,
     validate_instructor_availability,
+    validate_instructor_availability_for_pattern,
     validate_lesson_category_and_license,
 )
 
@@ -528,40 +529,6 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         required=False,
     )
 
-    def validate_recurrence_days(self, value):
-        if not isinstance(value, list):
-            raise serializers.ValidationError("Recurrence days must be a list.")
-        if not value:
-            raise serializers.ValidationError("At least one recurrence day is required.")
-        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
-        for day in value:
-            if day not in valid_days:
-                raise serializers.ValidationError(f"Invalid day: {day}. Must be one of {valid_days}.")
-        return value
-
-    def validate_times(self, value):
-        if not isinstance(value, list):
-            raise serializers.ValidationError("Times must be a list.")
-        if not value:
-            raise serializers.ValidationError("At least one time is required.")
-        import re
-        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
-        for time_str in value:
-            if not isinstance(time_str, str) or not time_pattern.match(time_str):
-                raise serializers.ValidationError(f"Invalid time format: {time_str}. Must be HH:MM (e.g., 09:30).")
-        return value
-
-    def validate_start_date(self, value):
-        from datetime import date
-        if value < date.today():
-            raise serializers.ValidationError("Start date cannot be in the past.")
-        return value
-
-    def validate_num_lessons(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Number of lessons must be positive.")
-        return value
-
     class Meta:
         model = ScheduledClassPattern
         fields = [
@@ -584,6 +551,27 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
             # Removed: status - patterns don't have status, only generated classes do
             "created_at",
         ]
+
+    def validate(self, attrs):
+        from .validators import validate_classroom_resource_for_class
+
+        instance = getattr(self, "instance", None)
+        instructor = attrs.get("instructor") or (instance.instructor if instance else None)
+        resource = attrs.get("resource") or (instance.resource if instance else None)
+        recurrence_days = attrs.get("recurrence_days") or (instance.recurrence_days if instance else [])
+        times = attrs.get("times") or (instance.times if instance else [])
+
+        # Instructor availability
+        validate_instructor_availability_for_pattern(
+            getattr(instructor, "id", None),
+            recurrence_days,
+            times
+        )
+
+        # Classroom resource only
+        validate_classroom_resource_for_class(resource)
+
+        return attrs
 
 
 class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
@@ -695,8 +683,8 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         assert start is not None
         end = start + timedelta(minutes=int(duration or 60))
 
-        # Instructor availability - REMOVED to match ScheduledClassPattern behavior (allow scheduling outside availability)
-        # validate_instructor_availability(getattr(instructor, "id", None), start)
+        # Instructor availability
+        validate_instructor_availability(getattr(instructor, "id", None), start)
 
         # Category and instructor license rules
         validate_category_and_license(course, instructor, resource)

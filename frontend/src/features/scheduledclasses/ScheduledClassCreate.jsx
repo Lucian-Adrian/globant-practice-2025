@@ -20,7 +20,7 @@ export default function ScheduledClassCreate(props) {
         <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
           <SelectInput label={t('resources.scheduledclasses.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
-        <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ type: 'CLASSROOM' }}>
+                <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gt: 2 }}>
           <SelectInput label={t('resources.scheduledclasses.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <DateTimeInput source="scheduled_time" label={t('resources.scheduledclasses.fields.scheduled_time', 'Scheduled Time')} validate={[required()]} />
