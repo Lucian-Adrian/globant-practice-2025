@@ -600,7 +600,6 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         source="students",
         many=True,
         required=False,
-        write_only=True
     )
 
     class Meta:
