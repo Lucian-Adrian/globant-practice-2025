@@ -77,7 +77,7 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
             }), { type: 'success' });
         }
         refresh();
-        unselectAll('scheduledclasspatterns');
+        unselectAll('scheduled-class-patterns');
       },
       onError: (error) => {
         notify(t('admin.resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
@@ -153,7 +153,7 @@ const BulkRegenerateClassesButton = ({ selectedIds }) => {
           generated
         }), { type: 'success' });
         refresh();
-        unselectAll('scheduledclasspatterns');
+        unselectAll('scheduled-class-patterns');
       },
       onError: (error) => {
         notify(t('resources.scheduledclasspatterns.bulk.regenerate_error', { error: error.message }), { type: 'error' });
@@ -202,7 +202,7 @@ const ViewClassesButton = ({ record }) => {
 
   const handleClick = () => {
     // Navigate to scheduled classes list filtered by this pattern
-    navigate(`/admin/scheduledclasses?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
+    navigate(`/admin/scheduled-classes?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
   };
 
   return (

@@ -63,7 +63,7 @@ export default function ScheduledClassPatternEdit(props) {
           <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
             <SelectInput label={t('resources.scheduledclasspatterns.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
           </ReferenceInput>
-          <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 10 }}>
+          <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ type: 'CLASSROOM' }}>
             <SelectInput label={t('resources.scheduledclasspatterns.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
           </ReferenceInput>
           

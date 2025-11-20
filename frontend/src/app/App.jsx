@@ -52,8 +52,8 @@ export default function App() {
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
       <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
-      <Resource name="scheduledclasspatterns" list={ScheduledClassPatternList} create={ScheduledClassPatternCreate} edit={ScheduledClassPatternEdit} show={ScheduledClassPatternShow} />
+      <Resource name="scheduled-classes" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
+      <Resource name="scheduled-class-patterns" list={ScheduledClassPatternList} create={ScheduledClassPatternCreate} edit={ScheduledClassPatternEdit} show={ScheduledClassPatternShow} />
     </Admin>
   );
 }

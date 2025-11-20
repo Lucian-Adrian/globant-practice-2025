@@ -8,7 +8,7 @@ import { SelectInput, useGetList, useTranslate } from 'react-admin';
  */
 export default function PatternFilterInput({ source = 'pattern_id', label, ...rest }) {
   const t = useTranslate();
-  const { data, isLoading } = useGetList('scheduledclasspatterns', {
+  const { data, isLoading } = useGetList('scheduled-class-patterns', {
     pagination: { page: 1, perPage: 1000 },
     sort: { field: 'name', order: 'ASC' },
   });

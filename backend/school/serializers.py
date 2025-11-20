@@ -695,8 +695,8 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         assert start is not None
         end = start + timedelta(minutes=int(duration or 60))
 
-        # Instructor availability
-        validate_instructor_availability(getattr(instructor, "id", None), start)
+        # Instructor availability - REMOVED to match ScheduledClassPattern behavior (allow scheduling outside availability)
+        # validate_instructor_availability(getattr(instructor, "id", None), start)
 
         # Category and instructor license rules
         validate_category_and_license(course, instructor, resource)

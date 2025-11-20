@@ -46,8 +46,8 @@ export default function Menu() {
       <RaMenu.ResourceItem name="payments" />
       <RaMenu.ResourceItem name="enrollments" />
       <RaMenu.ResourceItem name="lessons" />
-      <RaMenu.ResourceItem name="scheduledclasspatterns" />
-      <RaMenu.ResourceItem name="scheduledclasses" />
+      <RaMenu.ResourceItem name="scheduled-class-patterns" />
+      <RaMenu.ResourceItem name="scheduled-classes" />
       {isRu ? (
         // RU only: split label into two lines explicitly
         (() => {
