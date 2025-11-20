@@ -200,10 +200,14 @@ const ViewClassesButton = ({ record }) => {
   const navigate = useNavigate();
   const t = useTranslate();
 
-  const handleClick = () => {
-    // Navigate to scheduled classes list filtered by this pattern
-    navigate(`/admin/scheduled-classes?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (record && record.id) {
+        navigate(`/admin/scheduled-classes?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
+    }
   };
+
+  if (!record) return null;
 
   return (
     <Button
