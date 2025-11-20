@@ -14,10 +14,10 @@ import {
   useUnselectAll,
   Button,
   useTranslate,
-  Confirm,
-  useRedirect
+  Confirm
 } from 'react-admin';
 import { useMutation } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -40,25 +40,47 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
         dataProvider.create(`scheduled-class-patterns/${id}/generate-classes`, {
           data: {}
         })
+        .then(res => ({ status: 'fulfilled', value: res }))
+        .catch(err => ({ status: 'rejected', reason: err }))
       );
       const results = await Promise.all(promises);
-      // Count total generated classes
-      const totalGenerated = results.reduce((sum, result) => {
-        return sum + (result?.data?.length || 0);
+      
+      const successes = results.filter(r => r.status === 'fulfilled');
+      const failures = results.filter(r => r.status === 'rejected');
+      
+      // Count total generated classes from successes
+      const totalGenerated = successes.reduce((sum, result) => {
+        // The API returns { id, generated_count, enrollment_results }
+        const data = result?.value?.data;
+        if (data?.generated_count !== undefined) return sum + data.generated_count;
+        
+        // Fallback for legacy or other formats
+        if (Array.isArray(data)) return sum + data.length;
+        if (data?.results && Array.isArray(data.results)) return sum + data.results.length;
+        return sum;
       }, 0);
-      return { results, totalGenerated };
+      
+      return { results, totalGenerated, failureCount: failures.length };
     },
     {
-      onSuccess: ({ totalGenerated }) => {
-        notify(t('resources.scheduledclasspatterns.bulk.generate_success', { 
-          count: selectedIds.length, 
-          classes: totalGenerated 
-        }), { type: 'success' });
+      onSuccess: ({ totalGenerated, failureCount }) => {
+        if (failureCount > 0) {
+            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_partial_success', { 
+                success_count: selectedIds.length - failureCount,
+                fail_count: failureCount,
+                classes: totalGenerated 
+            }), { type: 'warning' });
+        } else {
+            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_success', { 
+                count: selectedIds.length, 
+                classes: totalGenerated 
+            }), { type: 'success' });
+        }
         refresh();
         unselectAll('scheduledclasspatterns');
       },
       onError: (error) => {
-        notify(t('resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
+        notify(t('admin.resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
       },
     }
   );
@@ -76,15 +98,15 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
   return (
     <>
       <Button
-        label={t('resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
+        label={t('admin.resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
         onClick={handleClick}
         disabled={isLoading || safeSelectedIds.length === 0}
         startIcon={isLoading ? <CircularProgress size={16} /> : <PlayArrowIcon />}
       />
       <Confirm
         isOpen={open}
-        title={t('resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
-        content={t('resources.scheduledclasspatterns.bulk.generate_confirm_content', {
+        title={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
+        content={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_content', {
           count: safeSelectedIds.length,
           defaultValue: 'Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.'
         })}
@@ -175,18 +197,18 @@ const BulkRegenerateClassesButton = ({ selectedIds }) => {
 
 // Custom action button to view generated classes for a pattern
 const ViewClassesButton = ({ record }) => {
-  const redirect = useRedirect();
+  const navigate = useNavigate();
   const t = useTranslate();
 
   const handleClick = () => {
     // Navigate to scheduled classes list filtered by this pattern
-    redirect(`/admin/scheduledclasses?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
+    navigate(`/admin/scheduledclasses?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
   };
 
   return (
     <Button
       onClick={handleClick}
-      label={t('resources.scheduledclasspatterns.viewClasses', 'View Classes')}
+      label={t('admin.resources.scheduledclasspatterns.viewClasses', 'View Classes')}
       startIcon={<VisibilityIcon />}
       size="small"
     />
