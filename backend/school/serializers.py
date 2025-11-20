@@ -303,6 +303,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             "model",
             "year",
             "resource_type",
+            "type",
         ]
 
     def get_resource_type(self, obj):
@@ -553,13 +554,21 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        from .validators import validate_classroom_resource_for_class
+        from .validators import (
+            validate_classroom_resource_for_class,
+            validate_scheduled_class_students_enrolled,
+            validate_scheduled_class_students_capacity
+        )
 
         instance = getattr(self, "instance", None)
+        course = attrs.get("course") or (instance.course if instance else None)
         instructor = attrs.get("instructor") or (instance.instructor if instance else None)
         resource = attrs.get("resource") or (instance.resource if instance else None)
         recurrence_days = attrs.get("recurrence_days") or (instance.recurrence_days if instance else [])
         times = attrs.get("times") or (instance.times if instance else [])
+        default_max_students = attrs.get("default_max_students") if "default_max_students" in attrs else (
+            instance.default_max_students if instance else None
+        )
 
         # Instructor availability
         validate_instructor_availability_for_pattern(
@@ -570,6 +579,16 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
 
         # Classroom resource only
         validate_classroom_resource_for_class(resource)
+
+        # Validate students enrollment
+        if "students" in attrs:
+            students = attrs.get("students") or []
+        else:
+            students = list(instance.students.all()) if instance else []
+        validate_scheduled_class_students_enrolled(course, students)
+
+        # Validate students capacity against default_max_students and resource capacity
+        validate_scheduled_class_students_capacity(resource, default_max_students, students)
 
         return attrs
 
@@ -584,7 +603,7 @@ class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
 class ScheduledClassSerializer(serializers.ModelSerializer):
     pattern = ScheduledClassPatternSummarySerializer(read_only=True)
     pattern_id = serializers.PrimaryKeyRelatedField(
-        queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
+        queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False, allow_null=True
     )
     course = CourseSerializer(read_only=True)
     course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), source="course")
