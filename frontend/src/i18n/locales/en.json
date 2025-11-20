@@ -450,6 +450,12 @@
     "requiredField": "This field is required",
     "invalidEmail": "Please enter a valid email address",
     "invalidPhone": "Please enter a valid phone number",
-    "atLeastOneRecurrence": "At least one recurrence is required"
+    "atLeastOneRecurrence": "At least one recurrence is required",
+    "outsideAvailability": "The selected time is outside the instructor's working hours.",
+    "instructorNotWorking": "The instructor is not working on this day.",
+    "checkAvailability": "Check Availability",
+    "checking": "Checking...",
+    "available": "Available",
+    "unavailable": "Unavailable"
   }
 }
