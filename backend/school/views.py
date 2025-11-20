@@ -1448,12 +1448,25 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             return [IsAdminUser()]
         return [IsAuthenticated()]
 
+    def create(self, request, *args, **kwargs):
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Creating ScheduledClassPattern with data: {request.data}")
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Updating ScheduledClassPattern {kwargs.get('pk')} with data: {request.data}")
+        return super().update(request, *args, **kwargs)
+
     @decorators.action(detail=True, methods=["post"], url_path="generate-classes")
     def generate_classes(self, request, pk=None):
         """Generate ScheduledClass instances for this pattern."""
         import time
         import logging
         from django.conf import settings
+        from django.core.exceptions import ValidationError
         from .notifications import (
             notification_service,
             ClassGenerationNotificationTemplate,
@@ -1468,8 +1481,15 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         if settings.DEBUG:
             logger.info(f"Starting generate-classes action for pattern '{pattern.name}' (ID: {pattern.id}) by user {request.user}")
         
-        pattern.validate_generation()  # Validate for overlaps
-        classes = pattern.generate_scheduled_classes()
+        try:
+            pattern.validate_generation()  # Validate for overlaps
+            classes = pattern.generate_scheduled_classes()
+        except (ValueError, ValidationError) as e:
+            logger.error(f"Class generation validation failed for pattern '{pattern.name}': {str(e)}")
+            return response.Response({
+                "error": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         created_classes = ScheduledClass.objects.bulk_create(classes)
         
         # Auto-enroll pattern students in generated classes
@@ -1484,11 +1504,13 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         # Send notifications
         self._send_generation_notifications(pattern, created_classes, enrollment_results)
         
-        # Use pagination for the response
-        paginator = StandardResultsSetPagination()
-        page = paginator.paginate_queryset(created_classes, request)
-        serializer = ScheduledClassSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        # Return format compatible with react-admin dataProvider.create
+        # The dataProvider wraps the response in { data: ... }, so we just return the object with 'id'
+        return response.Response({
+            "id": pattern.id,
+            "generated_count": len(created_classes),
+            "enrollment_results": enrollment_results
+        }, status=status.HTTP_200_OK)
 
     @decorators.action(detail=True, methods=["post"], url_path="regenerate-classes")
     def regenerate_classes(self, request, pk=None):
@@ -1513,8 +1535,15 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             logger.info(f"Deleted {deleted_count} existing classes for pattern '{pattern.name}'")
         
         # Generate new classes
-        pattern.validate_generation()  # Validate for overlaps
-        classes = pattern.generate_scheduled_classes()
+        try:
+            pattern.validate_generation()  # Validate for overlaps
+            classes = pattern.generate_scheduled_classes()
+        except (ValueError, ValidationError) as e:
+            logger.error(f"Class generation validation failed for pattern '{pattern.name}': {str(e)}")
+            return response.Response({
+                "error": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         created_classes = ScheduledClass.objects.bulk_create(classes)
         
         # Auto-enroll pattern students in generated classes
@@ -1529,16 +1558,13 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         # Send notifications
         self._send_generation_notifications(pattern, created_classes, enrollment_results)
         
-        # Use pagination for the response
-        paginator = StandardResultsSetPagination()
-        page = paginator.paginate_queryset(created_classes, request)
-        serializer = ScheduledClassSerializer(page, many=True)
-        
-        return paginator.get_paginated_response({
+        # Return format compatible with react-admin dataProvider.create
+        return response.Response({
+            "id": pattern.id,
             "deleted_count": deleted_count,
             "generated_count": len(classes),
-            "results": serializer.data
-        })
+            "enrollment_results": enrollment_results
+        }, status=status.HTTP_200_OK)
 
     def _auto_enroll_students(self, pattern, created_classes):
         """
@@ -1553,54 +1579,39 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         """
         from django.db import transaction
         
+        # Fetch all students once to avoid N queries
+        students = list(pattern.students.all())
+        
         results = {
-            'total_students': pattern.students.count(),
+            'total_students': len(students),
             'enrolled': 0,
             'failed': 0,
             'errors': []
         }
         
-        if not pattern.students.exists():
-            return results
-        
-        # Get all created classes with their IDs (they should have IDs after bulk_create)
-        class_ids = [cls.id for cls in created_classes if cls.id]
-        
-        if not class_ids:
-            results['errors'].append("No class IDs available after creation")
+        if not students:
             return results
         
         try:
             with transaction.atomic():
-                for student in pattern.students.all():
-                    enrolled_count = 0
-                    failed_count = 0
+                # Iterate through created classes (instances)
+                for scheduled_class in created_classes:
+                    # Since these are new classes, they are empty.
+                    # We can enroll students up to max_capacity.
                     
-                    for class_id in class_ids:
-                        try:
-                            scheduled_class = ScheduledClass.objects.get(id=class_id)
-                            
-                            # Check if student is already enrolled
-                            if scheduled_class.students.filter(id=student.id).exists():
-                                continue
-                            
-                            # Check if class is full
-                            if scheduled_class.is_full():
-                                failed_count += 1
-                                continue
-                            
-                            # Enroll student
-                            scheduled_class.students.add(student)
-                            enrolled_count += 1
-                            
-                        except ScheduledClass.DoesNotExist:
-                            failed_count += 1
-                            continue
+                    max_students = scheduled_class.max_students
                     
-                    if enrolled_count > 0:
-                        results['enrolled'] += 1
-                    if failed_count > 0:
-                        results['failed'] += 1
+                    # Determine who can be enrolled
+                    students_to_enroll = students[:max_students]
+                    students_not_enrolled = students[max_students:]
+                    
+                    if students_to_enroll:
+                        # Bulk add students to the class
+                        scheduled_class.students.add(*students_to_enroll)
+                        results['enrolled'] += len(students_to_enroll)
+                    
+                    if students_not_enrolled:
+                        results['failed'] += len(students_not_enrolled)
                         
         except Exception as e:
             results['errors'].append(f"Auto-enrollment failed: {str(e)}")
@@ -1637,17 +1648,25 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         if enrollment_results['enrolled'] > 0:
             student_template = StudentEnrollmentNotificationTemplate()
             
-            # Get all enrolled students
-            enrolled_students = pattern.students.all()
+            # Optimize: Fetch all student enrollments for these classes in one query
+            # instead of querying for each class
+            ScheduledClassStudent = ScheduledClass.students.through
+            relations = ScheduledClassStudent.objects.filter(
+                scheduledclass__in=created_classes
+            ).select_related('student')
+            
+            # Group students by class
+            class_students = {}
+            for rel in relations:
+                if rel.scheduledclass_id not in class_students:
+                    class_students[rel.scheduledclass_id] = []
+                class_students[rel.scheduledclass_id].append(rel.student)
             
             # Send notification for each generated class
             for scheduled_class in created_classes:
-                # Only send to students who were actually enrolled in this class
-                enrolled_in_this_class = enrolled_students.filter(
-                    scheduled_classes=scheduled_class
-                )
+                students = class_students.get(scheduled_class.id, [])
                 
-                for student in enrolled_in_this_class:
+                for student in students:
                     notification_service.send_notification(
                         template=student_template,
                         recipients=[student],
