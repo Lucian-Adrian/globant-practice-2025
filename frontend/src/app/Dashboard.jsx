@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Card, CardContent, Typography, Grid, Box, LinearProgress, Avatar, Chip } from '@mui/material';
 import { useTranslate } from 'react-admin';
-import QuickAddPanel from '../components/QuickAddPanel.tsx';
 import { 
   TrendingUp as TrendingUpIcon,
   School as SchoolIcon,
@@ -11,7 +10,6 @@ import {
   BarChart as BarChartIcon
 } from '@mui/icons-material';
 
-// Fallback static dataset for local development if API is unavailable
 const fallbackStats = {
   todayScheduled: 2,
   thisWeekCompleted: 5,
@@ -29,13 +27,12 @@ const fallbackStats = {
   ],
 };
 
-// Fetch lesson statistics from backend; fallback to static data on error
 async function fetchLessonStatistics() {
   try {
     const resp = await fetch('/api/utils/lesson-stats/');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
-    // Basic shape guard
+
     if (json && typeof json === 'object' && 'todayScheduled' in json) return json;
     return fallbackStats;
   } catch (_) {
@@ -43,7 +40,6 @@ async function fetchLessonStatistics() {
   }
 }
 
-// Simple bar chart component
 const SimpleBarChart = ({ data, height = 100 }) => {
   const maxValue = Math.max(...data.map(d => d.lessons));
   
@@ -73,7 +69,6 @@ const SimpleBarChart = ({ data, height = 100 }) => {
   );
 };
 
-// Lesson statistics widget component
 const LessonStatsWidget = () => {
   const t = useTranslate();
   const [stats, setStats] = React.useState(fallbackStats);
@@ -243,9 +238,6 @@ export default function Dashboard() {
           
           {/* Lesson Statistics Widget removed as requested */}
         </Grid>
-        <Box sx={{ mt: 3, maxWidth: 520 }}>
-          <QuickAddPanel />
-        </Box>
         </>
       )}
     </Box>

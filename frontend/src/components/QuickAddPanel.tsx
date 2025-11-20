@@ -1,14 +1,10 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import { Button, ResourceContextProvider, useTranslate } from 'react-admin';
+import { Button, ResourceContextProvider, useTranslate, useNotify } from 'react-admin';
 import { Card, CardHeader, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
-
-// Reuse existing create form components
 import InstructorCreate from '../features/instructors/InstructorCreate.jsx';
 import { makeResourceCreate } from '../features/resources';
 import { makeCourseCreate } from '../features/courses';
-
-// Fallback choices (App bootstraps dynamic enums, but these are safe defaults)
 import { VEHICLE_CATEGORIES as FALLBACK_VEHICLE } from '../shared/constants/drivingSchool.js';
 
 type OpenKind = null | 'instructor' | 'vehicle' | 'classroom' | 'course';
@@ -16,8 +12,7 @@ type OpenKind = null | 'instructor' | 'vehicle' | 'classroom' | 'course';
 const QuickAddPanel: React.FC = () => {
   const [open, setOpen] = useState<OpenKind>(null);
   const t = useTranslate();
-
-  // Forms built from factories with fallback choices
+  const notify = useNotify();
   const ResourceCreateForm = useMemo(() => makeResourceCreate(FALLBACK_VEHICLE), []);
   const courseTypeChoices = useMemo(() => ([
     { id: 'THEORY', name: 'THEORY' },
@@ -26,6 +21,10 @@ const QuickAddPanel: React.FC = () => {
   const CourseCreateForm = useMemo(() => makeCourseCreate(FALLBACK_VEHICLE, courseTypeChoices), [courseTypeChoices]);
 
   const close = () => setOpen(null);
+  const onCreated = () => {
+    try { notify('ra.notification.created', { type: 'info', messageArgs: { smart_count: 1 } }); } catch (_) {}
+    close();
+  };
 
   return (
     <Card>
@@ -34,7 +33,7 @@ const QuickAddPanel: React.FC = () => {
         <div
           style={{
             display: 'grid',
-            gap: '12px 16px', // vertical 12px, horizontal 16px (closer columns)
+            gap: '12px 16px', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
             alignItems: 'start',
             maxWidth: 560
@@ -59,7 +58,7 @@ const QuickAddPanel: React.FC = () => {
           <DialogTitle>{t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')}</DialogTitle>
           <DialogContent dividers>
             <ResourceContextProvider value="instructors">
-              <InstructorCreate redirect={false} mutationOptions={{ onSuccess: close }} />
+              <InstructorCreate redirect={false} mutationOptions={{ onSuccess: onCreated }} />
             </ResourceContextProvider>
           </DialogContent>
           <DialogActions>
@@ -72,7 +71,7 @@ const QuickAddPanel: React.FC = () => {
           <DialogTitle>{t('common.dashboard.quick_add.add_vehicle', 'Add New Vehicle')}</DialogTitle>
           <DialogContent dividers>
             <ResourceContextProvider value="resources">
-              <ResourceCreateForm redirect={false} mutationOptions={{ onSuccess: close }} />
+              <ResourceCreateForm redirect={false} mutationOptions={{ onSuccess: onCreated }} />
             </ResourceContextProvider>
           </DialogContent>
           <DialogActions>
@@ -86,7 +85,7 @@ const QuickAddPanel: React.FC = () => {
           <DialogContent dividers>
             <ResourceContextProvider value="resources">
               {/* Provide a sensible default that looks like a classroom (bigger capacity) */}
-              <ResourceCreateForm redirect={false} mutationOptions={{ onSuccess: close }} record={{ max_capacity: 30 }} />
+              <ResourceCreateForm redirect={false} mutationOptions={{ onSuccess: onCreated }} record={{ max_capacity: 30 }} />
             </ResourceContextProvider>
           </DialogContent>
           <DialogActions>
@@ -99,7 +98,7 @@ const QuickAddPanel: React.FC = () => {
           <DialogTitle>{t('common.dashboard.quick_add.add_course', 'Add New Course')}</DialogTitle>
           <DialogContent dividers>
             <ResourceContextProvider value="classes">
-              <CourseCreateForm redirect={false} mutationOptions={{ onSuccess: close }} />
+              <CourseCreateForm redirect={false} mutationOptions={{ onSuccess: onCreated }} />
             </ResourceContextProvider>
           </DialogContent>
           <DialogActions>
