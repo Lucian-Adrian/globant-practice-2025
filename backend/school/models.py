@@ -242,28 +242,42 @@ class ScheduledClassPattern(models.Model):
     def validate_generation(self):
         """Validate before generating classes to prevent overlaps."""
         from django.core.exceptions import ValidationError
-        from django.db.models import Q
+        from django.db.models import Q, F, ExpressionWrapper, DateTimeField
         from datetime import timedelta
         classes = self.generate_scheduled_classes()
         for cls in classes:
-            # Check overlap with existing classes for same instructor
-            overlaps = ScheduledClass.objects.filter(
-                ~Q(pattern=self) if self.pk else Q(),  # Exclude own if updating
-                pattern__instructor=self.instructor,
-                scheduled_time__lt=cls.scheduled_time + timedelta(minutes=cls.duration_minutes),
-                scheduled_time__gte=cls.scheduled_time
-            ).exists()
-            if overlaps:
-                raise ValidationError(f"Overlap detected for instructor at {cls.scheduled_time}.")
-            # Check for resource
-            overlaps = ScheduledClass.objects.filter(
-                ~Q(pattern=self) if self.pk else Q(),
-                pattern__resource=self.resource,
-                scheduled_time__lt=cls.scheduled_time + timedelta(minutes=cls.duration_minutes),
-                scheduled_time__gte=cls.scheduled_time
-            ).exists()
-            if overlaps:
-                raise ValidationError(f"Overlap detected for resource at {cls.scheduled_time}.")
+            cls_end = cls.scheduled_time + timedelta(minutes=cls.duration_minutes)
+            
+            # Check overlap with existing classes
+            # Overlap condition: (StartA < EndB) and (EndA > StartB)
+            # A = cls (new), B = existing
+            
+            # Simplified overlap check to avoid DB-specific issues with duration calculation
+            # Fetch potential conflicts in a wide window
+            # Assume max class duration is 4 hours for safety
+            window_start = cls.scheduled_time - timedelta(hours=4)
+            window_end = cls_end
+            
+            potential_conflicts = ScheduledClass.objects.filter(
+                scheduled_time__gte=window_start,
+                scheduled_time__lt=window_end
+            )
+            
+            if self.pk:
+                potential_conflicts = potential_conflicts.filter(Q(pattern__isnull=True) | ~Q(pattern=self))
+            
+            # Check in Python
+            for conflict in potential_conflicts:
+                conflict_end = conflict.scheduled_time + timedelta(minutes=conflict.duration_minutes)
+                
+                # Overlap: StartA < EndB and EndA > StartB
+                if cls.scheduled_time < conflict_end and cls_end > conflict.scheduled_time:
+                    if conflict.instructor == self.instructor:
+                        raise ValidationError(f"Overlap detected for instructor at {cls.scheduled_time}.")
+                    if conflict.resource == self.resource:
+                        raise ValidationError(f"Overlap detected for resource at {cls.scheduled_time}.")
+            
+
 
     def delete(self, *args, **kwargs):
         # Delete all generated classes before deleting the pattern
@@ -280,6 +294,12 @@ class ScheduledClassPattern(models.Model):
 
         logger = logging.getLogger(__name__)
         start_time = time_module.time()
+        
+        # Validate that pattern has required data
+        if not self.recurrence_days or not self.times:
+            error_msg = f"Pattern '{self.name}' cannot generate classes: missing recurrence_days or times"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         
         if settings.DEBUG:
             logger.info(f"Starting class generation for pattern '{self.name}' (ID: {self.id})")
@@ -305,7 +325,18 @@ class ScheduledClassPattern(models.Model):
         time_objs = []
         for time_str in self.times:
             if isinstance(time_str, str):
-                time_objs.append(time.fromisoformat(time_str))
+                # Handle H:MM format by padding with zero
+                if len(time_str) == 4 and time_str[1] == ':':
+                    time_str = f"0{time_str}"
+                try:
+                    time_objs.append(time.fromisoformat(time_str))
+                except ValueError:
+                    # Fallback for other formats if needed
+                    try:
+                        t = datetime.strptime(time_str, "%H:%M").time()
+                        time_objs.append(t)
+                    except ValueError:
+                        raise ValueError(f"Invalid time format: {time_str}")
             else:
                 time_objs.append(time_str)
 
