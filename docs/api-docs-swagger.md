@@ -131,3 +131,294 @@ Authorization: Bearer <access_token>
   "detail": "Authentication credentials were not provided."
 }
 ```
+
+## Scheduled Class Patterns
+
+### List/Create Scheduled Class Patterns
+
+**Endpoints:**
+- `GET /api/scheduled-class-patterns/` - List all patterns
+- `POST /api/scheduled-class-patterns/` - Create new pattern
+
+**Authentication:** Admin required for POST
+
+**Query Parameters (GET):**
+- `course` - Filter by course ID
+- `instructor` - Filter by instructor ID
+- `resource` - Filter by resource ID
+- `status` - Filter by status
+- `start_date__gte` - Filter by start date greater than or equal
+- `start_date__lte` - Filter by start date less than or equal
+
+**Request Body (POST):**
+```json
+{
+  "name": "Monday/Wednesday Theory Classes",
+  "course_id": 1,
+  "instructor_id": 1,
+  "resource_id": 1,
+  "student_ids": [1, 2, 3],
+  "recurrence_days": ["MONDAY", "WEDNESDAY"],
+  "times": ["10:00", "14:00"],
+  "start_date": "2024-10-01",
+  "num_lessons": 20,
+  "duration_minutes": 60,
+  "max_students": 15,
+  "status": "SCHEDULED"
+}
+```
+
+**Response (Success - 201 Created):**
+```json
+{
+  "id": 1,
+  "name": "Monday/Wednesday Theory Classes",
+  "course": {
+    "id": 1,
+    "name": "Driving Theory Course B",
+    "category": "B",
+    "type": "THEORY"
+  },
+  "instructor": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Smith",
+    "email": "john.smith@example.com"
+  },
+  "resource": {
+    "id": 1,
+    "name": "Classroom A",
+    "category": "CLASSROOM"
+  },
+  "students": [
+    {
+      "id": 1,
+      "first_name": "Alice",
+      "last_name": "Johnson",
+      "email": "alice@example.com"
+    }
+  ],
+  "recurrence_days": ["MONDAY", "WEDNESDAY"],
+  "times": ["10:00", "14:00"],
+  "start_date": "2024-10-01",
+  "num_lessons": 20,
+  "duration_minutes": 60,
+  "max_students": 15,
+  "status": "SCHEDULED",
+  "created_at": "2024-09-15T10:30:00Z"
+}
+```
+
+**Response (Error - 400 Bad Request):**
+```json
+{
+  "recurrence_days": ["Recurrence days cannot be empty."],
+  "times": ["Times cannot be empty."],
+  "start_date": ["Start date cannot be in the past."]
+}
+```
+
+### Get/Update/Delete Scheduled Class Pattern
+
+**Endpoints:**
+- `GET /api/scheduled-class-patterns/{id}/` - Get pattern details
+- `PUT /api/scheduled-class-patterns/{id}/` - Update pattern
+- `DELETE /api/scheduled-class-patterns/{id}/` - Delete pattern
+
+**Authentication:** Admin required for PUT/DELETE
+
+### Generate Classes from Pattern
+
+**Endpoint:** `POST /api/scheduled-class-patterns/{id}/generate-classes/`
+
+**Description:** Generate ScheduledClass instances based on the pattern's recurrence rules.
+
+**Authentication:** Admin required
+
+**Response (Success - 200 OK):**
+```json
+{
+  "count": 20,
+  "results": [
+    {
+      "id": 1,
+      "name": "Monday/Wednesday Theory Classes - 2024-10-01 10:00",
+      "scheduled_time": "2024-10-01T10:00:00Z",
+      "duration_minutes": 60,
+      "max_students": 15,
+      "status": "SCHEDULED"
+    }
+  ]
+}
+```
+
+**Response (Error - 400 Bad Request):**
+```json
+{
+  "detail": "Overlap detected for instructor at 2024-10-01 10:00:00+00:00."
+}
+```
+
+### Regenerate Classes from Pattern
+
+**Endpoint:** `POST /api/scheduled-class-patterns/{id}/regenerate-classes/`
+
+**Description:** Delete existing generated classes and create new ones.
+
+**Authentication:** Admin required
+
+**Response (Success - 200 OK):**
+```json
+{
+  "deleted_count": 20,
+  "generated_count": 20,
+  "results": [...]
+}
+```
+
+### Get Pattern Statistics
+
+**Endpoint:** `GET /api/scheduled-class-patterns/{id}/statistics/`
+
+**Description:** Get statistics for a scheduled class pattern.
+
+**Authentication:** Authenticated user
+
+**Response (Success - 200 OK):**
+```json
+{
+  "pattern_id": 1,
+  "pattern_name": "Monday/Wednesday Theory Classes",
+  "total_classes": 20,
+  "scheduled_classes": 18,
+  "completed_classes": 2,
+  "cancelled_classes": 0,
+  "total_enrolled_students": 12,
+  "average_students_per_class": 12.0,
+  "capacity_utilization_percent": 80.0
+}
+```
+
+### Export Patterns
+
+**Endpoint:** `GET /api/scheduled-class-patterns/export/`
+
+**Description:** Export scheduled class patterns to CSV.
+
+**Authentication:** Admin required
+
+**Response:** CSV file download
+
+## Scheduled Classes
+
+### List/Create Scheduled Classes
+
+**Endpoints:**
+- `GET /api/scheduled-classes/` - List all classes
+- `POST /api/scheduled-classes/` - Create new class
+
+**Query Parameters (GET):**
+- `pattern__course` - Filter by course ID
+- `pattern__instructor` - Filter by instructor ID
+- `pattern__resource` - Filter by resource ID
+- `status` - Filter by status
+- `scheduled_time__date` - Filter by date
+- `scheduled_time__gte` - Filter by start time
+- `scheduled_time__lte` - Filter by end time
+
+**Request Body (POST):**
+```json
+{
+  "pattern_id": 1,
+  "name": "Custom Class",
+  "scheduled_time": "2024-10-01T10:00:00Z",
+  "duration_minutes": 60,
+  "max_students": 15,
+  "status": "SCHEDULED"
+}
+```
+
+### Get/Update/Delete Scheduled Class
+
+**Endpoints:**
+- `GET /api/scheduled-classes/{id}/` - Get class details
+- `PUT /api/scheduled-classes/{id}/` - Update class
+- `DELETE /api/scheduled-classes/{id}/` - Delete class
+
+**Authentication:** Admin required for PUT/DELETE
+
+### Enroll Student in Class
+
+**Endpoint:** `POST /api/scheduled-classes/{id}/enroll/`
+
+**Request Body:**
+```json
+{
+  "student_id": 1
+}
+```
+
+**Response (Success - 200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Monday Theory Class",
+  "scheduled_time": "2024-10-01T10:00:00Z",
+  "students": [
+    {
+      "id": 1,
+      "first_name": "Alice",
+      "last_name": "Johnson"
+    }
+  ]
+}
+```
+
+**Response (Error - 400 Bad Request):**
+```json
+{
+  "detail": "Student already enrolled"
+}
+```
+
+### Unenroll Student from Class
+
+**Endpoint:** `POST /api/scheduled-classes/{id}/unenroll/`
+
+**Request Body:**
+```json
+{
+  "student_id": 1
+}
+```
+
+### Export Classes
+
+**Endpoint:** `GET /api/scheduled-classes/export/`
+
+**Description:** Export scheduled classes to CSV.
+
+**Authentication:** Admin required
+
+**Response:** CSV file download
+
+### Import Classes
+
+**Endpoint:** `POST /api/scheduled-classes/import/`
+
+**Description:** Import scheduled classes from CSV.
+
+**Authentication:** Admin required
+
+**Request:** Multipart form data with CSV file
+
+**Response (Success - 200 OK):**
+```json
+{
+  "created": 5,
+  "updated": 2,
+  "created_ids": [1, 2, 3, 4, 5],
+  "updated_ids": [6, 7],
+  "errors": []
+}
+```

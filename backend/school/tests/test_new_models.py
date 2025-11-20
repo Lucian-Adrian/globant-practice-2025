@@ -64,9 +64,8 @@ class ScheduledClassModelTest(TestCase):
             times=['10:00'],
             start_date=timezone.now().date(),
             num_lessons=1,
-            duration_minutes=60,
-            max_students=25,
-            status="SCHEDULED",
+            default_duration_minutes=60,
+            default_max_students=25,
         )
         # Create scheduled class from pattern
         self.scheduled_class = ScheduledClass.objects.create(
@@ -94,15 +93,15 @@ class ScheduledClassModelTest(TestCase):
             date_of_birth="1990-01-01",
         )
 
-        # Enroll student in the pattern (not directly in scheduled class)
-        self.pattern.students.add(student)
+        # Enroll student in the scheduled class
+        self.scheduled_class.students.add(student)
 
         self.assertEqual(self.scheduled_class.current_enrollment(), 1)
         self.assertEqual(self.scheduled_class.available_spots(), 24)
         self.assertFalse(self.scheduled_class.is_full())
 
-        # Check reverse relationship - student should be in pattern's students
-        self.assertIn(student, self.pattern.students.all())
+        # Check reverse relationship - student should be in class's students
+        self.assertIn(student, self.scheduled_class.students.all())
 
     def test_capacity_limits(self):
         # Create max_students students
@@ -117,8 +116,8 @@ class ScheduledClassModelTest(TestCase):
             )
             students.append(student)
 
-        # Enroll all students in the pattern
-        self.pattern.students.add(*students)
+        # Enroll all students in the scheduled class
+        self.scheduled_class.students.add(*students)
 
         self.assertEqual(self.scheduled_class.current_enrollment(), 25)
         self.assertEqual(self.scheduled_class.available_spots(), 0)

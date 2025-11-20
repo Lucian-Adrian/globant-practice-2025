@@ -58,7 +58,10 @@
   "type": { "theory": "Teorie", "driving": "Practică" },
   "filters": {
     "available": "Disponibil",
-    "unavailable": "Indisponibil"
+    "unavailable": "Indisponibil",
+    "scheduled": "Programat",
+    "completed": "Finalizat",
+    "canceled": "Anulat"
   },
   "resources": {
     "students": {
@@ -125,6 +128,55 @@
       "fields": {
         "enrollment": "Înscriere"
       }
+    },
+    "scheduledclasses": {
+      "name": "Clase Programate",
+      "fields": {
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "pattern": "Model",
+        "scheduled_time": "Ora programată",
+        "duration_minutes": "Durată (min)",
+        "current_enrollment": "Înscriere curentă",
+        "available_spots": "Locuri disponibile",
+        "max_students": "Max studenți",
+        "recurrences": "Repetări",
+        "num_lessons": "Număr de lecții",
+        "day": "Zi",
+        "time": "Oră",
+        "status": "Status",
+        "students": "Studenți"
+      }
+    },
+    "scheduledclasspatterns": {
+      "name": "Modele Clase Programate",
+      "fields": {
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "day": "Zi",
+        "time": "Oră",
+        "start_date": "Data Început Model",
+        "num_lessons": "Număr de Lecții",
+        "default_duration_minutes": "Durată Implicită (min)",
+        "default_max_students": "Max Studenți Implicit"
+      },
+      "bulk": {
+        "generate": "Generează Clase",
+        "regenerate": "Regenerează Clase",
+        "generate_success": "Clase generate cu succes pentru {{count}} model(e). Creat {{classes}} clasă(clase).",
+        "regenerate_success": "Clase regenerate cu succes pentru {{count}} model(e). Șterse {{deleted}} clasă(clase), create {{generated}} clasă(clase) nouă.",
+        "generate_error": "Eșuat generarea claselor: {{error}}",
+        "regenerate_error": "Eșuat regenerarea claselor: {{error}}",
+        "generate_confirm_title": "Generează Clase",
+        "generate_confirm_content": "Sigur doriți să generați clase pentru {{count}} model(e)? Acest lucru poate dura ceva timp.",
+        "regenerate_confirm_title": "Regenerează Clase",
+        "regenerate_confirm_content": "Sigur doriți să regenerați clase pentru {{count}} model(e)? Acest lucru va șterge clasele existente și va crea altele noi."
+      },
+      "viewClasses": "Vezi Clase"
     }
   },
   "lessons": {
@@ -337,5 +389,12 @@
     "action": {
       "back": "Înapoi"
     }
+  },
+  "validation": {
+    "timeFormat": "Ora trebuie să fie în format HH:MM (ex., 09:30 sau 14:00)",
+    "requiredField": "Acest câmp este obligatoriu",
+    "invalidEmail": "Vă rugăm să introduceți o adresă de email validă",
+    "invalidPhone": "Vă rugăm să introduceți un număr de telefon valid",
+    "atLeastOneRecurrence": "Este necesară cel puțin o repetare"
   }
 }

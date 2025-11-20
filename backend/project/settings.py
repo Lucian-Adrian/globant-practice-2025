@@ -230,3 +230,7 @@ SIMPLE_JWT = {
     "SIGNING_KEY": os.getenv("JWT_SIGNING_KEY", SECRET_KEY),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# Email settings
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@drivingschool.com")

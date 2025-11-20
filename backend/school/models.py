@@ -220,21 +220,91 @@ class ScheduledClassPattern(models.Model):
     )
     start_date = models.DateField(help_text="Start date for the recurrence")
     num_lessons = models.IntegerField(help_text="Total number of lessons to generate")
-    duration_minutes = models.IntegerField(default=60)
-    max_students = models.IntegerField()
-    status = models.CharField(
-        max_length=20,
-        choices=LessonStatus.choices(),
-        default=LessonStatus.SCHEDULED.value,
-    )
+    # Default values for generated classes
+    default_duration_minutes = models.IntegerField(default=60, help_text="Default duration for generated classes")
+    default_max_students = models.IntegerField(default=10, help_text="Default max students for generated classes")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.name} - {self.course.name}"
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        from datetime import date
+        if not self.recurrence_days:
+            raise ValidationError("Recurrence days cannot be empty.")
+        if not self.times:
+            raise ValidationError("Times cannot be empty.")
+        if self.start_date < date.today():
+            raise ValidationError("Start date cannot be in the past.")
+        # Check for valid day names
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        if not all(day in valid_days for day in self.recurrence_days):
+            raise ValidationError("Invalid recurrence days.")
+
+    def validate_generation(self):
+        """Validate before generating classes to prevent overlaps."""
+        from django.core.exceptions import ValidationError
+        from django.db.models import Q, F, ExpressionWrapper, DateTimeField
+        from datetime import timedelta
+        classes = self.generate_scheduled_classes()
+        for cls in classes:
+            cls_end = cls.scheduled_time + timedelta(minutes=cls.duration_minutes)
+            
+            # Check overlap with existing classes
+            # Overlap condition: (StartA < EndB) and (EndA > StartB)
+            # A = cls (new), B = existing
+            
+            # Simplified overlap check to avoid DB-specific issues with duration calculation
+            # Fetch potential conflicts in a wide window
+            # Assume max class duration is 4 hours for safety
+            window_start = cls.scheduled_time - timedelta(hours=4)
+            window_end = cls_end
+            
+            potential_conflicts = ScheduledClass.objects.filter(
+                scheduled_time__gte=window_start,
+                scheduled_time__lt=window_end
+            )
+            
+            if self.pk:
+                potential_conflicts = potential_conflicts.filter(Q(pattern__isnull=True) | ~Q(pattern=self))
+            
+            # Check in Python
+            for conflict in potential_conflicts:
+                conflict_end = conflict.scheduled_time + timedelta(minutes=conflict.duration_minutes)
+                
+                # Overlap: StartA < EndB and EndA > StartB
+                if cls.scheduled_time < conflict_end and cls_end > conflict.scheduled_time:
+                    if conflict.instructor == self.instructor:
+                        raise ValidationError(f"Overlap detected for instructor at {cls.scheduled_time}.")
+                    if conflict.resource == self.resource:
+                        raise ValidationError(f"Overlap detected for resource at {cls.scheduled_time}.")
+            
+
+
+    def delete(self, *args, **kwargs):
+        # Delete all generated classes before deleting the pattern
+        self.scheduled_classes.all().delete()
+        super().delete(*args, **kwargs)
 
     def generate_scheduled_classes(self):
         """Generate ScheduledClass instances based on recurrence."""
-        from datetime import datetime, timedelta, date
+        import time as time_module
+        import logging
+        from datetime import datetime, timedelta, date, time
+        from django.utils import timezone
+        from django.conf import settings
+
+        logger = logging.getLogger(__name__)
+        start_time = time_module.time()
+        
+        # Validate that pattern has required data
+        if not self.recurrence_days or not self.times:
+            error_msg = f"Pattern '{self.name}' cannot generate classes: missing recurrence_days or times"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        if settings.DEBUG:
+            logger.info(f"Starting class generation for pattern '{self.name}' (ID: {self.id})")
+            logger.info(f"Pattern config: days={self.recurrence_days}, times={self.times}, num_lessons={self.num_lessons}")
+
         classes = []
         current_date = self.start_date
         if isinstance(current_date, str):
@@ -249,38 +319,87 @@ class ScheduledClassPattern(models.Model):
             'SATURDAY': 5,
             'SUNDAY': 6,
         }
-        recurrence_day_indices = [day_map[day] for day in self.recurrence_days if day in day_map]
+        recurrence_day_indices = set(day_map[day] for day in self.recurrence_days if day in day_map)
+        
+        # Pre-calculate time objects
+        time_objs = []
+        for time_str in self.times:
+            if isinstance(time_str, str):
+                # Handle H:MM format by padding with zero
+                if len(time_str) == 4 and time_str[1] == ':':
+                    time_str = f"0{time_str}"
+                try:
+                    time_objs.append(time.fromisoformat(time_str))
+                except ValueError:
+                    # Fallback for other formats if needed
+                    try:
+                        t = datetime.strptime(time_str, "%H:%M").time()
+                        time_objs.append(t)
+                    except ValueError:
+                        raise ValueError(f"Invalid time format: {time_str}")
+            else:
+                time_objs.append(time_str)
 
-        while count < self.num_lessons:
+        iteration_count = 0
+        max_iterations = self.num_lessons * 10  # Safety limit to prevent infinite loops
+        
+        while count < self.num_lessons and iteration_count < max_iterations:
+            iteration_count += 1
             if current_date.weekday() in recurrence_day_indices:
-                for time_obj in self.times:
+                for time_obj in time_objs:
                     if count >= self.num_lessons:
                         break
-                    if isinstance(time_obj, str):
-                        from datetime import time
-                        time_obj = time.fromisoformat(time_obj)
-                    scheduled_time = datetime.combine(current_date, time_obj)
-                    # Create ScheduledClass
+                    naive_dt = datetime.combine(current_date, time_obj)
+                    scheduled_time = timezone.make_aware(naive_dt)
+                    # Create ScheduledClass with default values from pattern
                     scheduled_class = ScheduledClass(
                         pattern=self,
+                        course=self.course,
+                        instructor=self.instructor,
+                        resource=self.resource,
                         name=f"{self.name} - {current_date.strftime('%Y-%m-%d')} {time_obj.strftime('%H:%M')}",
                         scheduled_time=scheduled_time,
-                        duration_minutes=self.duration_minutes,
-                        max_students=self.max_students,
-                        status=self.status,
+                        duration_minutes=self.default_duration_minutes,
+                        max_students=self.default_max_students,
+                        status=LessonStatus.SCHEDULED.value,  # Default status for generated classes
                     )
                     classes.append(scheduled_class)
                     count += 1
             current_date += timedelta(days=1)
+        
+        generation_time = time_module.time() - start_time
+        
+        if settings.DEBUG:
+            logger.info(f"Class generation completed for pattern '{self.name}' in {generation_time:.3f}s")
+            logger.info(f"Generated {len(classes)} classes, iterated through {iteration_count} days")
+            if iteration_count >= max_iterations:
+                logger.warning(f"Pattern '{self.name}' hit iteration limit ({max_iterations}) - possible infinite loop")
+        
         return classes
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=['start_date']),
+            models.Index(fields=['course']),
+            models.Index(fields=['instructor']),
+            models.Index(fields=['resource']),
+            models.Index(fields=['start_date', 'course']),  # Composite index for common queries
+        ]
 
 
 class ScheduledClass(models.Model):
     pattern = models.ForeignKey(
         ScheduledClassPattern, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    instructor = models.ForeignKey(
+        Instructor, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
+    )
+    resource = models.ForeignKey(
+        Resource, on_delete=models.CASCADE, related_name="scheduled_classes", null=True, blank=True
     )
     name = models.CharField(max_length=100, help_text="e.g., 'Monday Theory Class'")
     scheduled_time = models.DateTimeField()
@@ -291,16 +410,15 @@ class ScheduledClass(models.Model):
         choices=LessonStatus.choices(),
         default=LessonStatus.SCHEDULED.value,
     )
+    students = models.ManyToManyField(Student, related_name="scheduled_classes", blank=True)
 
     def __str__(self):
         pattern_name = self.pattern.name if self.pattern else "No Pattern"
         return f"{self.name} - {pattern_name}"
 
     def current_enrollment(self):
-        """Return current number of enrolled students from pattern"""
-        if self.pattern:
-            return self.pattern.students.count()
-        return 0
+        """Return current number of enrolled students"""
+        return self.students.count()
 
     def available_spots(self):
         """Return number of available spots"""
@@ -312,6 +430,12 @@ class ScheduledClass(models.Model):
 
     class Meta:
         ordering = ["scheduled_time"]
+        indexes = [
+            models.Index(fields=['pattern']),
+            models.Index(fields=['scheduled_time']),
+            models.Index(fields=['status']),
+            models.Index(fields=['scheduled_time', 'status']),  # Composite index for time range + status queries
+        ]
 
 
 class Enrollment(models.Model):
