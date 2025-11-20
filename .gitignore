@@ -68,3 +68,7 @@ Thumbs.db
 # AI
 implementation.md
 plan.md
+.gitignore
+tasks.md
+completion.md
+translations.md
