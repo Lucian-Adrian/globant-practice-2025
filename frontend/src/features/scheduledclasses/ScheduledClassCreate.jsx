@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateTimeInput, NumberInput, useTranslate, ReferenceArrayInput, SelectArrayInput, required } from 'react-admin';
 import { validateScheduledClass } from '../../shared/validation/lessonValidation';
 import Breadcrumb from '../../shared/components/Breadcrumb.jsx';
+import AvailabilityChecker from './AvailabilityChecker';
 
 export default function ScheduledClassCreate(props) {
   const t = useTranslate();
@@ -28,6 +29,7 @@ export default function ScheduledClassCreate(props) {
             <SelectInput label={t('resources.scheduledclasses.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
           </ReferenceInput>
           <DateTimeInput source="scheduled_time" label={t('resources.scheduledclasses.fields.scheduled_time', 'Scheduled Time')} validate={[required()]} />
+          <AvailabilityChecker />
           <NumberInput source="duration_minutes" label={t('resources.scheduledclasses.fields.duration_minutes', 'Duration (min)')} defaultValue={60} validate={[required()]} />
           <NumberInput source="max_students" label={t('resources.scheduledclasses.fields.max_students', 'Max Students')} validate={[required()]} />
           <SelectInput source="status" label={t('resources.scheduledclasses.fields.status', 'Status')} choices={statusChoices} defaultValue="SCHEDULED" />

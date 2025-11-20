@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Edit, SimpleForm, TextInput, ReferenceInput, SelectInput, DateTimeInput, NumberInput, useTranslate, required, ReferenceArrayInput, SelectArrayInput, TopToolbar, ListButton } from 'react-admin';
 import { validateScheduledClass } from '../../shared/validation/lessonValidation';
 import Breadcrumb from '../../shared/components/Breadcrumb.jsx';
+import AvailabilityChecker from './AvailabilityChecker';
 
 export default function ScheduledClassEdit(props) {
   const t = useTranslate();
@@ -34,6 +35,7 @@ export default function ScheduledClassEdit(props) {
             <SelectInput label={t('resources.scheduledclasses.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
           </ReferenceInput>
           <DateTimeInput source="scheduled_time" label={t('resources.scheduledclasses.fields.scheduled_time', 'Scheduled time')} validate={[required()]} />
+          <AvailabilityChecker />
           <NumberInput source="duration_minutes" label={t('resources.scheduledclasses.fields.duration_minutes', 'Duration (min)')} />
           <NumberInput source="max_students" label={t('resources.scheduledclasses.fields.max_students', 'Max students')} />
           <NumberInput source="current_enrollment" label={t('resources.scheduledclasses.fields.current_enrollment', 'Current enrollment')} disabled />
