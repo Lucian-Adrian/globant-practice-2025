@@ -122,13 +122,19 @@ class InstructorAvailability(models.Model):
 class Resource(models.Model):
     name = models.CharField(max_length=100)
     max_capacity = models.IntegerField(help_text="2=vehicle, 30+=classroom")
-    category = models.CharField(max_length=5, choices=VehicleCategory.choices())
+    category = models.CharField(max_length=5, choices=VehicleCategory.choices(), null=True, blank=True)
     is_available = models.BooleanField(default=True)
     # Vehicle-specific fields (nullable for classrooms)
     license_plate = models.CharField(max_length=15, null=True, blank=True)
     make = models.CharField(max_length=50, null=True, blank=True)
     model = models.CharField(max_length=50, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
+    
+    RESOURCE_TYPES = [
+        ("VEHICLE", "Vehicle"),
+        ("CLASSROOM", "Classroom"),
+    ]
+    type = models.CharField(max_length=20, choices=RESOURCE_TYPES, default="VEHICLE")
 
     def __str__(self):
         if self.is_vehicle():
@@ -146,13 +152,15 @@ class Resource(models.Model):
     @property
     def resource_type(self):
         """Return human-readable resource type"""
-        if self.is_vehicle():
-            return "Vehicle"
-        if self.is_classroom():
-            return "Classroom"
-        return "Unknown"
+        return self.get_type_display()
 
     def save(self, *args, **kwargs):
+        # Auto-set type based on capacity if not set
+        if self.max_capacity == 2:
+            self.type = "VEHICLE"
+        elif self.max_capacity > 2:
+            self.type = "CLASSROOM"
+            
         # Normalize license plate for consistency and to improve uniqueness checks
         if self.license_plate:
             # Uppercase and strip spaces around - keep existing hyphens/dots as-is
