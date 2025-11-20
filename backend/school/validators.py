@@ -348,6 +348,7 @@ def validate_scheduled_class_students_enrolled(course, students) -> None:
         return
     from .models import Enrollment
 
+    not_enrolled_names = []
     for student in students:
         sid = getattr(student, "id", None)
         if not sid:
@@ -355,7 +356,16 @@ def validate_scheduled_class_students_enrolled(course, students) -> None:
             continue
         exists = Enrollment.objects.filter(student_id=sid, course_id=getattr(course, "id", None)).exists()
         if not exists:
-            raise serializers.ValidationError({"student_ids": [_("validation.studentNotEnrolledToCourse")]})
+            name = f"{getattr(student, 'first_name', '')} {getattr(student, 'last_name', '')}".strip() or str(sid)
+            not_enrolled_names.append(name)
+    
+    if not_enrolled_names:
+        names_str = ", ".join(not_enrolled_names)
+        raise serializers.ValidationError({
+            "student_ids": [
+                _("validation.studentNotEnrolledToCourse") + f" ({names_str})"
+            ]
+        })
 
 
 def validate_scheduled_class_students_capacity(resource, max_students, students) -> None:
@@ -382,7 +392,11 @@ def validate_scheduled_class_students_capacity(resource, max_students, students)
         except Exception:
             m = None
         if m is not None and count > m:
-            raise serializers.ValidationError({"student_ids": [_("validation.capacityBelowSelected")]})
+            raise serializers.ValidationError({
+                "student_ids": [
+                    _("validation.capacityBelowSelected") + f" (Selected: {count}, Max: {m})"
+                ]
+            })
 
     # Physical capacity: resource.max_capacity
     cap = getattr(resource, "max_capacity", None) if resource is not None else None
@@ -391,7 +405,11 @@ def validate_scheduled_class_students_capacity(resource, max_students, students)
     except Exception:
         cap_int = None
     if cap_int is not None and count > cap_int:
-        raise serializers.ValidationError({"student_ids": [_("validation.selectedStudentsExceedCapacity")]})
+        raise serializers.ValidationError({
+            "student_ids": [
+                _("validation.selectedStudentsExceedCapacity") + f" (Selected: {count}, Capacity: {cap_int})"
+            ]
+        })
 def validate_lesson_resource_availability(resource, status) -> None:
     if (status == "SCHEDULED") and resource is not None:
         try:
@@ -438,7 +456,8 @@ def validate_instructor_availability(instructor_id, start) -> None:
             # Skip malformed/corrupted availability records
             pass
     if not slots:
-        raise serializers.ValidationError({"scheduled_time": [_("validation.outsideAvailability")]})
+        # Strict validation: if no availability is defined, the instructor is not working.
+        raise serializers.ValidationError({"instructor_id": [_("validation.instructorNotWorking")]})
 
     def to_minutes(hhmm: str) -> int:
         # Validate format: must contain colon and both parts numeric
@@ -472,7 +491,13 @@ def validate_instructor_availability(instructor_id, start) -> None:
                 ok = True
                 break
     if not ok:
-        raise serializers.ValidationError({"scheduled_time": [_("validation.outsideAvailability")]})
+        # Format slots for friendly error message
+        slots_str = ", ".join(sorted(slots))
+        raise serializers.ValidationError({
+            "scheduled_time": [
+                _("validation.outsideAvailability") + f" (Working hours: {slots_str})"
+            ]
+        })
 
 def validate_instructor_availability_for_pattern(instructor_id, recurrence_days, times) -> None:
     """
@@ -504,7 +529,8 @@ def validate_instructor_availability_for_pattern(instructor_id, recurrence_days,
                 pass
         
         if not slots:
-             raise serializers.ValidationError({"instructor_id": [_("validation.outsideAvailability")]})
+             # If no availability is defined for this day, we allow scheduling.
+             continue
 
         slot_list = sorted(slots)
         
