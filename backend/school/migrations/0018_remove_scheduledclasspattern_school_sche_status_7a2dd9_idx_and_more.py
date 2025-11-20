@@ -11,14 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveIndex(
-            model_name='scheduledclasspattern',
-            name='school_sche_status_7a2dd9_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='scheduledclasspattern',
-            name='school_sche_start_d_929d9f_idx',
-        ),
         migrations.AddField(
             model_name='scheduledclass',
             name='course',

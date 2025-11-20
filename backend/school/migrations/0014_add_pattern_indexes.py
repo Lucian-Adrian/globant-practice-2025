@@ -16,10 +16,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='scheduledclasspattern',
-            index=models.Index(fields=['status'], name='school_sche_status_7a2dd9_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='scheduledclasspattern',
             index=models.Index(fields=['course'], name='school_sche_course__971d2d_idx'),
         ),
         migrations.AddIndex(
@@ -29,9 +25,5 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name='scheduledclasspattern',
             index=models.Index(fields=['resource'], name='school_sche_resourc_5d9ec9_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='scheduledclasspattern',
-            index=models.Index(fields=['start_date', 'status'], name='school_sche_start_d_929d9f_idx'),
         ),
     ]
