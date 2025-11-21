@@ -6,12 +6,14 @@ import { useNavigate } from "react-router-dom";
 type Enrollment = any; // TODO: Replace with real types if available
 type Lesson = any;
 type ScheduledClass = any;
+type ScheduledClassPattern = any;
 
 interface EnrollmentDetailsModalProps {
   open: boolean;
   enrollment: Enrollment | null;
   lessons: Lesson[];
   scheduledClasses: ScheduledClass[];
+  patterns: ScheduledClassPattern[]; // 👈 NEW
   onClose: () => void;
 }
 
@@ -37,7 +39,7 @@ const formatDateNoSeconds = (dt: any): string => {
   const d = parseDate(dt);
   if (!d) return "";
   const date = d.toLocaleDateString();
-  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
   return `${date} ${time}`;
 };
 
@@ -52,6 +54,51 @@ const humanResource = (obj: any): string => {
   const r = obj?.resource || obj?.pattern?.resource || null;
   if (!r) return "";
   return r.name || [r.make, r.model].filter(Boolean).join(" ") || r.license_plate || "";
+};
+
+// Helpers to format schedule from pattern.recurrence_days + pattern.times
+const buildDayName = (code: string, t: any): string => {
+  const map: Record<string, string> = {
+    MONDAY: t('portal.progress.details.days.monday', 'Monday'),
+    TUESDAY: t('portal.progress.details.days.tuesday', 'Tuesday'),
+    WEDNESDAY: t('portal.progress.details.days.wednesday', 'Wednesday'),
+    THURSDAY: t('portal.progress.details.days.thursday', 'Thursday'),
+    FRIDAY: t('portal.progress.details.days.friday', 'Friday'),
+    SATURDAY: t('portal.progress.details.days.saturday', 'Saturday'),
+    SUNDAY: t('portal.progress.details.days.sunday', 'Sunday'),
+  };
+  return map[code] || code;
+};
+
+
+const toLocaleTime = (timeStr: string): string => {
+  if (!timeStr) return '';
+  const [h, m] = String(timeStr).split(':').map((x) => parseInt(x, 10));
+  if (Number.isNaN(h) || Number.isNaN(m)) return timeStr;
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
+const humanScheduleRows = (pattern: any, t: any): string[] => {
+  if (!pattern) return [];
+  const days: string[] = Array.isArray(pattern?.recurrence_days) ? pattern.recurrence_days : [];
+  const times: string[] = Array.isArray(pattern?.times) ? pattern.times : [];
+  const rows: string[] = [];
+  days.forEach((d) => {
+    const dayName = buildDayName(d, t);
+    if (times.length === 0) rows.push(dayName);
+    times.forEach((tm) => {
+      const time = toLocaleTime(tm);
+      // Localization-friendly: allow translators to change the separator/template
+      rows.push(t('portal.progress.details.dayTime', {
+        day: dayName,
+        time,
+        defaultValue: `${dayName} - ${time}`
+      }));
+    });
+  });
+  return rows;
 };
 
 const pickBestContextItem = (e: any, lessons: any[], scheduledClasses: any[]) => {
@@ -77,56 +124,173 @@ const statusClasses = (status: string) => {
   return "tw-bg-warning tw-text-warning-foreground"; // scheduled / in-progress default
 };
 
-export default function EnrollmentDetailsModal({ open, enrollment, lessons, scheduledClasses, onClose }: EnrollmentDetailsModalProps) {
+export default function EnrollmentDetailsModal({
+  open,
+  enrollment,
+  lessons,
+  scheduledClasses,
+  patterns,
+  onClose,
+}: EnrollmentDetailsModalProps) {
   const { t } = useTranslation("portal");
   const navigate = useNavigate();
 
-  // Compute header context (instructor/resource) using next upcoming then last past
+  const type = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
+
+  console.log("🔍 EnrollmentDetailsModal props:");
+  console.log("Enrollment:", enrollment);
+  console.log("Lessons:", lessons);
+  console.log("ScheduledClasses:", scheduledClasses);
+  console.log("Patterns:", patterns);
+
+
+  // 👉 Pick pattern for this enrollment (THEORY only)
+  const selectedPattern = useMemo(() => {
+  console.log("🔍 [selectedPattern] START -----------------------------");
+
+  if (!enrollment) {
+    console.log("❌ No enrollment");
+    return null;
+  }
+
+  const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
+  console.log("Enrollment.type =", typeUpper);
+
+  if (typeUpper !== "THEORY") {
+    console.log("ℹ️ Enrollment is not THEORY → no pattern needed");
+    return null;
+  }
+
+  const studentId = enrollment?.student?.id ?? enrollment?.student_id;
+  const courseId = enrollment?.course?.id ?? enrollment?.course_id;
+
+  console.log("Enrollment courseId:", courseId);
+  console.log("Enrollment studentId:", studentId);
+
+  if (!studentId || !courseId) {
+    console.log("❌ Missing studentId or courseId");
+    return null;
+  }
+
+  console.log("📦 Available patterns:", patterns);
+
+  // 1) Try from patterns[] (primary)
+  const fromPatterns = (patterns || []).find((p: any) => {
+    console.log("→ Checking pattern:", p);
+
+    if (p?.course?.id !== courseId) {
+      console.log("⛔ Pattern course mismatch:", p?.course?.id);
+      return false;
+    }
+
+    const students = p?.students || [];
+    console.log("   Pattern students:", students);
+
+    if (!Array.isArray(students)) {
+      console.log("⛔ Pattern.students is not an array");
+      return false;
+    }
+
+    const match = students.some((s: any) =>
+      typeof s === "number" ? s === studentId : s?.id === studentId
+    );
+
+    console.log("   Student match:", match);
+
+    return match;
+  });
+
+  if (fromPatterns) {
+    console.log("🎯 MATCH → Pattern from patterns[]:", fromPatterns);
+    return fromPatterns;
+  }
+
+  console.log("⚠️ No direct patterns found → checking fallback scheduledClasses…");
+
+  // 2) Fallback: check scheduledClasses[].pattern
+  for (const sc of scheduledClasses || []) {
+    const p = sc?.pattern;
+    console.log("→ Checking scheduledClass.pattern:", p);
+
+    if (!p) continue;
+    if (p?.course?.id !== courseId) {
+      console.log("⛔ ScheduledClass pattern course mismatch");
+      continue;
+    }
+
+    const students = p?.students || [];
+    console.log("   Pattern students:", students);
+
+    if (!Array.isArray(students)) continue;
+
+    const hasStudent = students.some((s: any) =>
+      typeof s === "number" ? s === studentId : s?.id === studentId
+    );
+
+    console.log("   Student matched in fallback:", hasStudent);
+
+    if (hasStudent) {
+      console.log("🎯 MATCH → Fallback pattern from scheduledClasses:", p);
+      return p;
+    }
+  }
+
+  console.log("❌ No pattern found at all");
+  console.log("🔍 [selectedPattern] END -----------------------------");
+
+  return null;
+}, [enrollment, patterns, scheduledClasses]);
+
+
+  // Header context: instructor / resource
   const context = useMemo(() => {
     if (!enrollment) return { instructor: "", resource: "" };
+
+    const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
+
+    if (typeUpper === "THEORY") {
+      console.log("🎨 CONTEXT computed:", {
+      type: typeUpper,
+      selectedPattern,
+      instructor: selectedPattern ? humanInstructor({ pattern: selectedPattern }) : null,
+      resource: selectedPattern ? humanResource({ pattern: selectedPattern }) : null
+      });
+      return {
+        instructor: selectedPattern ? humanInstructor({ pattern: selectedPattern }) : "",
+        resource: selectedPattern ? humanResource({ pattern: selectedPattern }) : "",
+      };
+    }
+
+    // PRACTICE – use original logic
     const best = pickBestContextItem(enrollment, lessons, scheduledClasses);
     return {
       instructor: best ? humanInstructor(best) : "",
       resource: best ? humanResource(best) : "",
     };
-  }, [enrollment, lessons, scheduledClasses]);
-
-  // Theory: upcoming scheduled classes only
-  const theoryUpcoming = useMemo(() => {
-    if (!enrollment) return [] as any[];
-    const type = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
-    if (type !== "THEORY") return [] as any[];
-    const now = Date.now();
-    return (scheduledClasses || [])
-      .filter((sc: any) => isForEnrollment(sc, enrollment))
-      .map((sc: any) => ({ sc, ts: parseDate(sc?.scheduled_time)?.getTime?.() || 0 }))
-      .filter(({ ts }) => ts && ts >= now)
-      .sort((a, b) => a.ts - b.ts)
-      .map(({ sc }) => sc)
-      .slice(0, 3);
-  }, [enrollment, scheduledClasses]);
+  }, [enrollment, lessons, scheduledClasses, selectedPattern]);
 
   // Activity history: latest three items; source depends on type
   const history = useMemo(() => {
     if (!enrollment) return [] as any[];
 
-    const type = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
-    const source = type === "PRACTICE" ? (lessons || []) : (scheduledClasses || []);
+    const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
+    const source = typeUpper === "PRACTICE" ? (lessons || []) : (scheduledClasses || []);
+
+    console.log("🕘 Building history for type:", typeUpper);
+    console.log("History source:", source);
 
     return source
-        .filter((it: any) => {
+      .filter((it: any) => {
         if (!isForEnrollment(it, enrollment)) return false;
 
         const status = (it?.status || "").toUpperCase();
-        return status === "COMPLETED" || status === "CANCELED";  // <-- ONLY these two
-        })
-        .map((it: any) => ({ it, ts: parseDate(it?.scheduled_time)?.getTime?.() || 0 }))
-        .sort((a, b) => b.ts - a.ts)
-        .map(({ it }) => it)
-        .slice(0, 3);
-    }, [enrollment, lessons, scheduledClasses]);
-
-  const type = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
+        return status === "COMPLETED" || status === "CANCELED";
+      })
+      .map((it: any) => ({ it, ts: parseDate(it?.scheduled_time)?.getTime?.() || 0 }))
+      .sort((a, b) => b.ts - a.ts)
+      .map(({ it }) => it)
+      .slice(0, 3);
+  }, [enrollment, lessons, scheduledClasses]);
 
   if (!open || !enrollment) return null;
 
@@ -142,19 +306,30 @@ export default function EnrollmentDetailsModal({ open, enrollment, lessons, sche
             <div className="tw-flex tw-items-start tw-justify-between tw-gap-4">
               <div className="tw-space-y-2">
                 <div>
-                  <div className="tw-text-xs tw-text-muted-foreground">{String(t("portal.progress.details.course"))}</div>
-                  <div className="tw-text-lg tw-font-semibold">{enrollment?.course?.name || String(t("portal:booking.form.course"))}</div>
+                  <div className="tw-text-xs tw-text-muted-foreground">
+                    {String(t("portal.progress.details.course"))}
+                  </div>
+                  <div className="tw-text-lg tw-font-semibold">
+                    {enrollment?.course?.name || String(t("portal:booking.form.course"))}
+                  </div>
                 </div>
                 <div>
-                  <div className="tw-text-xs tw-text-muted-foreground">{String(t("portal.progress.details.instructor"))}</div>
+                  <div className="tw-text-xs tw-text-muted-foreground">
+                    {String(t("portal.progress.details.instructor"))}
+                  </div>
                   <div className="tw-text-sm">{context.instructor || na}</div>
                 </div>
                 <div>
-                  <div className="tw-text-xs tw-text-muted-foreground">{String(t("portal.progress.details.resource"))}</div>
+                  <div className="tw-text-xs tw-text-muted-foreground">
+                    {String(t("portal.progress.details.resource"))}
+                  </div>
                   <div className="tw-text-sm">{context.resource || na}</div>
                 </div>
               </div>
-              <button className="tw-text-sm tw-font-medium tw-text-muted-foreground hover:tw-text-foreground" onClick={onClose}>
+              <button
+                className="tw-text-sm tw-font-medium tw-text-muted-foreground hover:tw-text-foreground"
+                onClick={onClose}
+              >
                 {String(t("portal.progress.details.close", "Close"))}
               </button>
             </div>
@@ -164,31 +339,20 @@ export default function EnrollmentDetailsModal({ open, enrollment, lessons, sche
           <div className="tw-p-5 tw-space-y-6">
             {type === "THEORY" ? (
               <div>
-                <h4 className="tw-text-sm tw-font-semibold tw-mb-2">{String(t("portal.progress.details.scheduledLessons"))}</h4>
-                {theoryUpcoming.length ? (
-                  <div className="tw-space-y-2">
-                    {theoryUpcoming.map((sc: any, idx: number) => {
-                      const status = (sc?.status || "").toUpperCase();
-                      const statusLabel =
-                        status === "COMPLETED"
-                          ? t("portal.progress.details.status.completed")
-                          : status === "CANCELED"
-                          ? t("portal.progress.details.status.canceled")
-                          : t("portal.progress.details.status.scheduled");
-                      return (
-                        <div key={idx} className="tw-flex tw-items-center tw-justify-between tw-text-sm tw-border tw-border-border tw-rounded-lg tw-px-3 tw-py-2">
-                          <div className="tw-text-muted-foreground">
-                            {formatDateNoSeconds(sc?.scheduled_time)} • {humanResource(sc) || na}
-                          </div>
-                          <span className={`tw-inline-flex tw-items-center tw-rounded-md tw-text-xs tw-font-medium tw-px-2.5 tw-py-0.5 ${statusClasses(status)}`}>
-                            {String(statusLabel)}
-                          </span>
-                        </div>
-                      );
-                    })}
+                <h4 className="tw-text-sm tw-font-semibold tw-mb-2">
+                  {String(t("portal.progress.details.scheduledLessons"))}
+                </h4>
+                {selectedPattern ? (
+                  <div className="tw-space-y-1">
+                    {/* Detailed rows */}
+                    <div className="tw-space-y-1">
+                      {humanScheduleRows(selectedPattern, t).map((row, idx) => (
+                        <div key={idx} className="tw-text-sm tw-text-muted-foreground">{row}</div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
-                  <p className="tw-text-sm tw-text-muted-foreground">{String(t("portal.progress.details.noScheduled"))}</p>
+                  <p className="tw-text-sm tw-text-muted-foreground">{na}</p>
                 )}
               </div>
             ) : (
@@ -203,7 +367,9 @@ export default function EnrollmentDetailsModal({ open, enrollment, lessons, sche
             )}
 
             <div>
-              <h4 className="tw-text-sm tw-font-semibold tw-mb-2">{String(t("portal.progress.details.activityHistory"))}</h4>
+              <h4 className="tw-text-sm tw-font-semibold tw-mb-2">
+                {String(t("portal.progress.details.activityHistory"))}
+              </h4>
               {history.length ? (
                 <div className="tw-space-y-2">
                   {history.map((it: any, idx: number) => {
@@ -214,12 +380,30 @@ export default function EnrollmentDetailsModal({ open, enrollment, lessons, sche
                         : status === "CANCELED"
                         ? t("portal.progress.details.status.canceled")
                         : t("portal.progress.details.status.scheduled");
+
+                    // Base label: date • resource
+                    let label = `${formatDateNoSeconds(it?.scheduled_time)} • ${humanResource(it) || na}`;
+
+                    // THEORY: show instructor only if differs from default
+                    if (type === "THEORY") {
+                      const defaultInstructor = (context.instructor || "").trim();
+                      const rowInstructor = humanInstructor(it).trim();
+                      if (rowInstructor && defaultInstructor && rowInstructor !== defaultInstructor) {
+                        label += ` • ${rowInstructor}`;
+                      }
+                    }
+
                     return (
-                      <div key={idx} className="tw-flex tw-items-center tw-justify-between tw-text-sm tw-border tw-border-border tw-rounded-lg tw-px-3 tw-py-2">
-                        <div className="tw-text-muted-foreground">
-                          {formatDateNoSeconds(it?.scheduled_time)} • {humanResource(it) || na}
-                        </div>
-                        <span className={`tw-inline-flex tw-items-center tw-rounded-md tw-text-xs tw-font-medium tw-px-2.5 tw-py-0.5 ${statusClasses(status)}`}>
+                      <div
+                        key={idx}
+                        className="tw-flex tw-items-center tw-justify-between tw-text-sm tw-border tw-border-border tw-rounded-lg tw-px-3 tw-py-2"
+                      >
+                        <div className="tw-text-muted-foreground">{label}</div>
+                        <span
+                          className={`tw-inline-flex tw-items-center tw-rounded-md tw-text-xs tw-font-medium tw-px-2.5 tw-py-0.5 ${statusClasses(
+                            status
+                          )}`}
+                        >
                           {String(statusLabel)}
                         </span>
                       </div>
@@ -227,7 +411,9 @@ export default function EnrollmentDetailsModal({ open, enrollment, lessons, sche
                   })}
                 </div>
               ) : (
-                <p className="tw-text-sm tw-text-muted-foreground">{String(t("portal.progress.details.activityNone"))}</p>
+                <p className="tw-text-sm tw-text-muted-foreground">
+                  {String(t("portal.progress.details.activityNone"))}
+                </p>
               )}
             </div>
           </div>

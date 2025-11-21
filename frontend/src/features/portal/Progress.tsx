@@ -120,6 +120,7 @@ const Progress: React.FC = () => {
   }, []);
 
   const lessons = useMemo(() => (data?.lessons ?? []), [data]);
+  const patterns = useMemo(() => (data?.patterns ?? []), [data]);
   const scheduledClasses = useMemo(() => (data?.scheduled_classes ?? data?.scheduledclasses ?? []), [data]);
   const courses = useMemo(() => (data?.courses ?? []), [data]);
   const enrollments = useMemo(() => (data?.enrollments ?? []), [data]);
@@ -398,6 +399,7 @@ const Progress: React.FC = () => {
         open={!!showDetails && !!selectedEnrollment}
         enrollment={selectedEnrollment}
         lessons={lessons}
+        patterns={patterns} 
         scheduledClasses={scheduledClasses}
         onClose={() => { setShowDetails(false); setSelectedEnrollment(null); }}
       />

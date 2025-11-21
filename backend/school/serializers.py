@@ -586,15 +586,29 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         ]
 
 
-class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
-    """Minimal serializer for pattern to avoid data bloat in ScheduledClass responses"""
+class ScheduledClassPatternNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for ScheduledClass.pattern with essential fields for portal UI."""
+    course = CourseSerializer(read_only=True)
+    instructor = InstructorSerializer(read_only=True)
+    resource = ResourceSerializer(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+
     class Meta:
         model = ScheduledClassPattern
-        fields = ["id", "name"]  # Removed status - patterns don't have status
+        fields = [
+            "id",
+            "name",
+            "course",
+            "instructor",
+            "resource",
+            "students",
+            "recurrence_days",
+            "times",
+        ]
 
 
 class ScheduledClassSerializer(serializers.ModelSerializer):
-    pattern = ScheduledClassPatternSummarySerializer(read_only=True)
+    pattern = ScheduledClassPatternNestedSerializer(read_only=True)
     pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
     )

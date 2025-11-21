@@ -376,6 +376,16 @@
         "activityNone": "Nicio activitate recentă",
         "noScheduled": "Nu există lecții teoretice programate",
         "na": "N/A",
+        "days": {
+          "monday": "Luni",
+          "tuesday": "Marți",
+          "wednesday": "Miercuri",
+          "thursday": "Joi",
+          "friday": "Vineri",
+          "saturday": "Sâmbătă",
+          "sunday": "Duminică"
+        },
+        "dayTime": "{{day}} - {{time}}",
         "status": {
           "scheduled": "Programat",
           "completed": "Finalizat",

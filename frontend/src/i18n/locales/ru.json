@@ -376,6 +376,16 @@
         "activityNone": "Пока нет недавней активности",
         "noScheduled": "Нет запланированных теоретических уроков",
         "na": "N/A",
+        "days": {
+          "monday": "Понедельник",
+          "tuesday": "Вторник",
+          "wednesday": "Среда",
+          "thursday": "Четверг",
+          "friday": "Пятница",
+          "saturday": "Суббота",
+          "sunday": "Воскресенье"
+        },
+        "dayTime": "{{day}} - {{time}}",
         "status": {
           "scheduled": "Запланирован",
           "completed": "Завершен",
