@@ -59,7 +59,10 @@
   },
   "filters": {
     "available": "Available",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "canceled": "Canceled"
   },
   "resources": {
     "students": {
@@ -126,6 +129,55 @@
       "fields": {
         "enrollment": "Enrollment"
       }
+    },
+    "scheduledclasses": {
+      "name": "Scheduled Classes",
+      "fields": {
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "pattern": "Pattern",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "current_enrollment": "Current enrollment",
+        "available_spots": "Available spots",
+        "max_students": "Max students",
+        "recurrences": "Recurrences",
+        "num_lessons": "Number of Lessons",
+        "day": "Day",
+        "time": "Time",
+        "status": "Status",
+        "students": "Students"
+      }
+    },
+    "scheduledclasspatterns": {
+      "name": "Scheduled Class Patterns",
+      "fields": {
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "day": "Day",
+        "time": "Time",
+        "start_date": "Pattern Start Date",
+        "num_lessons": "Number of Lessons",
+        "default_duration_minutes": "Default Duration (min)",
+        "default_max_students": "Default Max Students"
+      },
+      "bulk": {
+        "generate": "Generate Classes",
+        "regenerate": "Regenerate Classes",
+        "generate_success": "Successfully generated classes for {{count}} pattern(s). Created {{classes}} class(es).",
+        "regenerate_success": "Successfully regenerated classes for {{count}} pattern(s). Deleted {{deleted}} class(es), created {{generated}} new class(es).",
+        "generate_error": "Failed to generate classes: {{error}}",
+        "regenerate_error": "Failed to regenerate classes: {{error}}",
+        "generate_confirm_title": "Generate Classes",
+        "generate_confirm_content": "Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.",
+        "regenerate_confirm_title": "Regenerate Classes",
+        "regenerate_confirm_content": "Are you sure you want to regenerate classes for {{count}} pattern(s)? This will delete existing classes and create new ones."
+      },
+      "viewClasses": "View Classes"
     }
   },
   "lessons": {
@@ -412,5 +464,12 @@
     "action": {
       "back": "Back"
     }
+  },
+  "validation": {
+    "timeFormat": "Time must be in HH:MM format (e.g., 09:30 or 14:00)",
+    "requiredField": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "atLeastOneRecurrence": "At least one recurrence is required"
   }
 }

@@ -56,11 +56,34 @@ export const validateLicenseCategoriesClient = (value) => {
 };
 
 // Validate time format (HH:MM)
-export const validateTimeFormat = (value) => {
+export const validateTimeFormat = (t) => (value) => {
   if (!value) return undefined; // Allow empty values, use required() for mandatory fields
+
+  // Handle different input types
+  let stringValue;
+  if (value instanceof Date) {
+    // Extract HH:MM from Date object
+    const hours = value.getHours().toString().padStart(2, '0');
+    const minutes = value.getMinutes().toString().padStart(2, '0');
+    stringValue = `${hours}:${minutes}`;
+  } else {
+    stringValue = String(value).trim();
+    // Handle formats like "10:00:00" or "10:00:00.000" by taking only HH:MM
+    if (stringValue.includes(':')) {
+      const parts = stringValue.split(':');
+      if (parts.length >= 2) {
+        stringValue = `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+      }
+    }
+  }
+
   const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  if (!timeRegex.test(value)) {
-    return 'Time must be in HH:MM format (e.g., 09:30 or 14:00)';
+  if (!timeRegex.test(stringValue)) {
+    if (t && typeof t === 'function') {
+      return t('validation.timeFormat');
+    } else {
+      return 'Time must be in HH:MM format (e.g., 09:30 or 14:00)'; // Fallback
+    }
   }
   return undefined;
 };

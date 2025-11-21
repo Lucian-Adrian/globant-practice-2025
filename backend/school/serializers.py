@@ -528,6 +528,40 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    def validate_recurrence_days(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Recurrence days must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one recurrence day is required.")
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        for day in value:
+            if day not in valid_days:
+                raise serializers.ValidationError(f"Invalid day: {day}. Must be one of {valid_days}.")
+        return value
+
+    def validate_times(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Times must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one time is required.")
+        import re
+        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
+        for time_str in value:
+            if not isinstance(time_str, str) or not time_pattern.match(time_str):
+                raise serializers.ValidationError(f"Invalid time format: {time_str}. Must be HH:MM (e.g., 09:30).")
+        return value
+
+    def validate_start_date(self, value):
+        from datetime import date
+        if value < date.today():
+            raise serializers.ValidationError("Start date cannot be in the past.")
+        return value
+
+    def validate_num_lessons(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Number of lessons must be positive.")
+        return value
+
     class Meta:
         model = ScheduledClassPattern
         fields = [
@@ -545,9 +579,9 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
             "times",
             "start_date",
             "num_lessons",
-            "duration_minutes",
-            "max_students",
-            "status",
+            "default_duration_minutes",
+            "default_max_students",
+            # Removed: status - patterns don't have status, only generated classes do
             "created_at",
         ]
 
@@ -556,7 +590,7 @@ class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
     """Minimal serializer for pattern to avoid data bloat in ScheduledClass responses"""
     class Meta:
         model = ScheduledClassPattern
-        fields = ["id", "name", "status"]
+        fields = ["id", "name"]  # Removed status - patterns don't have status
 
 
 class ScheduledClassSerializer(serializers.ModelSerializer):
@@ -564,8 +598,22 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
     )
+    course = CourseSerializer(read_only=True)
+    course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), source="course")
+    instructor = InstructorSerializer(read_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor")
+    resource = ResourceSerializer(read_only=True)
+    resource_id = serializers.PrimaryKeyRelatedField(queryset=Resource.objects.all(), source="resource")
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+    student_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        source="students",
+        many=True,
+        required=False,
+        write_only=True
+    )
 
     class Meta:
         model = ScheduledClass
@@ -574,12 +622,20 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
             "pattern",
             "pattern_id",
             "name",
+            "course",
+            "course_id",
+            "instructor",
+            "instructor_id",
+            "resource",
+            "resource_id",
             "scheduled_time",
             "duration_minutes",
             "max_students",
             "status",
             "current_enrollment",
             "available_spots",
+            "students",
+            "student_ids",
         ]
 
     def get_current_enrollment(self, obj):
@@ -639,8 +695,8 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         assert start is not None
         end = start + timedelta(minutes=int(duration or 60))
 
-        # Instructor availability
-        validate_instructor_availability(getattr(instructor, "id", None), start)
+        # Instructor availability - REMOVED to match ScheduledClassPattern behavior (allow scheduling outside availability)
+        # validate_instructor_availability(getattr(instructor, "id", None), start)
 
         # Category and instructor license rules
         validate_category_and_license(course, instructor, resource)

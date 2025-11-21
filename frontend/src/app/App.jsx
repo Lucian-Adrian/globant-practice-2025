@@ -14,6 +14,7 @@ import { PaymentList, makePaymentEdit, makePaymentCreate } from '../features/pay
 import { EnrollmentList, EnrollmentEdit, EnrollmentCreate } from '../features/enrollments';
 import { LessonList, LessonEdit, LessonCreate } from '../features/lessons';
 import { ScheduledClassList, ScheduledClassCreate, ScheduledClassEdit } from '../features/scheduledclasses';
+import { ScheduledClassPatternList, ScheduledClassPatternCreate, ScheduledClassPatternEdit, ScheduledClassPatternShow } from '../features/scheduledclasspatterns';
 import { VEHICLE_CATEGORIES as FALLBACK_VEHICLE, STUDENT_STATUS as FALLBACK_STUDENT, PAYMENT_METHODS as FALLBACK_PAYMENT } from '../shared/constants/drivingSchool';
 import { Route } from 'react-router-dom';
 import StudentsKanban from '../features/students/kanban/StudentsKanban.jsx';
@@ -51,7 +52,8 @@ export default function App() {
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
       <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
+      <Resource name="scheduled-classes" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
+      <Resource name="scheduled-class-patterns" list={ScheduledClassPatternList} create={ScheduledClassPatternCreate} edit={ScheduledClassPatternEdit} show={ScheduledClassPatternShow} />
     </Admin>
   );
 }

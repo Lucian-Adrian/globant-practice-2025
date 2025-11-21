@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import React from 'react';
 import portalEn from './locales/en.json';
+
 // Auto-pickup of additional portal locales if present (Vite only)
 const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
   ? import.meta.glob('./locales/*.json', { eager: true })
@@ -12,60 +13,150 @@ const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
 // we inline minimal RA translation objects instead of importing optional packages.
 const englishMessages = {
   ra: {
-  action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions:'Bulk actions', export:'Export', search:'Search', select_all:'Select all', clear_input_value:'Clear', remove_filter:'Remove filter', add_filter:'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back', undo: 'Undo' },
-  navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page {{offsetBegin}}-{{offsetEnd}} of {{total}}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
-  sort: { sort_by: 'Sort by {{field}} {{order}}',  ASC: 'ascending', DESC: 'descending' },
-    // Merged auth keys
-    auth: { email: 'Email', username:'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
-    // Merged page keys
+    action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions: 'Bulk actions', export: 'Export', search: 'Search', select_all: 'Select all', clear_input_value: 'Clear', remove_filter: 'Remove filter', add_filter: 'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back', undo: 'Undo' },
+    navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page {{offsetBegin}}-{{offsetEnd}} of {{total}}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
+    sort: { sort_by: 'Sort by {{field}} {{order}}', ASC: 'ascending', DESC: 'descending' },
+    auth: { email: 'Email', username: 'Username', password: 'Password', sign_in: 'Sign in', sign_out: 'Sign out', logout: 'Sign out', user_menu: 'User' },
     page: { login: 'Login', list: 'List', dashboard: 'Dashboard', create: 'Create', edit: 'Edit', show: 'Show', error: 'Error' },
-    message: { error: 'Error', invalid_form: 'Invalid form' },
-    validation: { required: 'Required' },
-    custom: { import_csv: 'Import CSV', export_csv: 'Export CSV' },
-    notification: { updated: 'Element updated', created: 'Element created', deleted: 'Element deleted' },
-  }
+    message: { error: 'Error', invalid_form: 'Invalid form' }, validation: { required: 'Required' },
+    custom: { import_csv: 'Import CSV', export_csv: 'Export CSV' }, notification: { updated: 'Element updated', created: 'Element created', deleted: 'Element deleted' },
+  },
 };
 const romanianMessages = {
   ra: {
-  action: { edit: 'Editează', save: 'Salvează', delete: 'Șterge', refresh: 'Reîmprospătează', show: 'Vezi', list: 'Listă', create: 'Creează', bulk_actions:'Acțiuni în masă', export:'Exportă', search:'Caută', select_all:'Selectează tot', clear_input_value:'Curăță', remove_filter:'Elimină filtrul', add_filter:'ADAUGĂ FILTRU', open_menu: 'Deschide meniul', close_menu: 'Închide meniul', open: 'Deschide', close: 'Închide', back: 'Înapoi', undo: 'Anulează' },
-  navigation: { next: 'Următor', prev: 'Anterior', page_range_info: 'Pagina {{offsetBegin}}-{{offsetEnd}} din {{total}}', page_rows_per_page: 'Rânduri pe pagină:', no_results: 'Fără rezultate' },
-  sort: { sort_by: 'Sortează după {{field}} {{order}}', ASC: 'crescător', DESC: 'descrescător' },
+    action: {
+      edit: 'Editează',
+      save: 'Salvează',
+      delete: 'Șterge',
+      refresh: 'Reîmprospătează',
+      show: 'Vezi',
+      list: 'Listă',
+      create: 'Creează',
+      bulk_actions: 'Acțiuni în masă',
+      export: 'Exportă',
+      search: 'Caută',
+      select_all: 'Selectează tot',
+      clear_input_value: 'Curăță',
+      remove_filter: 'Elimină filtrul',
+      add_filter: 'ADAUGĂ FILTRU',
+      open_menu: 'Deschide meniul',
+      close_menu: 'Închide meniul',
+      open: 'Deschide',
+      close: 'Închide',
+      back: 'Înapoi',
+      undo: 'Anulează',
+    },
+    navigation: {
+      next: 'Următor',
+      prev: 'Anterior',
+      page_range_info: 'Pagina {{offsetBegin}}-{{offsetEnd}} din {{total}}',
+      page_rows_per_page: 'Rânduri pe pagină:',
+      no_results: 'Fără rezultate',
+    },
+    sort: {
+      sort_by: 'Sortează după {{field}} {{order}}',
+      ASC: 'crescător',
+      DESC: 'descrescător',
+    },
     // Merged auth keys
-    auth: { email: 'Email', username:'Utilizator', password: 'Parolă', sign_in: 'Autentificare', sign_out: 'Deconectare', logout: 'Deconectare', user_menu: 'Utilizator' },
+    auth: {
+      email: 'Email',
+      username: 'Utilizator',
+      password: 'Parolă',
+      sign_in: 'Autentificare',
+      sign_out: 'Deconectare',
+      logout: 'Deconectare',
+      user_menu: 'Utilizator',
+    },
     // Merged page keys
-    page: { login: 'Autentificare', list: 'Listă', dashboard: 'Tablou de bord', create: 'Creează', edit: 'Editează', show: 'Vezi', error: 'Eroare' },
-    message: { error: 'Eroare', invalid_form: 'Formular invalid' },
-    validation: { required: 'Obligatoriu' },
-    custom: { import_csv: 'Importă CSV', export_csv: 'Exportă CSV' },
-    notification: { updated: 'Element actualizat', created: 'Element creat', deleted: 'Element șters' },
-  }
+    page: {
+      login: 'Autentificare',
+      list: 'Listă',
+      dashboard: 'Tablou de bord',
+      create: 'Creează',
+      edit: 'Editează',
+      show: 'Vezi',
+      error: 'Eroare',
+    },
+    message: { error: 'Eroare', invalid_form: 'Formular invalid' }, validation: { required: 'Obligatoriu' }, custom: { import_csv: 'Importă CSV', export_csv: 'Exportă CSV' }, notification: { updated: 'Element actualizat', created: 'Element creat', deleted: 'Element șters' },
+  },
 };
 const russianMessages = {
   ra: {
-  action: { edit: 'Редактировать', save: 'Сохранить', delete: 'Удалить', refresh: 'Обновить', show: 'Просмотр', list: 'Список', create: 'Создать', bulk_actions:'Массовые действия', export:'Экспорт', search:'Поиск', select_all:'Выбрать все', clear_input_value:'Очистить', remove_filter:'Убрать фильтр', add_filter:'ДОБАВИТЬ ФИЛЬТР', open_menu: 'Открыть меню', close_menu: 'Закрыть меню', open: 'Открыть', close: 'Закрыть', back: 'Назад', undo: 'Отменить' },
-  navigation: { next: 'Следующий', prev: 'Предыдущий', page_range_info: 'Страница {{offsetBegin}}-{{offsetEnd}} из {{total}}', page_rows_per_page: 'Строк на странице:', no_results: 'Нет результатов' },
-  sort: { sort_by: 'Сортировать по {{field}} {{order}}', ASC: 'по возрастанию', DESC: 'по убыванию' },
+    action: {
+      edit: 'Редактировать',
+      save: 'Сохранить',
+      delete: 'Удалить',
+      refresh: 'Обновить',
+      show: 'Просмотр',
+      list: 'Список',
+      create: 'Создать',
+      bulk_actions: 'Массовые действия',
+      export: 'Экспорт',
+      search: 'Поиск',
+      select_all: 'Выбрать все',
+      clear_input_value: 'Очистить',
+      remove_filter: 'Убрать фильтр',
+      add_filter: 'ДОБАВИТЬ ФИЛЬТР',
+      open_menu: 'Открыть меню',
+      close_menu: 'Закрыть меню',
+      open: 'Открыть',
+      close: 'Закрыть',
+      back: 'Назад',
+      undo: 'Отменить',
+    },
+    navigation: {
+      next: 'Следующий',
+      prev: 'Предыдущий',
+      page_range_info: 'Страница {{offsetBegin}}-{{offsetEnd}} из {{total}}',
+      page_rows_per_page: 'Строк на странице:',
+      no_results: 'Нет результатов',
+    },
+    sort: {
+      sort_by: 'Сортировать по {{field}} {{order}}',
+      ASC: 'по возрастанию',
+      DESC: 'по убыванию',
+    },
     // Merged auth keys
-    auth: { email: 'Email', username:'Имя пользователя', password: 'Пароль', sign_in: 'Войти', sign_out: 'Выйти', logout: 'Выйти', user_menu: 'Пользователь' },
+    auth: {
+      email: 'Email',
+      username: 'Имя пользователя',
+      password: 'Пароль',
+      sign_in: 'Войти',
+      sign_out: 'Выйти',
+      logout: 'Выйти',
+      user_menu: 'Пользователь',
+    },
     // Merged page keys
-    page: { login: 'Вход', list: 'Список', dashboard: 'Панель', create: 'Создать', edit: 'Редактировать', show: 'Просмотр', error: 'Ошибка' },
-    message: { error: 'Ошибка', invalid_form: 'Неверная форма' },
-    validation: { required: 'Обязательно' },
-    custom: { import_csv: 'Импорт CSV', export_csv: 'Экспорт CSV' },
-    notification: { updated: 'Элемент обновлен', created: 'Элемент создан', deleted: 'Элемент удален' },
-  }
+    page: {
+      login: 'Вход',
+      list: 'Список',
+      dashboard: 'Панель',
+      create: 'Создать',
+      edit: 'Редактировать',
+      show: 'Просмотр',
+      error: 'Ошибка',
+    },
+    message: { error: 'Ошибка', invalid_form: 'Неверная форма' }, validation: { required: 'Обязательно' }, custom: { import_csv: 'Импорт CSV', export_csv: 'Экспорт CSV' }, notification: { updated: 'Элемент обновлен', created: 'Элемент создан', deleted: 'Элемент удален' },
+  },
 };
 
 // Normalize RA placeholders from "%{var}" to i18next format "{{var}}"
 const fixPlaceholders = (obj) => {
   if (!obj || typeof obj !== 'object') return obj;
+
   const recur = (o) => Object.fromEntries(
     Object.entries(o).map(([k, v]) => {
-      if (typeof v === 'string') return [k, v.replace(/%\{(.*?)\}/g, '{{$1}}')];
-      if (v && typeof v === 'object' && !Array.isArray(v)) return [k, recur(v)];
+      if (typeof v === 'string') {
+        return [k, v.replace(/%\{(.*?)\}/g, '{{$1}}')];
+      }
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        return [k, recur(v)];
+      }
       return [k, v];
     })
   );
+
   return recur(obj);
 };
 
@@ -175,9 +266,10 @@ const languageData = {
       capacityExceeded: 'Max students must be positive and cannot exceed the room capacity.',
       capacityBelowEnrolled: 'Max students cannot be lower than current enrollment.',
       studentNotEnrolledToCourse: 'All selected students must be enrolled in the chosen course.',
-  studentNotEnrolledToCourseNames: 'The following students are not enrolled in the chosen course: {{names}}.',
+      studentNotEnrolledToCourseNames: 'The following students are not enrolled in the chosen course: {{names}}.',
   capacityBelowSelected: 'Max students cannot be lower than number of selected students.',
   selectedStudentsExceedCapacity: 'Selected students exceed room capacity.',
+  atLeastOneRecurrence: 'At least one recurrence is required',
     },
     admin: {
       resources: {
@@ -213,6 +305,49 @@ const languageData = {
           helper: 'Create a scheduled class to start planning lessons.', 
           create: 'Create Scheduled Class' 
         },
+        scheduledclasspatterns: {
+          name: 'Scheduled Class Patterns',
+          empty: 'No patterns yet',
+          invite: 'Create the first pattern',
+          fields: {
+            id: 'ID',
+            name: 'Name',
+            course: 'Course',
+            instructor: 'Instructor',
+            resource: 'Resource',
+            recurrence_days: 'Recurrence Days',
+            times: 'Times',
+            start_date: 'Start Date',
+            num_lessons: 'Number of Lessons',
+            default_duration_minutes: 'Default Duration (min)',
+            default_max_students: 'Default Max Students',
+            students: 'Students',
+            day: 'Day',
+            time: 'Time',
+            recurrences: 'Recurrences'
+          },
+          generate: {
+            button: 'Generate Classes',
+            confirm_title: 'Generate Classes',
+            confirm_content: 'Generate scheduled classes for this pattern?',
+            success: 'Classes generated successfully',
+            error: 'Error generating classes'
+          },
+          bulk: {
+            generate: 'Generate Classes',
+            regenerate: 'Regenerate Classes',
+            generate_success: 'Generated classes for %{count} patterns (%{classes} classes)',
+            generate_partial_success: 'Generated classes: %{success_count} success, %{fail_count} failed (%{classes} classes)',
+            generate_error: 'Error generating classes: %{error}',
+            regenerate_success: 'Regenerated classes for %{count} patterns (deleted %{deleted}, generated %{generated})',
+            regenerate_error: 'Error regenerating classes: %{error}',
+            generate_confirm_title: 'Generate Classes',
+            generate_confirm_content: 'Are you sure you want to generate classes for %{count} pattern(s)? This may take some time.',
+            regenerate_confirm_title: 'Regenerate Classes',
+            regenerate_confirm_content: 'Are you sure you want to regenerate classes for %{count} pattern(s)? This will delete existing classes and create new ones.'
+          },
+          viewClasses: 'View Classes'
+        },
       }
     },
     resources: {
@@ -226,7 +361,10 @@ const languageData = {
   lessons: { name:'Lessons', empty:'No lessons yet', invite:'Schedule the first lesson', import_helper:'You can import a CSV to add multiple lessons at once.', import_format_hint:'Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).', fields:{ id:'ID', enrollment:'Enrollment', instructor:'Instructor', vehicle:'Vehicle', resource:'Resource', scheduled_time:'Scheduled time', duration_minutes:'Duration (min)', status:'Status', notes:'Notes' } },
       'instructor-availabilities': { name: 'Instructor Availabilities', empty: 'No availabilities yet', invite: 'Create availabilities', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Day', hours: 'Hours' } },
       classes: { name:'Courses', empty:'No courses yet', invite:'Create the first course', fields: { id: 'ID', name: 'Name', category: 'Category', type: 'Type', description: 'Description', price: 'Price', required_lessons: 'Required lessons' } },
-      scheduledclasses: { name: 'Scheduled Classes', empty: 'No scheduled classes yet', invite: 'Create the first scheduled class', import_helper: 'You can import a CSV to add multiple scheduled classes at once.', import_format_hint: 'Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', scheduled_time: 'Scheduled time', duration_minutes: 'Duration (min)', max_students: 'Max students', students: 'Students', current_enrollment: 'Current enrollment', available_spots: 'Available spots' }, helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
+      scheduledclasses: { name: 'Scheduled Classes', empty: 'No scheduled classes yet', invite: 'Create the first scheduled class', import_helper: 'You can import a CSV to add multiple scheduled classes at once.', import_format_hint: 'Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', scheduled_time: 'Scheduled time', duration_minutes: 'Duration (min)', max_students: 'Max students', students: 'Students', current_enrollment: 'Current enrollment', available_spots: 'Available spots', pattern: 'Pattern' }, helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
+      'scheduled-classes': { name: 'Scheduled Classes', empty: 'No scheduled classes yet', invite: 'Create the first scheduled class', import_helper: 'You can import a CSV to add multiple scheduled classes at once.', import_format_hint: 'Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', scheduled_time: 'Scheduled time', duration_minutes: 'Duration (min)', max_students: 'Max students', students: 'Students', current_enrollment: 'Current enrollment', available_spots: 'Available spots', pattern: 'Pattern' }, helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
+      scheduledclasspatterns: { name: 'Scheduled Class Patterns', empty: 'No patterns yet', invite: 'Create the first pattern', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', recurrence_days: 'Recurrence Days', times: 'Times', start_date: 'Start Date', num_lessons: 'Number of Lessons', default_duration_minutes: 'Default Duration (min)', default_max_students: 'Default Max Students', students: 'Students', day: 'Day', time: 'Time', recurrences: 'Recurrences' } },
+      'scheduled-class-patterns': { name: 'Scheduled Class Patterns', empty: 'No patterns yet', invite: 'Create the first pattern', fields: { id: 'ID', name: 'Name', course: 'Course', instructor: 'Instructor', resource: 'Resource', recurrence_days: 'Recurrence Days', times: 'Times', start_date: 'Start Date', num_lessons: 'Number of Lessons', default_duration_minutes: 'Default Duration (min)', default_max_students: 'Default Max Students', students: 'Students', day: 'Day', time: 'Time', recurrences: 'Recurrences' } },
     },
   },
   ro: {
@@ -332,6 +470,7 @@ const languageData = {
   studentNotEnrolledToCourseNames: 'Următorii studenți nu sunt înscriși la cursul ales: {{names}}.',
   capacityBelowSelected: 'Numărul maxim nu poate fi mai mic decât numărul de studenți selectați.',
   selectedStudentsExceedCapacity: 'Numărul de studenți selectați depășește capacitatea sălii.',
+  atLeastOneRecurrence: 'Este necesară cel puțin o recurență',
     },
     // Duplicate resource labels under the 'admin' namespace to ensure RA menu/items resolve without falling back to EN
     admin: {
@@ -346,7 +485,51 @@ const languageData = {
   lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
         'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
         classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
-        scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+        'scheduled-classes': { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile', pattern: 'Model' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+      scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+        scheduledclasspatterns: {
+          name: 'Modele de clase programate',
+          empty: 'Niciun model încă',
+          invite: 'Creați primul model',
+          fields: {
+            id: 'ID',
+            name: 'Nume',
+            course: 'Curs',
+            instructor: 'Instructor',
+            resource: 'Resursă',
+            recurrence_days: 'Zile de recurență',
+            times: 'Ore',
+            start_date: 'Data de început',
+            num_lessons: 'Număr de lecții',
+            default_duration_minutes: 'Durată implicită (min)',
+            default_max_students: 'Studenți maximi impliciți',
+            students: 'Studenți',
+            day: 'Zi',
+            time: 'Oră',
+            recurrences: 'Recurențe'
+          },
+          generate: {
+            button: 'Generează Clase',
+            confirm_title: 'Generează Clase',
+            confirm_content: 'Generați clase programate pentru acest model?',
+            success: 'Clase generate cu succes',
+            error: 'Eroare la generarea claselor'
+          },
+          bulk: {
+            generate: 'Generează Clase',
+            regenerate: 'Regenerează Clase',
+            generate_success: 'Clase generate pentru %{count} modele (%{classes} clase)',
+            generate_partial_success: 'Clase generate: %{success_count} succes, %{fail_count} eșuate (%{classes} clase)',
+            generate_error: 'Eroare la generarea claselor: %{error}',
+            regenerate_success: 'Clase regenerate pentru %{count} modele (șterse %{deleted}, generate %{generated})',
+            regenerate_error: 'Eroare la regenerarea claselor: %{error}',
+            generate_confirm_title: 'Generează Clase',
+            generate_confirm_content: 'Sunteți sigur că doriți să generați clase pentru %{count} modele? Acest lucru poate dura.',
+            regenerate_confirm_title: 'Regenerează Clase',
+            regenerate_confirm_content: 'Sunteți sigur că doriți să regenerați clase pentru %{count} modele? Aceasta va șterge clasele existente și va crea altele noi.'
+          },
+          viewClasses: 'Vezi Clase'
+        },
       }
     },
     resources: {
@@ -360,7 +543,10 @@ const languageData = {
   lessons: { name:'Lecții', empty:'Nicio lecție încă', invite:'Programați prima lecție', import_helper:'Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.', import_format_hint:'Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).', fields:{ id:'ID', enrollment:'Înscriere', instructor:'Instructor', vehicle:'Vehicul', resource:'Resursă', scheduled_time:'Ora programării', duration_minutes:'Durată (min)', status:'Statut', notes:'Note' } },
       'instructor-availabilities': { name: 'Disponibilități instructor', empty: 'Nicio disponibilitate', invite: 'Adaugă disponibilități', fields: { id: 'ID', instructor_id: 'Instructor', day: 'Zi', hours: 'Ore' } },
       classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
-    scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+    'scheduled-classes': { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile', pattern: 'Model' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+      scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
+      'scheduled-class-patterns': { name: 'Modele de clase programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
+      scheduledclasspatterns: { name: 'Modele de clase programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
     },
   },
   ru: {
@@ -466,6 +652,7 @@ const languageData = {
       studentNotEnrolledToCourseNames: 'Следующие студенты не записаны на выбранный курс: {{names}}.',
   capacityBelowSelected: 'Макс. число студентов не может быть меньше количества выбранных студентов.',
   selectedStudentsExceedCapacity: 'Количество выбранных студентов превышает вместимость аудитории.',
+  atLeastOneRecurrence: 'Требуется хотя бы одно повторение',
     },
     // Duplicate resource labels under 'admin' for consistent RA lookups
     admin: {
@@ -481,6 +668,49 @@ const languageData = {
         'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
         classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
       scheduledclasses: { name: 'Запланированные занятия', empty: 'Пока нет запланированных занятий', invite: 'Создайте первое запланированное занятие', import_helper: 'Вы можете импортировать CSV, чтобы добавить несколько занятий сразу.', import_format_hint: 'Обязательные колонки: name,course,instructor,resource,scheduled_time,duration_minutes,max_students (остальные игнорируются).', fields: { id: 'ИД', name: 'Название', course: 'Курс', instructor: 'Инструктор', resource: 'Ресурс', scheduled_time: 'Время', duration_minutes: 'Длительность (мин)', max_students: 'Макс. число студентов', students: 'Студенты', current_enrollment: 'Текущая запись', available_spots: 'Доступные места' }, helper: 'Создайте запланированное занятие, чтобы начать планирование уроков.', create: 'Создать запланированное занятие' },
+        scheduledclasspatterns: {
+          name: 'Шаблоны запланированных занятий',
+          empty: 'Шаблонов пока нет',
+          invite: 'Создайте первый шаблон',
+          fields: {
+            id: 'ИД',
+            name: 'Название',
+            course: 'Курс',
+            instructor: 'Инструктор',
+            resource: 'Ресурс',
+            recurrence_days: 'Дни повторения',
+            times: 'Время',
+            start_date: 'Дата начала',
+            num_lessons: 'Количество занятий',
+            default_duration_minutes: 'Длительность по умолчанию (мин)',
+            default_max_students: 'Макс. студентов по умолчанию',
+            students: 'Студенты',
+            day: 'День',
+            time: 'Время',
+            recurrences: 'Повторения'
+          },
+          generate: {
+            button: 'Создать занятия',
+            confirm_title: 'Создать занятия',
+            confirm_content: 'Создать запланированные занятия для этого шаблона?',
+            success: 'Занятия созданы успешно',
+            error: 'Ошибка при создании занятий'
+          },
+          bulk: {
+            generate: 'Создать занятия',
+            regenerate: 'Пересоздать занятия',
+            generate_success: 'Созданы занятия для %{count} шаблонов (%{classes} занятий)',
+            generate_partial_success: 'Созданы занятия: %{success_count} успешно, %{fail_count} неудачно (%{classes} занятий)',
+            generate_error: 'Ошибка при создании занятий: %{error}',
+            regenerate_success: 'Пересозданы занятия для %{count} шаблонов (удалено %{deleted}, создано %{generated})',
+            regenerate_error: 'Ошибка при пересоздании занятий: %{error}',
+            generate_confirm_title: 'Создать занятия',
+            generate_confirm_content: 'Вы уверены, что хотите создать занятия для %{count} шаблонов? Это может занять некоторое время.',
+            regenerate_confirm_title: 'Пересоздать занятия',
+            regenerate_confirm_content: 'Вы уверены, что хотите пересоздать занятия для %{count} шаблонов? Это удалит существующие занятия и создаст новые.'
+          },
+          viewClasses: 'Просмотр занятий'
+        },
       }
     },
     resources: {
@@ -495,6 +725,7 @@ const languageData = {
       'instructor-availabilities': { name: 'Доступность инструкторов', empty: 'Нет доступности', invite: 'Добавьте доступность', fields: { id: 'ID', instructor_id: 'Инструктор', day: 'День', hours: 'Часы' } },
       classes: { name:'Занятия', empty:'Занятий пока нет', invite:'Создайте первое занятие', fields: { id: 'ID', name: 'Название', category: 'Категория', type: 'Тип', description: 'Описание', price: 'Цена', required_lessons: 'Требуемые уроки' } },
     scheduledclasses: { name: 'Запланированные занятия', empty: 'Пока нет запланированных занятий', invite: 'Создайте первое запланированное занятие', import_helper: 'Вы можете импортировать CSV, чтобы добавить несколько занятий сразу.', import_format_hint: 'Обязательные колонки: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (остальные игнорируются).', fields: { id: 'ИД', name: 'Название', course: 'Курс', instructor: 'Инструктор', resource: 'Ресурс', scheduled_time: 'Время', duration_minutes: 'Длительность (мин)', max_students: 'Макс. число студентов', students: 'Студенты', current_enrollment: 'Текущая запись', available_spots: 'Доступные места' }, helper: 'Создайте запланированное занятие, чтобы начать планирование уроков.', create: 'Создать запланированное занятие' },
+      scheduledclasspatterns: { name: 'Шаблоны Запланированных Классов', empty: 'Шаблонов пока нет', invite: 'Создайте первый шаблон', fields: { id: 'ИД', name: 'Название', course: 'Курс', instructor: 'Инструктор', resource: 'Ресурс', recurrence_days: 'Дни повторения', times: 'Времена', start_date: 'Дата начала', num_lessons: 'Количество уроков', default_duration_minutes: 'Длительность по умолчанию (мин)', default_max_students: 'Макс. студентов по умолчанию', students: 'Студенты', day: 'День', time: 'Время', recurrences: 'Повторения' } },
     },
   },
 };
@@ -570,6 +801,9 @@ export function initI18n(lang = storedLang || 'en') {
       ns: ['ra', 'common', 'validation', 'admin', 'portal'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
+      react: {
+        bindI18n: 'languageChanged loaded added',
+      },
     });
     // Initial hydration attempt for starting language
     ensurePortalBundle(lang);
@@ -595,9 +829,11 @@ export function useI18nForceUpdate() {
     i18n.on('languageChanged', bump);
     // Also react when async namespaces (like 'portal') finish loading
     i18n.on('loaded', bump);
+    i18n.on('added', bump);
     return () => {
       i18n.off('languageChanged', bump);
       i18n.off('loaded', bump);
+      i18n.off('added', bump);
     };
   }, []);
 }
@@ -610,14 +846,17 @@ if (typeof window !== 'undefined') {
 
 // React-Admin i18n provider bridge
 // Enhanced RA translation provider mapping RA / common / resources prefixed keys to proper namespaces
+let currentLocale = i18n.language || 'en';
+
 export const raI18nProvider = {
   translate: (key, options = {}) => {
     if (!key) return '';
 
     const tryKey = (k, ns) => {
-  // react-admin often passes '_' as alias for defaultValue
-  const { _, defaultValue, ...rest } = options || {};
-  const r = i18n.t(k, { ns, defaultValue: defaultValue ?? _ ?? k, ...rest });
+      // react-admin often passes '_' as alias for defaultValue
+      const { _, defaultValue, ...rest } = options || {};
+      // Force use of currentLocale to avoid lag
+      const r = i18n.t(k, { ns, lng: currentLocale, defaultValue: defaultValue ?? _ ?? k, ...rest });
       return r && r !== k ? r : null;
     };
 
@@ -663,14 +902,15 @@ export const raI18nProvider = {
     }
     // 6. Direct attempt (maybe already using internal path without prefix)
   const { _, defaultValue, ...rest } = options || {};
-  const direct = i18n.t(key, { ...rest, defaultValue: defaultValue ?? _ ?? key });
+  const direct = i18n.t(key, { ...rest, lng: currentLocale, defaultValue: defaultValue ?? _ ?? key });
     if (direct && direct !== key) return direct;
     return key; // fallback to raw key (helps detect missing keys in UI)
   },
   changeLocale: (locale) => {
+    currentLocale = locale;
     return i18n.changeLanguage(locale);
   },
-  getLocale: () => i18n.language,
+  getLocale: () => currentLocale,
 };
 
 export default i18n;
