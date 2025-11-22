@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
+import EnrollmentDetailsModal from "./EnrollmentDetailsModal";
 import { studentRawFetch } from "../../api/httpClient";
 import { iconXs, iconSm, iconMd } from "../../shared/constants/iconSizes";
 
@@ -96,6 +97,8 @@ const Progress: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
+  const [selectedEnrollment, setSelectedEnrollment] = useState<any | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -117,6 +120,7 @@ const Progress: React.FC = () => {
   }, []);
 
   const lessons = useMemo(() => (data?.lessons ?? []), [data]);
+  const patterns = useMemo(() => (data?.patterns ?? []), [data]);
   const scheduledClasses = useMemo(() => (data?.scheduled_classes ?? data?.scheduledclasses ?? []), [data]);
   const courses = useMemo(() => (data?.courses ?? []), [data]);
   const enrollments = useMemo(() => (data?.enrollments ?? []), [data]);
@@ -176,6 +180,8 @@ const Progress: React.FC = () => {
     const percentage = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 0;
     return { enrollmentsCount, totalCompleted, totalRequired, totalRemaining, percentage };
   }, [enrollments, lessons, scheduledClasses]);
+
+  // Details modal fully decoupled into its own component
 
   // Milestones/Achievements/Skills were removed per new spec; cleaning leftover data/functions to avoid unused or undefined refs.
   const getProgressTone = (value: number) => (value >= 80 ? "tw-text-success" : value >= 50 ? "tw-text-primary" : "tw-text-warning");
@@ -363,7 +369,7 @@ const Progress: React.FC = () => {
                   </div>
                   <ProgressBar value={pct} className="tw-h-2" />
                   <div className="tw-flex tw-justify-end tw-mt-4">
-                    <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-transition-colors tw-bg-secondary tw-text-foreground hover:tw-bg-secondary/80" onClick={() => { /* no-op */ }}>
+                    <button className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-transition-colors tw-bg-secondary tw-text-foreground hover:tw-bg-secondary/80" onClick={() => { setSelectedEnrollment(e); setShowDetails(true); }}>
                       {t('portal.progress.enrollment.details')}
                     </button>
                   </div>
@@ -389,6 +395,14 @@ const Progress: React.FC = () => {
           </CardContent>
         </Card>
       </Container>
+      <EnrollmentDetailsModal
+        open={!!showDetails && !!selectedEnrollment}
+        enrollment={selectedEnrollment}
+        lessons={lessons}
+        patterns={patterns}
+        scheduledClasses={scheduledClasses}
+        onClose={() => { setShowDetails(false); setSelectedEnrollment(null); }}
+      />
     </div>
   );
 };
