@@ -399,7 +399,7 @@ const Progress: React.FC = () => {
         open={!!showDetails && !!selectedEnrollment}
         enrollment={selectedEnrollment}
         lessons={lessons}
-        patterns={patterns} 
+        patterns={patterns}
         scheduledClasses={scheduledClasses}
         onClose={() => { setShowDetails(false); setSelectedEnrollment(null); }}
       />
