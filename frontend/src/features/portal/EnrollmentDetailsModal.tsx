@@ -87,16 +87,19 @@ const humanScheduleRows = (pattern: any, t: any): string[] => {
   const rows: string[] = [];
   days.forEach((d) => {
     const dayName = buildDayName(d, t);
-    if (times.length === 0) rows.push(dayName);
-    times.forEach((tm) => {
-      const time = toLocaleTime(tm);
-      // Localization-friendly: allow translators to change the separator/template
-      rows.push(t('portal.progress.details.dayTime', {
-        day: dayName,
-        time,
-        defaultValue: `${dayName} - ${time}`
-      }));
-    });
+    if (times.length === 0) {
+      rows.push(dayName);
+    } else {
+      times.forEach((tm) => {
+        const time = toLocaleTime(tm);
+        // Localization-friendly: allow translators to change the separator/template
+        rows.push(t('portal.progress.details.dayTime', {
+          day: dayName,
+          time,
+          defaultValue: `${dayName} - ${time}`
+        }));
+      });
+    }
   });
   return rows;
 };
