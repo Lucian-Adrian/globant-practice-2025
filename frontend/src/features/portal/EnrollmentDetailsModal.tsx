@@ -137,57 +137,35 @@ export default function EnrollmentDetailsModal({
 
   const type = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
 
-  console.log("🔍 EnrollmentDetailsModal props:");
-  console.log("Enrollment:", enrollment);
-  console.log("Lessons:", lessons);
-  console.log("ScheduledClasses:", scheduledClasses);
-  console.log("Patterns:", patterns);
-
 
   // 👉 Pick pattern for this enrollment (THEORY only)
   const selectedPattern = useMemo(() => {
-  console.log("🔍 [selectedPattern] START -----------------------------");
-
   if (!enrollment) {
-    console.log("❌ No enrollment");
     return null;
   }
 
   const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
-  console.log("Enrollment.type =", typeUpper);
 
   if (typeUpper !== "THEORY") {
-    console.log("ℹ️ Enrollment is not THEORY → no pattern needed");
     return null;
   }
 
   const studentId = enrollment?.student?.id ?? enrollment?.student_id;
   const courseId = enrollment?.course?.id ?? enrollment?.course_id;
 
-  console.log("Enrollment courseId:", courseId);
-  console.log("Enrollment studentId:", studentId);
-
   if (!studentId || !courseId) {
-    console.log("❌ Missing studentId or courseId");
     return null;
   }
 
-  console.log("📦 Available patterns:", patterns);
-
   // 1) Try from patterns[] (primary)
   const fromPatterns = (patterns || []).find((p: any) => {
-    console.log("→ Checking pattern:", p);
-
     if (p?.course?.id !== courseId) {
-      console.log("⛔ Pattern course mismatch:", p?.course?.id);
       return false;
     }
 
     const students = p?.students || [];
-    console.log("   Pattern students:", students);
 
     if (!Array.isArray(students)) {
-      console.log("⛔ Pattern.students is not an array");
       return false;
     }
 
@@ -195,31 +173,23 @@ export default function EnrollmentDetailsModal({
       typeof s === "number" ? s === studentId : s?.id === studentId
     );
 
-    console.log("   Student match:", match);
-
     return match;
   });
 
   if (fromPatterns) {
-    console.log("🎯 MATCH → Pattern from patterns[]:", fromPatterns);
     return fromPatterns;
   }
-
-  console.log("⚠️ No direct patterns found → checking fallback scheduledClasses…");
 
   // 2) Fallback: check scheduledClasses[].pattern
   for (const sc of scheduledClasses || []) {
     const p = sc?.pattern;
-    console.log("→ Checking scheduledClass.pattern:", p);
 
     if (!p) continue;
     if (p?.course?.id !== courseId) {
-      console.log("⛔ ScheduledClass pattern course mismatch");
       continue;
     }
 
     const students = p?.students || [];
-    console.log("   Pattern students:", students);
 
     if (!Array.isArray(students)) continue;
 
@@ -227,16 +197,10 @@ export default function EnrollmentDetailsModal({
       typeof s === "number" ? s === studentId : s?.id === studentId
     );
 
-    console.log("   Student matched in fallback:", hasStudent);
-
     if (hasStudent) {
-      console.log("🎯 MATCH → Fallback pattern from scheduledClasses:", p);
       return p;
     }
   }
-
-  console.log("❌ No pattern found at all");
-  console.log("🔍 [selectedPattern] END -----------------------------");
 
   return null;
 }, [enrollment, patterns, scheduledClasses]);
@@ -249,12 +213,6 @@ export default function EnrollmentDetailsModal({
     const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
 
     if (typeUpper === "THEORY") {
-      console.log("🎨 CONTEXT computed:", {
-      type: typeUpper,
-      selectedPattern,
-      instructor: selectedPattern ? humanInstructor({ pattern: selectedPattern }) : null,
-      resource: selectedPattern ? humanResource({ pattern: selectedPattern }) : null
-      });
       return {
         instructor: selectedPattern ? humanInstructor({ pattern: selectedPattern }) : "",
         resource: selectedPattern ? humanResource({ pattern: selectedPattern }) : "",
@@ -276,8 +234,6 @@ export default function EnrollmentDetailsModal({
     const typeUpper = (enrollment?.course?.type || enrollment?.type || "").toUpperCase();
     const source = typeUpper === "PRACTICE" ? (lessons || []) : (scheduledClasses || []);
 
-    console.log("🕘 Building history for type:", typeUpper);
-    console.log("History source:", source);
 
     return source
       .filter((it: any) => {
