@@ -13,6 +13,7 @@ const portalLocales = typeof import.meta !== 'undefined' && import.meta.glob
 // we inline minimal RA translation objects instead of importing optional packages.
 const englishMessages = {
   ra: {
+    nav: { home: 'Home' },
     action: { edit: 'Edit', save: 'Save', delete: 'Delete', refresh: 'Refresh', show: 'Show', list: 'List', create: 'Create', bulk_actions: 'Bulk actions', export: 'Export', search: 'Search', select_all: 'Select all', clear_input_value: 'Clear', remove_filter: 'Remove filter', add_filter: 'ADD FILTER', open_menu: 'Open menu', close_menu: 'Close menu', open: 'Open', close: 'Close', back: 'Back', undo: 'Undo' },
     navigation: { next: 'Next', prev: 'Prev', page_range_info: 'Page {{offsetBegin}}-{{offsetEnd}} of {{total}}', page_rows_per_page: 'Rows per page:', no_results: 'No results' },
     sort: { sort_by: 'Sort by {{field}} {{order}}', ASC: 'ascending', DESC: 'descending' },
@@ -24,6 +25,7 @@ const englishMessages = {
 };
 const romanianMessages = {
   ra: {
+    nav: { home: 'Acasă' },
     action: {
       edit: 'Editează',
       save: 'Salvează',
@@ -83,6 +85,7 @@ const romanianMessages = {
 };
 const russianMessages = {
   ra: {
+    nav: { home: 'Главная' },
     action: {
       edit: 'Редактировать',
       save: 'Сохранить',
