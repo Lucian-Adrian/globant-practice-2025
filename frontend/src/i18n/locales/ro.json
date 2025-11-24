@@ -397,6 +397,36 @@
           "CANCELED": "Anulat"
         }
       },
+      "details": {
+        "close": "Închide",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "scheduledLessons": "Lecții programate",
+        "bookLesson": "Programează o lecție",
+        "activityHistory": "Istoricul activității",
+        "activityNone": "Nicio activitate recentă",
+        "noScheduled": "Nu există lecții teoretice programate",
+        "na": "N/A",
+        "days": {
+          "monday": "Luni",
+          "tuesday": "Marți",
+          "wednesday": "Miercuri",
+          "thursday": "Joi",
+          "friday": "Vineri",
+          "saturday": "Sâmbătă",
+          "sunday": "Duminică"
+        },
+        "dayTime": "{{day}} - {{time}}",
+        "status": {
+          "scheduled": "Programat",
+          "completed": "Finalizat",
+          "canceled": "Anulat",
+          "SCHEDULED": "Programat",
+          "COMPLETED": "Finalizat",
+          "CANCELED": "Anulat"
+        }
+      },
       "motivational": { "title": "Ești aproape!", "body": "Cu {{remaining}}% rămas, ești pe drumul cel bun către permis. Continuă!" }
     },
     "landing": {

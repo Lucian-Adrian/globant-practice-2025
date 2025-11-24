@@ -397,6 +397,36 @@
           "CANCELED": "Отменено"
         }
       },
+      "details": {
+        "close": "Закрыть",
+        "course": "Курс",
+        "instructor": "Инструктор",
+        "resource": "Ресурс",
+        "scheduledLessons": "Запланированные уроки",
+        "bookLesson": "Записаться на урок",
+        "activityHistory": "История активности",
+        "activityNone": "Пока нет недавней активности",
+        "noScheduled": "Нет запланированных теоретических уроков",
+        "na": "N/A",
+        "days": {
+          "monday": "Понедельник",
+          "tuesday": "Вторник",
+          "wednesday": "Среда",
+          "thursday": "Четверг",
+          "friday": "Пятница",
+          "saturday": "Суббота",
+          "sunday": "Воскресенье"
+        },
+        "dayTime": "{{day}} - {{time}}",
+        "status": {
+          "scheduled": "Запланирован",
+          "completed": "Завершен",
+          "canceled": "Отменен",
+          "SCHEDULED": "Запланирован",
+          "COMPLETED": "Завершен",
+          "CANCELED": "Отменен"
+        }
+      },
       "motivational": { "title": "Вы почти у цели!", "body": "Осталось {{remaining}}% — вы на верном пути к правам. Продолжайте!" }
     },
     "landing": {

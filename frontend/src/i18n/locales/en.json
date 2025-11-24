@@ -452,6 +452,36 @@
           "CANCELED": "Canceled"
         }
       },
+      "details": {
+        "close": "Close",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "scheduledLessons": "Scheduled lessons",
+        "bookLesson": "Book a lesson",
+        "activityHistory": "Activity history",
+        "activityNone": "No recent activity yet",
+        "noScheduled": "No scheduled theory lessons",
+        "na": "N/A",
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        },
+        "dayTime": "{{day}} - {{time}}",
+        "status": {
+          "scheduled": "Scheduled",
+          "completed": "Completed",
+          "canceled": "Canceled",
+          "SCHEDULED": "Scheduled",
+          "COMPLETED": "Completed",
+          "CANCELED": "Canceled"
+        }
+      },
       "motivational": { "title": "You're Almost There!", "body": "With {{remaining}}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!" }
     },
     "landing": {

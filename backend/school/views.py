@@ -1109,6 +1109,8 @@ def student_me(request):
 @decorators.permission_classes([AllowAny])
 def student_dashboard(request):
     """Student dashboard: view instructors and courses."""
+    import logging
+    logger = logging.getLogger(__name__)
     auth_header = request.META.get("HTTP_AUTHORIZATION", "")
     if not auth_header.startswith("Bearer "):
         return response.Response(
@@ -1142,12 +1144,62 @@ def student_dashboard(request):
 
     # Get student's enrollments and lessons
     enrollments = Enrollment.objects.filter(student=student).select_related("course")
+    enrolled_course_ids = list(enrollments.values_list("course_id", flat=True))
+    logger.debug(
+        "student_dashboard: student_id=%s, enrolled_course_ids=%s, enrollments_count=%s",
+        student.id,
+        enrolled_course_ids,
+        enrollments.count(),
+    )
     lessons = (
         Lesson.objects.filter(enrollment__in=enrollments)
         .select_related("enrollment__course", "instructor", "resource")
         .order_by("scheduled_time")
     )
     lesson_data = LessonSerializer(lessons, many=True).data
+
+    # Patterns that explicitly include this student and belong to enrolled courses
+    # - course must be one of the student's enrolled courses
+    # - AND the student must be in pattern.students
+    patterns = (
+        ScheduledClassPattern.objects.filter(
+            course_id__in=enrolled_course_ids,
+            students=student,
+        )
+        .select_related("course", "instructor", "resource")
+        .prefetch_related("students")
+    )
+    pattern_data = ScheduledClassPatternSerializer(patterns, many=True).data
+    logger.debug(
+        "student_dashboard: patterns_count=%s for student_id=%s",
+        len(pattern_data),
+        student.id,
+    )
+
+    # Scheduled classes for this student (theory side)
+    # Include classes linked to the above patterns where the student participates
+    scheduled_classes = (
+        ScheduledClass.objects.filter(
+            students=student,
+            pattern__in=patterns,
+        )
+        .select_related(
+            "pattern__course",
+            "pattern__instructor",
+            "pattern__resource",
+            "course",
+            "instructor",
+            "resource",
+        )
+        .prefetch_related("pattern__students", "students")
+        .order_by("scheduled_time")
+    )
+    scheduled_class_data = ScheduledClassSerializer(scheduled_classes, many=True).data
+    logger.debug(
+        "student_dashboard: scheduled_classes_count=%s for student_id=%s",
+        len(scheduled_class_data),
+        student.id,
+    )
 
     # Get payments for the student's enrollments
     payments = (
@@ -1256,6 +1308,8 @@ def student_dashboard(request):
             "instructors": instructor_data,
             "courses": course_data,
             "lessons": lesson_data,
+            "scheduled_classes": scheduled_class_data,
+            "patterns": pattern_data,
             "payments": payment_data,
             "enrollments": enrollment_data,
             "lesson_summary": lesson_summary,
