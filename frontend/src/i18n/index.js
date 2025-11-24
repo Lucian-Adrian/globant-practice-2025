@@ -549,8 +549,8 @@ const languageData = {
       classes: { name:'Clase', empty:'Nicio clasă încă', invite:'Creați prima clasă', fields: { id: 'ID', name: 'Nume', category: 'Categorie', type: 'Tip', description: 'Descriere', price: 'Preț', required_lessons: 'Lecții necesare' } },
     'scheduled-classes': { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile', pattern: 'Model' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
       scheduledclasses: { name: 'Clase programate', empty: 'Nicio clasă programată încă', invite: 'Creați prima clasă programată', import_helper: 'Puteți importa un CSV pentru a adăuga mai multe clase programate odată.', import_format_hint: 'Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', scheduled_time: 'Ora programării', duration_minutes: 'Durată (min)', max_students: 'Număr maxim de studenți', students: 'Studenți', current_enrollment: 'Înscriși curent', available_spots: 'Locuri disponibile' }, helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați clasă programată' },
-      'scheduled-class-patterns': { name: 'Modele de clase programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
-      scheduledclasspatterns: { name: 'Modele de clase programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
+      'scheduled-class-patterns': { name: 'Modele Clase Programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
+      scheduledclasspatterns: { name: 'Modele Clase Programate', empty: 'Niciun model încă', invite: 'Creați primul model', fields: { id: 'ID', name: 'Nume', course: 'Curs', instructor: 'Instructor', resource: 'Resursă', recurrence_days: 'Zile de recurență', times: 'Ore', start_date: 'Data de început', num_lessons: 'Număr de lecții', default_duration_minutes: 'Durată implicită (min)', default_max_students: 'Studenți maximi impliciți', students: 'Studenți', day: 'Zi', time: 'Oră', recurrences: 'Recurențe' } },
     },
   },
   ru: {
@@ -947,6 +947,13 @@ export const raI18nProvider = {
       if (rAdmin2) return rAdmin2;
       const rCommon2 = tryKey(withoutPrefix, 'common');
       if (rCommon2) return rCommon2;
+
+      // Fallback: check 'portal' namespace (where external JSONs are loaded)
+      // e.g. portal:resources.scheduled-class-patterns.name
+      const rPortal = tryKey(key, 'portal');
+      if (rPortal) return rPortal;
+      const rPortal2 = tryKey(withoutPrefix, 'portal');
+      if (rPortal2) return rPortal2;
     }
     // 6. Direct attempt (maybe already using internal path without prefix)
   const { _, defaultValue, ...rest } = options || {};
