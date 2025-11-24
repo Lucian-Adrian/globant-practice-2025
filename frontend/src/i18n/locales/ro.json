@@ -200,46 +200,6 @@
         "confirm_content": "Generați clase programate pentru acest model?"
       },
       "viewClasses": "Vezi Clase"
-    },
-    "scheduled-class-patterns": {
-      "name": "Modele Clase Programate",
-      "fields": {
-        "name": "Nume",
-        "course": "Curs",
-        "instructor": "Instructor",
-        "resource": "Resursă",
-        "day": "Zi",
-        "time": "Oră",
-        "start_date": "Data Început Model",
-        "num_lessons": "Număr de Lecții",
-        "default_duration_minutes": "Durată Implicită (min)",
-        "default_max_students": "Max Studenți Implicit",
-        "recurrences": "Repetări",
-        "students": "Studenți",
-        "recurrence_days": "Zile de repetare",
-        "times": "Ore"
-      },
-      "bulk": {
-        "generate": "Generează Clase",
-        "regenerate": "Regenerează Clase",
-        "generate_success": "Clase generate cu succes pentru {{count}} model(e). Creat {{classes}} clasă(clase).",
-        "generate_partial_success": "Clase generate pentru {{success_count}} model(e). Eșuat pentru {{fail_count}} model(e). Creat {{classes}} clasă(clase).",
-        "regenerate_success": "Clase regenerate cu succes pentru {{count}} model(e). Șterse {{deleted}} clasă(clase), create {{generated}} clasă(clase) nouă.",
-        "generate_error": "Eșuat generarea claselor: {{error}}",
-        "regenerate_error": "Eșuat regenerarea claselor: {{error}}",
-        "generate_confirm_title": "Generează Clase",
-        "generate_confirm_content": "Sigur doriți să generați clase pentru {{count}} model(e)? Acest lucru poate dura ceva timp.",
-        "regenerate_confirm_title": "Regenerează Clase",
-        "regenerate_confirm_content": "Sigur doriți să regenerați clase pentru {{count}} model(e)? Acest lucru va șterge clasele existente și va crea altele noi."
-      },
-      "generate": {
-        "button": "Generează Clase",
-        "success": "Clase generate cu succes",
-        "error": "Eroare la generarea claselor",
-        "confirm_title": "Generează Clase",
-        "confirm_content": "Generați clase programate pentru acest model?"
-      },
-      "viewClasses": "Vezi Clase"
     }
   },
   "days": {
@@ -453,9 +413,7 @@
   },
   "ra": {
     "page": {
-      "error": "Eroare",
-      "empty": "Niciun element încă",
-      "invite": "Doriți să creați unul?"
+      "error": "Eroare"
     },
     "message": {
       "error": "Eroare"

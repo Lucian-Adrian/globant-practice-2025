@@ -468,9 +468,7 @@
   },
   "ra": {
     "page": {
-      "error": "Error",
-      "empty": "No items yet",
-      "invite": "Do you want to create one?"
+      "error": "Error"
     },
     "message": {
       "error": "Error"
