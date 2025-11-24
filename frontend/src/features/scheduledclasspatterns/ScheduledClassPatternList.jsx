@@ -65,13 +65,13 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
     {
       onSuccess: ({ totalGenerated, failureCount }) => {
         if (failureCount > 0) {
-            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_partial_success', { 
+            notify(t('resources.scheduledclasspatterns.bulk.generate_partial_success', { 
                 success_count: selectedIds.length - failureCount,
                 fail_count: failureCount,
                 classes: totalGenerated 
             }), { type: 'warning' });
         } else {
-            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_success', { 
+            notify(t('resources.scheduledclasspatterns.bulk.generate_success', { 
                 count: selectedIds.length, 
                 classes: totalGenerated 
             }), { type: 'success' });
@@ -80,7 +80,7 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
         unselectAll('scheduled-class-patterns');
       },
       onError: (error) => {
-        notify(t('admin.resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
+        notify(t('resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
       },
     }
   );
@@ -98,15 +98,15 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
   return (
     <>
       <Button
-        label={t('admin.resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
+        label={t('resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
         onClick={handleClick}
         disabled={isLoading || safeSelectedIds.length === 0}
         startIcon={isLoading ? <CircularProgress size={16} /> : <PlayArrowIcon />}
       />
       <Confirm
         isOpen={open}
-        title={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
-        content={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_content', {
+        title={t('resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
+        content={t('resources.scheduledclasspatterns.bulk.generate_confirm_content', {
           count: safeSelectedIds.length,
           defaultValue: 'Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.'
         })}
@@ -212,7 +212,7 @@ const ViewClassesButton = ({ record }) => {
   return (
     <Button
       onClick={handleClick}
-      label={t('admin.resources.scheduledclasspatterns.viewClasses', 'View Classes')}
+      label={t('resources.scheduledclasspatterns.viewClasses', 'View Classes')}
       startIcon={<VisibilityIcon />}
       size="small"
     />

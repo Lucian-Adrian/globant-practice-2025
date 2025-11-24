@@ -43,13 +43,13 @@ export default function ScheduledClassPatternCreate(props) {
         <ArrayInput source="recurrences" label={t('resources.scheduledclasspatterns.fields.recurrences', 'Recurrences')} validate={[required()]}>
           <SimpleFormIterator>
             <SelectInput source="day" label={t('resources.scheduledclasspatterns.fields.day', 'Day')} choices={[
-              { id: 'MONDAY', name: 'Monday' },
-              { id: 'TUESDAY', name: 'Tuesday' },
-              { id: 'WEDNESDAY', name: 'Wednesday' },
-              { id: 'THURSDAY', name: 'Thursday' },
-              { id: 'FRIDAY', name: 'Friday' },
-              { id: 'SATURDAY', name: 'Saturday' },
-              { id: 'SUNDAY', name: 'Sunday' },
+              { id: 'MONDAY', name: t('days.MONDAY', 'Monday') },
+              { id: 'TUESDAY', name: t('days.TUESDAY', 'Tuesday') },
+              { id: 'WEDNESDAY', name: t('days.WEDNESDAY', 'Wednesday') },
+              { id: 'THURSDAY', name: t('days.THURSDAY', 'Thursday') },
+              { id: 'FRIDAY', name: t('days.FRIDAY', 'Friday') },
+              { id: 'SATURDAY', name: t('days.SATURDAY', 'Saturday') },
+              { id: 'SUNDAY', name: t('days.SUNDAY', 'Sunday') },
             ]} validate={[required()]} />
             <TextInput source="time" label={t('resources.scheduledclasspatterns.fields.time', 'Time')} validate={[required(), validateTimeFormat(t)]} />
           </SimpleFormIterator>
