@@ -413,7 +413,9 @@
   },
   "ra": {
     "page": {
-      "error": "Eroare"
+      "error": "Eroare",
+      "empty": "Niciun element încă",
+      "invite": "Doriți să creați unul?"
     },
     "message": {
       "error": "Eroare"
