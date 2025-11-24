@@ -16,6 +16,7 @@
     "goToLogin": "Перейти к логину",
     "with": "с",
     "viewAll": "Показать все",
+    "viewDetails": "Показать детали",
     "showLess": "Показать меньше",
     "noItems": "Нет элементов"
   },
@@ -61,7 +62,11 @@
     "unavailable": "Недоступно",
     "scheduled": "Запланирован",
     "completed": "Завершен",
-    "canceled": "Отменен"
+    "canceled": "Отменен",
+    "active": "Активный",
+    "inactive": "Неактивный",
+    "graduated": "Выпускник",
+    "pending": "В ожидании"
   },
   "resources": {
     "students": {
@@ -76,7 +81,10 @@
         "phone_number": "Номер телефона",
         "date_of_birth": "Дата рождения",
         "password": "Пароль",
-        "confirm_password": "Подтверждение пароля"
+        "confirm_password": "Подтверждение пароля",
+        "id": "ID",
+        "status": "Статус",
+        "enrollment_date": "Дата зачисления"
       }
     },
     "instructors": {
@@ -131,6 +139,9 @@
     },
     "scheduledclasses": {
       "name": "Запланированные Классы",
+      "empty": "Пока нет запланированных классов",
+      "helper": "Создайте запланированный класс, чтобы начать планирование уроков.",
+      "create": "Создать Запланированный Класс",
       "fields": {
         "name": "Название",
         "course": "Курс",
@@ -162,12 +173,17 @@
         "start_date": "Дата Начала Шаблона",
         "num_lessons": "Количество Занятий",
         "default_duration_minutes": "Длительность по умолчанию (мин)",
-        "default_max_students": "Макс Студентов по умолчанию"
+        "default_max_students": "Макс Студентов по умолчанию",
+        "recurrences": "Повторения",
+        "students": "Студенты",
+        "recurrence_days": "Дни повторения",
+        "times": "Время"
       },
       "bulk": {
         "generate": "Создать Классы",
         "regenerate": "Пересоздать Классы",
         "generate_success": "Классы успешно созданы для {{count}} шаблон(ов). Создано {{classes}} класс(ов).",
+        "generate_partial_success": "Созданы классы для {{success_count}} шаблон(ов). Ошибка для {{fail_count}} шаблон(ов). Создано {{classes}} класс(ов).",
         "regenerate_success": "Классы успешно пересозданы для {{count}} шаблон(ов). Удалено {{deleted}} класс(ов), создано {{generated}} новых класс(ов).",
         "generate_error": "Не удалось создать классы: {{error}}",
         "regenerate_error": "Не удалось пересоздать классы: {{error}}",
@@ -176,8 +192,24 @@
         "regenerate_confirm_title": "Пересоздать Классы",
         "regenerate_confirm_content": "Вы уверены, что хотите пересоздать классы для {{count}} шаблон(ов)? Это удалит существующие классы и создаст новые."
       },
+      "generate": {
+        "button": "Создать Классы",
+        "success": "Классы успешно созданы",
+        "error": "Ошибка создания классов",
+        "confirm_title": "Создать Классы",
+        "confirm_content": "Создать запланированные классы для этого шаблона?"
+      },
       "viewClasses": "Посмотреть Классы"
     }
+  },
+  "days": {
+    "MONDAY": "Понедельник",
+    "TUESDAY": "Вторник",
+    "WEDNESDAY": "Среда",
+    "THURSDAY": "Четверг",
+    "FRIDAY": "Пятница",
+    "SATURDAY": "Суббота",
+    "SUNDAY": "Воскресенье"
   },
   "lessons": {
     "header": {
@@ -388,6 +420,9 @@
     },
     "action": {
       "back": "Назад"
+    },
+    "custom": {
+      "import_csv": "Импорт CSV"
     }
   },
   "validation": {
