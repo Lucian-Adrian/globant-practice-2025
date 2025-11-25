@@ -20,7 +20,7 @@ import Dashboard from './Dashboard.jsx';
 
 export default function App() {
   const [enums, setEnums] = React.useState(null);
-  React.useEffect(() => { fetchEnums().then(setEnums); }, []);
+  React.useEffect(() => { fetchEnums().then(setEnums).catch(() => {}); }, []);
   const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
   const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
