@@ -68,6 +68,7 @@ const CourseStatusField = (recordOrProps) => {
 // Custom button to view class details
 const ViewDetailsButton = ({ record }) => {
   const navigate = useNavigate();
+  const t = useTranslate();
   
   const handleClick = () => {
     navigate(`/classes/${record.id}/details`);
@@ -87,7 +88,7 @@ const ViewDetailsButton = ({ record }) => {
         marginRight: '8px'
       }}
     >
-      Vezi Detalii
+      {t('commonUI.viewDetails', 'View Details')}
     </button>
   );
 };

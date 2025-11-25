@@ -1,4 +1,5 @@
 from django.contrib import admin
+from solo.admin import SingletonModelAdmin
 
 from . import models
 
@@ -66,8 +67,8 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(models.ScheduledClassPattern)
 class ScheduledClassPatternAdmin(admin.ModelAdmin):
-    list_display = ("name", "course", "instructor", "start_date", "num_lessons", "status")
-    list_filter = ("status", "course__category", "instructor")
+    list_display = ("name", "course", "instructor", "start_date", "num_lessons", "default_duration_minutes", "default_max_students")
+    list_filter = ("course__category", "instructor")
     search_fields = ("name", "course__name", "instructor__first_name", "instructor__last_name")
     date_hierarchy = "start_date"
 
@@ -85,3 +86,28 @@ class ScheduledClassAdmin(admin.ModelAdmin):
     list_filter = ("status", "pattern__course__category", "pattern__instructor")
     search_fields = ("name", "pattern__course__name", "pattern__instructor__first_name", "pattern__instructor__last_name")
     date_hierarchy = "scheduled_time"
+
+
+@admin.register(models.Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ("street", "city")
+    search_fields = ("street", "city")
+
+
+@admin.register(models.SchoolConfig)
+class SchoolConfigAdmin(SingletonModelAdmin):
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("school_name", "school_logo", "email")
+        }),
+        ("Contact Information", {
+            "fields": ("contact_phone1", "contact_phone2", "business_hours")
+        }),
+        ("Landing Page", {
+            "fields": ("landing_image", "landing_text")
+        }),
+        ("Configuration", {
+            "fields": ("social_links", "rules", "available_categories", "addresses")
+        }),
+    )
+    filter_horizontal = ("addresses",)

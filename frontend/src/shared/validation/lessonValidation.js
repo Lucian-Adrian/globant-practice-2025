@@ -131,6 +131,8 @@ export async function validateLesson(values, t, currentId) {
 			}
 		}
 		if (!ok) errors.scheduled_time = t('validation.outsideAvailability');
+	} else {
+		errors.instructor_id = t('validation.instructorNotWorking');
 	}
 
 	// Category & license checks
@@ -303,6 +305,8 @@ export async function validateScheduledClass(values, t, currentId) {
 			}
 		}
 		if (!ok) errors.scheduled_time = t('validation.outsideAvailability');
+	} else {
+		errors.instructor_id = t('validation.instructorNotWorking');
 	}
 
 	// Category & license

@@ -20,14 +20,17 @@ export function AsidePanelProvider({ children }) {
   }, []);
 
   const toggle = React.useCallback(() => {
-    setCollapsed((c) => {
-      const next = !c;
-      try { window.localStorage.setItem(LS_KEY, next ? '1' : '0'); } catch {}
-      return next;
-    });
+    setCollapsed((c) => !c);
   }, []);
 
-  const value = React.useMemo(() => ({ collapsed, toggle, setCollapsed }), [collapsed, toggle]);
+  const setCollapsedStable = React.useCallback((value) => {
+    setCollapsed(value);
+    try { 
+      window.localStorage.setItem(LS_KEY, value ? '1' : '0'); 
+    } catch {}
+  }, []);
+
+  const value = React.useMemo(() => ({ collapsed, toggle, setCollapsed: setCollapsedStable }), [collapsed, toggle, setCollapsedStable]);
   return <AsidePanelContext.Provider value={value}>{children}</AsidePanelContext.Provider>;
 }
 

@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from .models import (
+    Address,
     Course,
     Enrollment,
     Instructor,
@@ -14,6 +15,7 @@ from .models import (
     Resource,
     ScheduledClass,
     ScheduledClassPattern,
+    SchoolConfig,
     Student,
     Vehicle,
 )
@@ -26,6 +28,7 @@ from .validators import (
     validate_lesson_practice_and_vehicle,
     validate_lesson_resource_availability,
     validate_instructor_availability,
+    validate_instructor_availability_for_pattern,
     validate_lesson_category_and_license,
 )
 
@@ -302,6 +305,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             "model",
             "year",
             "resource_type",
+            "type",
         ]
 
     def get_resource_type(self, obj):
@@ -545,27 +549,93 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
             "times",
             "start_date",
             "num_lessons",
-            "duration_minutes",
-            "max_students",
-            "status",
+            "default_duration_minutes",
+            "default_max_students",
+            # Removed: status - patterns don't have status, only generated classes do
             "created_at",
         ]
 
+    def validate(self, attrs):
+        from .validators import (
+            validate_classroom_resource_for_class,
+            validate_scheduled_class_students_enrolled,
+            validate_scheduled_class_students_capacity
+        )
 
-class ScheduledClassPatternSummarySerializer(serializers.ModelSerializer):
-    """Minimal serializer for pattern to avoid data bloat in ScheduledClass responses"""
+        instance = getattr(self, "instance", None)
+        course = attrs.get("course") or (instance.course if instance else None)
+        instructor = attrs.get("instructor") or (instance.instructor if instance else None)
+        resource = attrs.get("resource") or (instance.resource if instance else None)
+        recurrence_days = attrs.get("recurrence_days") or (instance.recurrence_days if instance else [])
+        times = attrs.get("times") or (instance.times if instance else [])
+        default_max_students = attrs.get("default_max_students") if "default_max_students" in attrs else (
+            instance.default_max_students if instance else None
+        )
+
+        # Instructor availability
+        validate_instructor_availability_for_pattern(
+            getattr(instructor, "id", None),
+            recurrence_days,
+            times
+        )
+
+        # Classroom resource only
+        validate_classroom_resource_for_class(resource)
+
+        # Validate students enrollment
+        if "students" in attrs:
+            students = attrs.get("students") or []
+        else:
+            students = list(instance.students.all()) if instance else []
+        validate_scheduled_class_students_enrolled(course, students)
+
+        # Validate students capacity against default_max_students and resource capacity
+        validate_scheduled_class_students_capacity(resource, default_max_students, students)
+
+        return attrs
+
+
+class ScheduledClassPatternNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for ScheduledClass.pattern with essential fields for portal UI."""
+    course = CourseSerializer(read_only=True)
+    instructor = InstructorSerializer(read_only=True)
+    resource = ResourceSerializer(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+
     class Meta:
         model = ScheduledClassPattern
-        fields = ["id", "name", "status"]
+        fields = [
+            "id",
+            "name",
+            "course",
+            "instructor",
+            "resource",
+            "students",
+            "recurrence_days",
+            "times",
+        ]
 
 
 class ScheduledClassSerializer(serializers.ModelSerializer):
-    pattern = ScheduledClassPatternSummarySerializer(read_only=True)
+    pattern = ScheduledClassPatternNestedSerializer(read_only=True)
     pattern_id = serializers.PrimaryKeyRelatedField(
-        queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False
+        queryset=ScheduledClassPattern.objects.all(), source="pattern", required=False, allow_null=True
     )
+    course = CourseSerializer(read_only=True)
+    course_id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), source="course")
+    instructor = InstructorSerializer(read_only=True)
+    instructor_id = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all(), source="instructor")
+    resource = ResourceSerializer(read_only=True)
+    resource_id = serializers.PrimaryKeyRelatedField(queryset=Resource.objects.all(), source="resource")
     current_enrollment = serializers.SerializerMethodField(read_only=True)
     available_spots = serializers.SerializerMethodField(read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+    student_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        source="students",
+        many=True,
+        required=False,
+    )
 
     class Meta:
         model = ScheduledClass
@@ -574,12 +644,20 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
             "pattern",
             "pattern_id",
             "name",
+            "course",
+            "course_id",
+            "instructor",
+            "instructor_id",
+            "resource",
+            "resource_id",
             "scheduled_time",
             "duration_minutes",
             "max_students",
             "status",
             "current_enrollment",
             "available_spots",
+            "students",
+            "student_ids",
         ]
 
     def get_current_enrollment(self, obj):
@@ -665,3 +743,84 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         check_scheduled_class_resource_conflicts(resource, start, end, instance)
 
         return attrs
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    """Serializer for Address model."""
+
+    class Meta:
+        model = Address
+        fields = ["id", "street", "city"]
+
+
+class SchoolConfigSerializer(serializers.ModelSerializer):
+    """Serializer for SchoolConfig singleton model matching Task 1 API contract."""
+
+    # Nested read-only addresses
+    addresses = AddressSerializer(many=True, read_only=True)
+    # Write-only field to set addresses by IDs
+    address_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+
+    class Meta:
+        model = SchoolConfig
+        fields = [
+            "id",
+            "school_name",
+            "school_logo",
+            "business_hours",
+            "email",
+            "contact_phone1",
+            "contact_phone2",
+            "landing_image",
+            "landing_text",
+            "social_links",
+            "rules",
+            "available_categories",
+            "addresses",
+            "address_ids",
+        ]
+        read_only_fields = ["id"]
+
+    def validate_landing_text(self, value):
+        """Validate landing_text is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("landing_text must be a dictionary")
+        return value
+
+    def validate_social_links(self, value):
+        """Validate social_links is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("social_links must be a dictionary")
+        return value
+
+    def validate_rules(self, value):
+        """Validate rules is a dictionary."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("rules must be a dictionary")
+        return value
+
+    def validate_available_categories(self, value):
+        """Validate available_categories is a list."""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("available_categories must be a list")
+        return value
+
+    def update(self, instance, validated_data):
+        """Handle addresses update separately due to ManyToMany."""
+        address_ids = validated_data.pop("address_ids", None)
+
+        # Update regular fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update addresses if provided
+        if address_ids is not None:
+            instance.addresses.set(address_ids)
+
+        return instance

@@ -7,6 +7,8 @@ import ListImportActions from '../../shared/components/ListImportActions.jsx';
 import { useAsidePanel } from '../../shared/state/AsidePanelContext.jsx';
 import InstructorFilterInput from '../../shared/components/InstructorFilterInput.jsx';
 import ResourceFilterInput from '../../shared/components/ResourceFilterInput.jsx';
+import PatternFilterInput from '../../shared/components/PatternFilterInput.jsx';
+import Breadcrumb from '../../shared/components/Breadcrumb.jsx';
 
 // Client-side filtered datagrid (mirrors Lessons approach, without type filter)
 const FilteredDatagrid = (props) => {
@@ -32,6 +34,8 @@ const FilteredDatagrid = (props) => {
         const rid = record?.resource?.id;
         if (String(rid) !== String(filterValues.resource_id)) return false;
       }
+      // pattern id match
+      if (filterValues.pattern_id && String(record?.pattern?.id) !== String(filterValues.pattern_id)) return false;
       return true;
     });
   }, [data, location.search, isLoading]);
@@ -40,7 +44,8 @@ const FilteredDatagrid = (props) => {
     <Datagrid {...props} data={filteredData} rowClick="edit">
       <NumberField source="id" label="ID" />
       <TextField source="name" label={t('resources.scheduledclasses.fields.name', 'Name')} />
-      <TextField source="pattern.course.name" label={t('resources.scheduledclasses.fields.course', 'Course')} />
+      <TextField source="course.name" label={t('resources.scheduledclasses.fields.course', 'Course')} />
+      <TextField source="pattern.name" label={t('resources.scheduledclasses.fields.pattern', 'Pattern')} />
       <FunctionField
         label={t('resources.scheduledclasses.fields.instructor', 'Instructor')}
         render={(record) => (record?.instructor ? `${record.instructor.first_name || ''} ${record.instructor.last_name || ''}`.trim() : '')}
@@ -86,20 +91,24 @@ export default function ScheduledClassList(props) {
   const filters = [
     <InstructorFilterInput key="instructor" alwaysOn />,
     <ResourceFilterInput key="resource_id" source="resource_id" alwaysOn onlyClassrooms />,
+    <PatternFilterInput key="pattern" alwaysOn />,
   ];
 
   return (
-    <List
-      {...props}
-      filters={filters}
-      aside={collapsed ? null : <ScheduledClassListAside />}
-      actions={<ListImportActions endpoint="scheduled-classes" />}
-      exporter={false}
-      title={t('resources.scheduledclasses.name', { defaultValue: 'Scheduled Classes' })}
-      empty={<ScheduledClassListEmpty />}
-      sort={{ field: 'id', order: 'DESC' }}
-    >
-      <FilteredDatagrid />
-    </List>
+    <>
+      <Breadcrumb />
+      <List
+        {...props}
+        filters={filters}
+        aside={collapsed ? null : <ScheduledClassListAside />}
+        actions={<ListImportActions endpoint="scheduled-classes" />}
+        exporter={false}
+        title={t('resources.scheduledclasses.name', { defaultValue: 'Scheduled Classes' })}
+        empty={<ScheduledClassListEmpty />}
+        sort={{ field: 'id', order: 'DESC' }}
+      >
+        <FilteredDatagrid />
+      </List>
+    </>
   );
 }

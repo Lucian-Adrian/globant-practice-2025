@@ -35,22 +35,13 @@ const QuickAddPanel: React.FC = () => {
             display: 'grid',
             gap: '12px 16px', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            alignItems: 'start',
-            maxWidth: 560
+            alignItems: 'start'
           }}
         >
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')} onClick={() => setOpen('instructor')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_vehicle', 'Add New Vehicle')} onClick={() => setOpen('vehicle')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_classroom', 'Add New Classroom')} onClick={() => setOpen('classroom')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_course', 'Add New Course')} onClick={() => setOpen('course')} />
-          </div>
+          <Button label={t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')} onClick={() => setOpen('instructor')} />
+          <Button label={t('common.dashboard.quick_add.add_vehicle', 'Add New Vehicle')} onClick={() => setOpen('vehicle')} />
+          <Button label={t('common.dashboard.quick_add.add_classroom', 'Add New Classroom')} onClick={() => setOpen('classroom')} />
+          <Button label={t('common.dashboard.quick_add.add_course', 'Add New Course')} onClick={() => setOpen('course')} />
         </div>
 
         {/* Instructor modal */}

@@ -23,6 +23,7 @@
     "goToLogin": "Go to Login",
     "with": "with",
     "viewAll": "View all",
+    "viewDetails": "View Details",
     "showLess": "Show less",
     "noItems": "No items"
   },
@@ -59,7 +60,14 @@
   },
   "filters": {
     "available": "Available",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "canceled": "Canceled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "graduated": "Graduated",
+    "pending": "Pending"
   },
   "resources": {
     "students": {
@@ -74,7 +82,10 @@
         "phone_number": "Phone number",
         "date_of_birth": "Date of birth",
         "password": "Password",
-        "confirm_password": "Confirm password"
+        "confirm_password": "Confirm password",
+        "id": "ID",
+        "status": "Status",
+        "enrollment_date": "Enrollment Date"
       }
     },
     "instructors": {
@@ -126,7 +137,80 @@
       "fields": {
         "enrollment": "Enrollment"
       }
+    },
+    "scheduledclasses": {
+      "name": "Scheduled Classes",
+      "empty": "No scheduled classes yet",
+      "helper": "Create a scheduled class to start planning lessons.",
+      "create": "Create Scheduled Class",
+      "fields": {
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "pattern": "Pattern",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "current_enrollment": "Current enrollment",
+        "available_spots": "Available spots",
+        "max_students": "Max students",
+        "recurrences": "Recurrences",
+        "num_lessons": "Number of Lessons",
+        "day": "Day",
+        "time": "Time",
+        "status": "Status",
+        "students": "Students"
+      }
+    },
+    "scheduledclasspatterns": {
+      "name": "Scheduled Class Patterns",
+      "fields": {
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "day": "Day",
+        "time": "Time",
+        "start_date": "Pattern Start Date",
+        "num_lessons": "Number of Lessons",
+        "default_duration_minutes": "Default Duration (min)",
+        "default_max_students": "Default Max Students",
+        "recurrences": "Recurrences",
+        "students": "Students",
+        "recurrence_days": "Recurrence Days",
+        "times": "Times"
+      },
+      "bulk": {
+        "generate": "Generate Classes",
+        "regenerate": "Regenerate Classes",
+        "generate_success": "Successfully generated classes for {{count}} pattern(s). Created {{classes}} class(es).",
+        "generate_partial_success": "Generated classes for {{success_count}} pattern(s). Failed for {{fail_count}} pattern(s). Created {{classes}} class(es).",
+        "regenerate_success": "Successfully regenerated classes for {{count}} pattern(s). Deleted {{deleted}} class(es), created {{generated}} new class(es).",
+        "generate_error": "Failed to generate classes: {{error}}",
+        "regenerate_error": "Failed to regenerate classes: {{error}}",
+        "generate_confirm_title": "Generate Classes",
+        "generate_confirm_content": "Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.",
+        "regenerate_confirm_title": "Regenerate Classes",
+        "regenerate_confirm_content": "Are you sure you want to regenerate classes for {{count}} pattern(s)? This will delete existing classes and create new ones."
+      },
+      "generate": {
+        "button": "Generate Classes",
+        "success": "Classes generated successfully",
+        "error": "Error generating classes",
+        "confirm_title": "Generate Classes",
+        "confirm_content": "Generate scheduled classes for this pattern?"
+      },
+      "viewClasses": "View Classes"
     }
+  },
+  "days": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
   },
   "lessons": {
     "header": {
@@ -368,6 +452,36 @@
           "CANCELED": "Canceled"
         }
       },
+      "details": {
+        "close": "Close",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "scheduledLessons": "Scheduled lessons",
+        "bookLesson": "Book a lesson",
+        "activityHistory": "Activity history",
+        "activityNone": "No recent activity yet",
+        "noScheduled": "No scheduled theory lessons",
+        "na": "N/A",
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        },
+        "dayTime": "{{day}} - {{time}}",
+        "status": {
+          "scheduled": "Scheduled",
+          "completed": "Completed",
+          "canceled": "Canceled",
+          "SCHEDULED": "Scheduled",
+          "COMPLETED": "Completed",
+          "CANCELED": "Canceled"
+        }
+      },
       "motivational": { "title": "You're Almost There!", "body": "With {{remaining}}% remaining, you're well on your way to getting your license. Keep practicing and stay focused!" }
     },
     "landing": {
@@ -391,6 +505,22 @@
     },
     "action": {
       "back": "Back"
+    },
+    "custom": {
+      "import_csv": "Import CSV"
     }
+  },
+  "validation": {
+    "timeFormat": "Time must be in HH:MM format (e.g., 09:30 or 14:00)",
+    "requiredField": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "atLeastOneRecurrence": "At least one recurrence is required",
+    "outsideAvailability": "The selected time is outside the instructor's working hours.",
+    "instructorNotWorking": "The instructor is not working on this day.",
+    "checkAvailability": "Check Availability",
+    "checking": "Checking...",
+    "available": "Available",
+    "unavailable": "Unavailable"
   }
 }

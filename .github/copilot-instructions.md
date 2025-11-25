@@ -4,56 +4,162 @@ Ask questions for clarity.
 Ask questions for context.
 Ask questions for instructions and to understand the task better.
 
-This file gives concise, actionable guidance for AI coding agents working on this repo (full-stack Django + React).
+This file gives concise, actionable guidance for AI coding agents working on this repo (full-stack Django + React Admin driving school management system).
 
-Important: `frontend/` is the working application today. `frontend-structured-minimal/` is a reference for structure and patterns only. When refactoring, keep all features working from `frontend/` while reorganizing code to match the `frontend-structured-minimal` layout.
+## Architecture Overview
 
-High level
-- Backend: Django + DRF under `backend/` (see `backend/manage.py`, `backend/project/settings.py`, and `backend/school/`). Use DRF serializers and `school/api.py` for endpoints.
-- Frontend: React Admin SPA. Working app is under `frontend/`. The structural reference is under `frontend-structured-minimal/` (entry: `src/main.jsx`, app root: `src/App.jsx`). Frontend uses `react-admin`, `ra-data-simple-rest`, `i18next` and MUI.
+**Backend**: Django 5.2 + DRF + PostgreSQL under `backend/` (entry: `manage.py`, settings: `project/settings.py`, API: `school/api.py`)
+**Frontend**: React Admin SPA under `frontend/` (entry: `src/main.jsx`, admin app: `src/app/App.jsx`)
+**Database**: PostgreSQL with Docker Compose orchestration
+**Deployment**: Containerized with hot reloading for development
 
-Frontend dev workflow
-- Start dev server (working app): `cd frontend && npm install && npm run dev` (or `npm run start`). Vite serves on port 3000 by default.
-- Build for production: `npm run build` in `frontend/`.
-- Preview production build: `npm run preview`.
+## Critical Developer Workflows
 
-Key frontend files and patterns
-- `src/main.jsx`: app bootstrap and providers (i18n, dataProvider). Modify when adding global providers.
-- `src/App.jsx`: main React Admin resource registration. Add new resources (students, instructors, vehicles, courses, payments) here.
-- `src/api/dataProvider.js` (to be added in `frontend/` during refactor): the React Admin data provider; adapt endpoints/path or auth logic here when backend changes.
-- Feature folders (`src/features/<resource>/`): each resource follows the same pattern: `index.js`, `*List.jsx`, `*Create.jsx`, `*Edit.jsx`, optional `*ListAside.jsx` / `*ListActions.jsx`.
-- Shared components: `src/shared/components/` contains small reusable UI helpers (e.g., `PhoneFieldRA.jsx`, `ImportButton.jsx`, `DisabledUntilValidToolbar.jsx`). Prefer reusing these instead of copying logic.
-- Validation utilities: `src/shared/validation/raValidators.js` and `validators.js` contain project-specific validation rules (phone handling uses `libphonenumber-js` and there are helpers in `phoneUtils.js` in other frontends).
+### Full Development Environment
+```bash
+# Start all services (PostgreSQL + Django + React)
+docker-compose up --build
 
-Conventions & patterns
-- Resource CRUD: each feature exposes List/Edit/Create components wired to `ra-data-simple-rest` via `dataProvider`. Keep REST endpoints conventional: `/students/`, `/instructors/`, etc.
-- CSV import/export: `papaparse` is used; check `ImportButton.jsx` for behavior and expected CSV columns.
-- Phone fields: standardized using `libphonenumber-js` and project helpers. See `PhoneFieldRA.jsx` and `shared/validation` for examples. The working `frontend/` includes `phoneUtils.js` and `PhoneInput.jsx`; prefer the `PhoneFieldRA` + validators pattern during refactor.
-- i18n: `i18next` + `react-i18next` configured in `src/i18n.js`. Use translation keys from components; extend `i18n.js` for new namespaces.
+# Services available at:
+# - Frontend: http://localhost:3000 (Vite dev server)
+# - Backend API: http://localhost:8000/api/
+# - Database: localhost:5432
+```
 
-Testing & quality gates
-- No frontend tests shipped by default. For small changes, run the dev server and smoke-test UI flows. For CI or unit tests, prefer Jest + React Testing Library; add tests under the feature folder mirroring components.
+### Backend Development
+```bash
+# Run Django server (from backend/ directory)
+python manage.py runserver 0.0.0.0:8000
 
-Integration points
-- Frontend expects a simple REST API compatible with `ra-data-simple-rest`. If backend responses differ (paginated format, envelope), adapt `src/api/dataProvider.js`.
-- Auth: the working `frontend/` includes `authProvider.js` and legacy `Login.jsx`/`SignupForm.jsx`. Keep auth functional while refactoring; longer-term, integrate auth via RA `authProvider` and attach tokens in the `dataProvider`.
+# Create migrations
+python manage.py makemigrations
 
-Admin mount and future split
-- Admin panel is mounted under `/admin` (React Admin + auth). The default route `/` redirects to `/admin`; unauthenticated users see the RA login first.
-- Public routes like `/signup` can remain outside `/admin`. A later iteration can flesh out the Student Portal at root while keeping Admin under `/admin`.
+# Run migrations
+python manage.py migrate
 
-What to change vs. where to be conservative
-- Change UI and resource components freely under `frontend-structured-minimal/src/features/*` and `shared/*`.
-- Modify backend models/serializers when API data changes, but coordinate with frontend `dataProvider` expectations.
+# Create superuser
+python manage.py createsuperuser
+```
 
-Examples (copy-paste friendly)
-- Register a new resource in `src/App.jsx`:
-  - import the resource's `index.js` from `src/features/<resource>/index.js` and add it to `<Admin resources={[...]} />` (follow style used for `students`).
-- Adjust endpoints: edit `src/api/dataProvider.js` to map `getList` to the backend's pagination keys.
+### Frontend Development
+```bash
+# Install dependencies
+npm install
 
-Notes and sources
-- This guidance reflects the `CLEAN_STRUCTURE.md` layout and the `frontend-structured-minimal` package layout (scripts: `dev`, `build`, `preview`).
-- If you need backend startup commands, look at `backend/requirements.txt` and Dockerfile; typical Django commands used here are `python manage.py runserver` or Docker Compose in root.
+# Start dev server
+npm run dev  # or npm start
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Project-Specific Conventions & Patterns
+
+### Feature Organization (Frontend)
+Each resource follows identical structure under `src/features/<resource>/`:
+- `index.js`: Exports List/Edit/Create components
+- `*List.jsx`: Main listing with filters/search
+- `*Edit.jsx`: Edit form with validation
+- `*Create.jsx`: Create form
+- Optional: `*ListAside.jsx`, `*ListActions.jsx`
+
+**Example**: `src/features/students/index.js`
+```javascript
+export { default as StudentList } from './StudentList';
+export { default as StudentEdit } from './StudentEdit';
+export { default as StudentCreate } from './StudentCreate';
+```
+
+### React Admin Integration
+- Resources registered in `src/app/App.jsx` with dataProvider/authProvider
+- Data flows through `src/api/dataProvider.js` (adapts ra-data-simple-rest)
+- Authentication via `src/auth/authProvider.js`
+- Dynamic enums fetched via `src/api/enumsClient.js`
+
+### Phone Number Handling
+Standardized across frontend using `libphonenumber-js`:
+- Validation: `src/shared/validation/validators.js`
+- Components: `src/shared/components/PhoneFieldRA.jsx`
+- Backend: `school/validators.py` with `normalize_phone()`
+
+### CSV Import/Export
+Uses `papaparse` library:
+- Import: `src/shared/components/ImportButton.jsx`
+- Export: Backend API endpoints with `@action` decorators
+- Expected columns defined per resource
+
+### Internationalization (i18n)
+- Config: `src/i18n.js` with EN/RO/RU locales
+- Usage: `const { t } = useTranslation(); <h1>{t('key')}</h1>`
+- Extend language objects in `src/i18n.js` for new keys
+
+### Validation Patterns
+- Frontend: `src/shared/validation/validators.js` + `raValidators.js`
+- Backend: `school/validators.py` with Django validators
+- Phone validation assumes +373 (Moldova) default country code
+
+## Integration Points
+
+### API Communication
+- Frontend proxies to `http://backend:8000` in Docker
+- REST endpoints: `/api/students/`, `/api/instructors/`, etc.
+- OpenAPI docs: `http://localhost:8000/api/docs/swagger/`
+- Dynamic enums: `http://localhost:8000/api/meta/enums/`
+
+### Authentication Flow
+- Admin panel: `/admin/*` (React Admin auth)
+- Student portal: `/` routes (separate JWT tokens)
+- Token storage: `localStorage` with `student_access_token`
+
+## Key Files & Directories
+
+- `backend/school/models.py`: Core data models with enums
+- `backend/school/api.py`: DRF viewsets with FullCrudViewSet
+- `frontend/src/app/App.jsx`: React Admin resource registration
+- `frontend/src/features/`: Feature-based component organization
+- `frontend/src/shared/`: Reusable components and utilities
+- `frontend/src/api/dataProvider.js`: API integration layer
+- `docker-compose.yml`: Complete development environment
+
+## Development Standards
+
+### Git Workflow
+- Feature branches from `main`: `feature/description`
+- Protected main branch, PR reviews required
+- Commit messages: `type: description` (e.g., `feat: add payment status`)
+
+### Code Quality
+- ESLint/Prettier configured in frontend
+- Django migrations for schema changes
+- No frontend tests yet (Jest + RTL planned)
+- Backend tests in `school/tests/`
+
+### Business Rules
+- Currency: MDL (Moldovan Leu)
+- Phone country: +373 (Moldova)
+- Timezone: UTC (with local timezone considerations)
+- Student lifecycle: PENDING → ACTIVE → GRADUATED
+
+## Common Tasks
+
+### Add New Resource
+1. Create `src/features/<resource>/` with standard components
+2. Add to `src/app/App.jsx`: `<Resource name="resource" ... />`
+3. Create backend model in `school/models.py`
+4. Add API endpoints in `school/api.py`
+5. Run migrations: `python manage.py makemigrations && python manage.py migrate`
+
+### Add Form Validation
+1. Add validators to `src/shared/validation/validators.js`
+2. Import in component: `validate={myValidator}`
+3. Backend validation in `school/validators.py`
+
+### Add Translation
+1. Add keys to language objects in `src/i18n.js`
+2. Use in component: `const { t } = useTranslation(); {t('myKey')}`
 
 ALWAYS CHECK CONTRIBUTING.md AND PROJECT-SPECIFIC GUIDELINES IF PRESENT.
 

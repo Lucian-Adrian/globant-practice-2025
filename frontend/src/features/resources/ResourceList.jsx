@@ -128,14 +128,7 @@ function FilteredResourceDatagrid({ setSelectedRecord }) {
         <NumberField source="max_capacity" label={t('resources.resources.fields.max_capacity', 'Max Capacity')} />
         <TextField source="category" label={t('resources.resources.fields.category', 'Category')} />
         <TextField source="license_plate" label={t('resources.resources.fields.license_plate', 'License Plate')} />
-        <FunctionField
-          label={t('resources.resources.fields.resource_type', 'Type')}
-          render={(record) => 
-            (record.max_capacity ?? 0) <= 2
-              ? t('resources.resources.fields.vehicle', 'Vehicle')
-              : t('resources.resources.fields.classroom', 'Classroom')
-          }
-        />
+        <TextField source="type" label={t('resources.resources.fields.resource_type', 'Type')} />
         <FunctionField
           label={t('resources.resources.fields.is_available', 'Availability')}
           render={(record) => <ResourceStatusField record={record} />}

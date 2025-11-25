@@ -10,7 +10,7 @@ export default function makeResourceCreate(resourceChoices) {
         <SimpleForm>
           <TextInput source="name" validate={[required()]} />
           <NumberInput source="max_capacity" validate={[required()]} min={1} />
-          <SelectInput source="category" choices={resourceChoices} validate={[required()]} />
+          <SelectInput source="category" choices={resourceChoices} />
           <BooleanInput source="is_available" />
           {/* Vehicle-specific fields (optional for classrooms) */}
           <TextInput source="make" />
