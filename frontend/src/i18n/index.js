@@ -227,6 +227,15 @@ const languageData = {
           top_instructors: 'Top instructors',
           weekly_trend: 'Weekly trend'
         }
+        ,
+        quick_add: {
+          title: 'Quick Add',
+          add_instructor: 'Add New Instructor',
+          add_vehicle: 'Add New Vehicle',
+          add_classroom: 'Add New Classroom',
+          add_course: 'Add New Course',
+          close: 'Close'
+        }
       }
       ,
       days: {
@@ -492,6 +501,15 @@ const languageData = {
           attendance_rate: 'Rata de prezență',
           top_instructors: 'Top Instructori',
           weekly_trend: 'Evoluție săptămânală'
+        }
+        ,
+        quick_add: {
+          title: 'Adăugare Rapidă',
+          add_instructor: 'Adaugă Instructor Nou',
+          add_vehicle: 'Adaugă Vehicul Nou',
+          add_classroom: 'Adaugă Resursă Nouă',
+          add_course: 'Adaugă Curs Nou',
+          close: 'Închide'
         }
       }
       ,
@@ -801,6 +819,15 @@ const languageData = {
           attendance_rate: 'Посещаемость',
           top_instructors: 'Топ инструкторы',
           weekly_trend: 'Недельный тренд'
+        }
+        ,
+        quick_add: {
+          title: 'Быстрое добавление',
+          add_instructor: 'Добавить инструктора',
+          add_vehicle: 'Добавить транспорт',
+          add_classroom: 'Добавить аудиторию',
+          add_course: 'Добавить курс',
+          close: 'Закрыть'
         }
       }
       ,
