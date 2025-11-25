@@ -481,7 +481,7 @@ const languageData = {
         title: 'Настройки Школы',
         school_name: 'Название Школы',
         business_hours: 'Рабочие часы',
-  email: 'Эл. почта',
+        email: 'Эл. почта',
         contact_phone1: 'Телефон 1',
         contact_phone2: 'Телефон 2',
         school_logo: 'Логотип Школы (URL)',
