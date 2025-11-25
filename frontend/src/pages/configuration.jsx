@@ -174,7 +174,7 @@
 //                   <NumberInput source="rules.min_theory_hours_before_practice" label="Min theory hours before practice" />
 
 //                   <SelectArrayInput source="available_categories" label="Available Categories" choices={categoryChoices} optionValue="id" optionText="name" />
-			<QuickAddPanel />
+//                   <QuickAddPanel />
 //           <Card>
 //             <CardHeader title="Quick Add" />
 //             <CardContent>
