@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { Button, ResourceContextProvider, useTranslate, useNotify } from 'react-admin';
-import { Card, CardHeader, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
+import { Card, CardHeader, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import InstructorCreate from '../features/instructors/InstructorCreate.jsx';
 import { makeResourceCreate } from '../features/resources';
 import { makeCourseCreate } from '../features/courses';
