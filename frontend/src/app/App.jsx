@@ -6,7 +6,6 @@ import dataProvider from '../api/dataProvider';
 import { authProvider } from '../auth/authProvider';
 import { fetchEnums, mapToChoices } from '../api/enumsClient';
 import { makeStudentList, makeStudentEdit, makeStudentCreate } from '../features/students';
-// import { VehicleList, makeVehicleEdit, makeVehicleCreate } from '../features/vehicles';
 import { InstructorList, InstructorEdit, InstructorCreate } from '../features/instructors';
 import { InstructorAvailabilityList } from '../features/instructoravailabilities';
 import { CourseList, makeCourseEdit, makeCourseCreate } from '../features/courses';
