@@ -36,8 +36,7 @@ const QuickAddPanel: React.FC = () => {
             display: 'grid',
             gap: '12px 16px', // vertical 12px, horizontal 16px (closer columns)
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            alignItems: 'start',
-            maxWidth: 560
+            alignItems: 'start'
           }}
         >
           <Button label={t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')} onClick={() => setOpen('instructor')} />
