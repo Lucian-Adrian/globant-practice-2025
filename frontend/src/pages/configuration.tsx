@@ -15,8 +15,49 @@ import QuickAddPanel from '../components/QuickAddPanel.tsx';
 import { API_PREFIX, buildHeaders } from '../api/httpClient.js';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
 
-type SchoolConfig = any;
+interface Address {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
 
+interface LandingText {
+  en: string;
+  ro: string;
+  ru: string;
+  [key: string]: string; // allow for future languages
+}
+
+interface SocialLinks {
+  facebook: string;
+  instagram: string;
+  twitter: string;
+  youtube: string;
+  [key: string]: string; // allow for future social platforms
+}
+
+interface Rules {
+  min_theory_hours_before_practice: number;
+  [key: string]: number; // allow for future rules
+}
+
+interface SchoolConfig {
+  school_name: string;
+  business_hours: string;
+  email: string;
+  contact_phone1: string;
+  contact_phone2: string;
+  school_logo: string;
+  landing_image: string;
+  addresses: Address[];
+  landing_text: LandingText;
+  social_links: SocialLinks;
+  rules: Rules;
+  available_categories: string[];
+}
 // Temporary mock until the real API exists (Task 1 JSON approximation)
 const MOCK_CONFIG: SchoolConfig = {
   school_name: 'DriveAdmin School',
