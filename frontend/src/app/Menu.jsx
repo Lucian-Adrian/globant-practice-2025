@@ -76,6 +76,7 @@ export default function Menu() {
       )}
 
   <RaMenu.Item to="/admin/students/board" primaryText={translate('common.students.board.title', { defaultValue: 'Students Board' })} component={Link} />
+  <RaMenu.Item to="/admin/configuration" primaryText={translate('common.configuration.title', { defaultValue: 'Configuration' })} component={Link} />
     </RaMenu>
   );
 }
