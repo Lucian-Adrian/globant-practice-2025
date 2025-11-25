@@ -90,7 +90,7 @@ const MOCK_CONFIG: SchoolConfig = {
 async function uploadImageTo(endpoint: string, file: File): Promise<string> {
   const fd = new FormData();
   fd.append('file', file);
-  const resp = await fetch(endpoint, { method: 'POST', headers: buildHeaders(), body: fd });
+  const resp = await fetch(endpoint, { method: 'POST', body: fd });
   const body = await resp.json().catch(() => ({} as any));
   if (!resp.ok) throw new Error(body?.detail || body?.message || 'Upload failed');
   // Expect API to return { url: '...' } or similar
