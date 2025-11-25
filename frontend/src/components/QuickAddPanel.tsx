@@ -40,18 +40,10 @@ const QuickAddPanel: React.FC = () => {
             maxWidth: 560
           }}
         >
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')} onClick={() => setOpen('instructor')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_vehicle', 'Add New Vehicle')} onClick={() => setOpen('vehicle')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_classroom', 'Add New Classroom')} onClick={() => setOpen('classroom')} />
-          </div>
-          <div>
-            <Button label={t('common.dashboard.quick_add.add_course', 'Add New Course')} onClick={() => setOpen('course')} />
-          </div>
+          <Button label={t('common.dashboard.quick_add.add_instructor', 'Add New Instructor')} onClick={() => setOpen('instructor')} />
+          <Button label={t('common.dashboard.quick_add.add_vehicle', 'Add New Vehicle')} onClick={() => setOpen('vehicle')} />
+          <Button label={t('common.dashboard.quick_add.add_classroom', 'Add New Classroom')} onClick={() => setOpen('classroom')} />
+          <Button label={t('common.dashboard.quick_add.add_course', 'Add New Course')} onClick={() => setOpen('course')} />
         </div>
 
         {/* Instructor modal */}
