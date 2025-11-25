@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, Grid, Box } from '@mui/material';
 import { useTranslate } from 'react-admin';
 import QuickAddPanel from '../components/QuickAddPanel.tsx';
-import { API_PREFIX, rawFetch, httpJson, buildHeaders } from '../api/httpClient.js';
+import { API_PREFIX, buildHeaders } from '../api/httpClient.js';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
 
 type SchoolConfig = any;
