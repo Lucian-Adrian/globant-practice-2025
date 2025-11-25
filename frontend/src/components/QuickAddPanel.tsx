@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { Button, ResourceContextProvider, useTranslate } from 'react-admin';
-import { Card, CardHeader, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
+import { Card, CardHeader, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 // Reuse existing create form components
 import InstructorCreate from '../features/instructors/InstructorCreate.jsx';
