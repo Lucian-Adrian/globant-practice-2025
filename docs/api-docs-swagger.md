@@ -422,3 +422,56 @@ Authorization: Bearer <access_token>
   "errors": []
 }
 ```
+
+
+### Upload School Logo
+
+**Endpoint:** `POST /api/school/config/upload_logo/`
+
+**Description:** Upload or replace school logo image.
+
+**Request:** Multipart form-data
+
+**Form Fields:**
+- `logo`: Image file (required)
+
+**File Requirements:**
+- Maximum size: 5MB
+- Allowed formats: JPG, PNG, GIF, WEBP
+- Must be valid, non-corrupted image
+
+**Response (Success - 200 OK):**
+```json
+{
+  "message": "Logo uploaded successfully",
+  "school_logo": "http://localhost:8000/media/logos/school-logo.png"
+}
+```
+
+**Response (Error - 400 Bad Request):**
+```json
+{
+  "error": "File size must not exceed 5MB (current: 7.32MB)"
+}
+```
+
+```json
+{
+  "error": "Invalid file extension '.txt'. Allowed: .jpg, .jpeg, .png, .gif, .webp"
+}
+```
+
+### Upload Landing Image
+
+**Endpoint:** `POST /api/school/config/upload_landing_image/`
+
+**Description:** Upload or replace landing page hero image.
+
+**Request:** Multipart form-data
+
+**Form Fields:**
+- `image`: Image file (required)
+
+**File Requirements:** Same as logo upload
+
+**Response:** Same format as logo upload
