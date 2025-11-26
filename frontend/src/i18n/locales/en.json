@@ -432,6 +432,41 @@
         "hero": { "kicker": "Welcome back", "title": "Your Learning Hub", "subtitle": "Access lessons, progress, payments, and more.", "ctaBook": "Book Lesson", "ctaPractice": "Open Practice" },
         "img": { "alt": { "avatar": "Student avatar" }, "placeholder": "Image Placeholder" }
       }
+    },
+    "login": {
+      "title": "Student Login",
+      "subtitle": "Access your learning dashboard",
+      "phoneOrEmail": "Phone or Email",
+      "password": "Password",
+      "loginButton": "Log In",
+      "loggingIn": "Logging in...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create one",
+      "loginSuccess": "Logged in successfully.",
+      "loginPendingSweet": "We couldn't log you in right now — your account is pending approval. Please wait, or contact us at 069 155 877.",
+      "loginFailed": "Login failed",
+      "networkError": "Network error. Please try again."
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join our driving school",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "countryCode": "+373",
+      "dob": "Date of Birth",
+      "category": "License Category",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "signupButton": "Create Account",
+      "signingUp": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "loginInstead": "Log in instead",
+      "signupSuccess": "Account created successfully.",
+      "signupFailed": "Account creation failed",
+      "agreeToTerms": "I agree to the Terms of Use and Privacy Policy"
     }
   },
   "ra": {
@@ -450,6 +485,63 @@
     "requiredField": "This field is required",
     "invalidEmail": "Please enter a valid email address",
     "invalidPhone": "Please enter a valid phone number",
-    "atLeastOneRecurrence": "At least one recurrence is required"
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordsDontMatch": "Passwords don't match",
+    "invalidDob": "Please enter a valid date of birth",
+    "tooYoung": "You must be at least {{years}} years old",
+    "nameChars": "Name contains invalid characters",
+    "atLeastOneRecurrence": "At least one recurrence is required",
+    "selectInstructorFirst": "Please select an instructor first",
+    "selectTimeFirst": "Please select a scheduled time first",
+    "timeFormat": "Time must be in HH:MM format (e.g., 09:30 or 14:00)",
+    "capacityBelowSelected": "Max students cannot be lower than number of selected students",
+    "selectedStudentsExceedCapacity": "Selected students exceed room capacity",
+    "studentNotEnrolledToCourseNames": "The following students are not enrolled in the chosen course: {{names}}",
+    "theoryOnly": "Only theory courses are allowed for scheduled classes",
+    "classroomResourceRequired": "Only classrooms are allowed for theory classes",
+    "categoryMismatch": "Resource category must match course category",
+    "instructorLicenseMismatch": "Instructor license categories must include course category",
+    "outsideAvailability": "Selected time is outside instructor availability",
+    "instructorConflict": "Instructor has a scheduling conflict",
+    "studentConflict": "Student has a scheduling conflict",
+    "resourceConflict": "Resource has a scheduling conflict",
+    "practiceEnrollmentRequired": "Only practice enrollments can be used for lessons"
+  },
+  "availability": {
+    "allAvailable": "All selected times are available",
+    "notAvailable": "Not available: {{times}}",
+    "available": "Instructor is available at this time",
+    "checkFailed": "Failed to check availability"
+  },
+  "buttons": {
+    "checkAvailability": "Check Availability"
+  },
+  "scheduledclasscreate": {
+    "patternCreatedSuccess": "Pattern and scheduled classes created successfully",
+    "patternCreatedError": "Pattern created but failed to generate classes",
+    "patternCreateError": "Error creating pattern"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Pattern Start Date",
+    "numberOfLessons": "Number of Lessons",
+    "defaultDurationMin": "Default Duration (min)",
+    "defaultMaxStudents": "Default Max Students"
+  },
+  "scheduledclasspatternlist": {
+    "id": "ID",
+    "name": "Name",
+    "startDate": "Start Date",
+    "numLessons": "Number of Lessons"
+  },
+  "validators": {
+    "dobRequired": "Date of birth is required",
+    "dobFuture": "Date of birth cannot be in the future",
+    "tooYoung": "Must be at least 15 years old",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email address",
+    "phoneRequired": "Phone number is required",
+    "phoneInvalid": "Invalid phone number",
+    "licenseCategoriesRequired": "At least one category is required",
+    "licenseCategoriesInvalid": "Invalid categories: {{categories}}"
   }
 }

@@ -377,6 +377,41 @@
         "hero": { "kicker": "С возвращением", "title": "Ваш учебный центр", "subtitle": "Доступ к урокам, прогрессу, платежам и др.", "ctaBook": "Записаться", "ctaPractice": "Открыть практику" },
         "img": { "alt": { "avatar": "Аватар студента" } }
       }
+    },
+    "login": {
+      "title": "Вход для студентов",
+      "subtitle": "Доступ к вашей учебной панели",
+      "phoneOrEmail": "Телефон или Email",
+      "password": "Пароль",
+      "loginButton": "Войти",
+      "loggingIn": "Вход...",
+      "forgotPassword": "Забыли пароль?",
+      "noAccount": "Нет аккаунта?",
+      "createAccount": "Создать",
+      "loginSuccess": "Вход выполнен успешно.",
+      "loginPendingSweet": "Мы не смогли вас авторизовать сейчас — ваш аккаунт ожидает одобрения. Пожалуйста, подождите или свяжитесь с нами по телефону 069 155 877.",
+      "loginFailed": "Вход не удался",
+      "networkError": "Ошибка сети. Пожалуйста, попробуйте еще раз."
+    },
+    "signup": {
+      "title": "Создать аккаунт",
+      "subtitle": "Присоединяйтесь к нашей автошколе",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "email": "Email",
+      "phone": "Номер телефона",
+      "countryCode": "+373",
+      "dob": "Дата рождения",
+      "category": "Категория прав",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердить пароль",
+      "signupButton": "Создать аккаунт",
+      "signingUp": "Создание аккаунта...",
+      "haveAccount": "Уже есть аккаунт?",
+      "loginInstead": "Войти",
+      "signupSuccess": "Аккаунт создан успешно.",
+      "signupFailed": "Создание аккаунта не удалось",
+      "agreeToTerms": "Я согласен с Условиями использования и Политикой конфиденциальности"
     }
   },
   "ra": {
@@ -395,6 +430,62 @@
     "requiredField": "Это поле обязательно для заполнения",
     "invalidEmail": "Пожалуйста, введите действительный адрес электронной почты",
     "invalidPhone": "Пожалуйста, введите действительный номер телефона",
-    "atLeastOneRecurrence": "Требуется хотя бы одно повторение"
+    "passwordTooShort": "Пароль должен содержать не менее 6 символов",
+    "passwordsDontMatch": "Пароли не совпадают",
+    "invalidDob": "Пожалуйста, введите действительную дату рождения",
+    "tooYoung": "Вам должно быть не менее {{years}} лет",
+    "nameChars": "Имя содержит недопустимые символы",
+    "atLeastOneRecurrence": "Требуется хотя бы одно повторение",
+    "selectInstructorFirst": "Пожалуйста, сначала выберите инструктора",
+    "selectTimeFirst": "Пожалуйста, сначала выберите запланированное время",
+    "capacityBelowSelected": "Максимальное количество студентов не может быть меньше количества выбранных студентов",
+    "selectedStudentsExceedCapacity": "Выбранные студенты превышают вместимость аудитории",
+    "studentNotEnrolledToCourseNames": "Следующие студенты не записаны на выбранный курс: {{names}}",
+    "theoryOnly": "Для запланированных занятий разрешены только теоретические курсы",
+    "classroomResourceRequired": "Для теоретических занятий разрешены только аудитории",
+    "categoryMismatch": "Категория ресурса должна соответствовать категории курса",
+    "instructorLicenseMismatch": "Категории лицензии инструктора должны включать категорию курса",
+    "outsideAvailability": "Выбранное время находится вне доступности инструктора",
+    "instructorConflict": "У инструктора есть конфликт расписания",
+    "studentConflict": "У студента есть конфликт расписания",
+    "resourceConflict": "У ресурса есть конфликт расписания",
+    "practiceEnrollmentRequired": "Для занятий могут использоваться только практические записи"
+  },
+  "availability": {
+    "allAvailable": "Все выбранные времена доступны",
+    "notAvailable": "Недоступно: {{times}}",
+    "available": "Инструктор доступен в это время",
+    "checkFailed": "Не удалось проверить доступность"
+  },
+  "buttons": {
+    "checkAvailability": "Проверить Доступность"
+  },
+  "scheduledclasscreate": {
+    "patternCreatedSuccess": "Шаблон и запланированные занятия созданы успешно",
+    "patternCreatedError": "Шаблон создан, но не удалось сгенерировать занятия",
+    "patternCreateError": "Ошибка при создании шаблона"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Дата Начала Шаблона",
+    "numberOfLessons": "Количество Занятий",
+    "defaultDurationMin": "Длительность по Умолчанию (мин)",
+    "defaultMaxStudents": "Максимум Студентов по Умолчанию"
+  },
+  "scheduledclasspatternlist": {
+    "id": "ИД",
+    "name": "Название",
+    "startDate": "Дата Начала",
+    "numLessons": "Количество Занятий"
+  },
+  "validators": {
+    "dobRequired": "Дата рождения обязательна",
+    "dobFuture": "Дата рождения не может быть в будущем",
+    "tooYoung": "Должен быть не моложе 15 лет",
+    "emailRequired": "Email обязателен",
+    "emailInvalid": "Введите действительный адрес электронной почты",
+    "phoneRequired": "Номер телефона обязателен",
+    "phoneInvalid": "Неверный номер телефона",
+    "licenseCategoriesRequired": "Требуется хотя бы одна категория",
+    "licenseCategoriesInvalid": "Неверные категории: {{categories}}"
   }
 }
