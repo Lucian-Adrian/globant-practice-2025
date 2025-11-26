@@ -6,7 +6,7 @@ from io import StringIO, TextIOWrapper
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
@@ -105,8 +105,17 @@ class StudentViewSet(FullCrudViewSet):
     filterset_fields = {
         "status": ["exact"],
         "enrollment_date": ["gte", "lte", "gt", "lt"],
+        "enrollments__course": ["exact"],
     }
     search_fields = ["first_name", "last_name"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        enrollments = self.request.query_params.get('enrollments')
+        if enrollments:
+            # Filter students who have enrollments in the specified course
+            queryset = queryset.filter(enrollments__course_id=enrollments)
+        return queryset.distinct()
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
@@ -326,7 +335,7 @@ class InstructorViewSet(FullCrudViewSet):
 
 
 class InstructorAvailabilityViewSet(FullCrudViewSet):
-    queryset = InstructorAvailability.objects.select_related("instructor").all()
+    queryset = InstructorAvailability.objects.select_related("instructor").all().order_by("day", "instructor_id")
     serializer_class = InstructorAvailabilitySerializer
     filter_backends = [DjangoFilterBackend]
     # Allow filtering by instructor_id and day from the frontend (e.g. ?instructor_id=3)
@@ -1266,7 +1275,8 @@ class ResourceViewSet(FullCrudViewSet):
     filterset_fields = {
         "is_available": ["exact"],
         "category": ["exact"],
-        "max_capacity": ["exact", "lte", "gte"],
+        "max_capacity": ["exact", "lte", "gte", "gt"],
+        "license_plate": ["exact", "isnull"],
     }
 
     @decorators.action(detail=False, methods=["get"], url_path="available")
@@ -1482,30 +1492,34 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             logger.info(f"Starting generate-classes action for pattern '{pattern.name}' (ID: {pattern.id}) by user {request.user}")
         
         try:
-            pattern.validate_generation()  # Validate for overlaps
-            classes = pattern.generate_scheduled_classes()
+            with transaction.atomic():
+                pattern.validate_generation()  # Validate for overlaps
+                classes = pattern.generate_scheduled_classes()
+                
+                created_classes = ScheduledClass.objects.bulk_create(classes)
+                
+                # Auto-enroll students
+                enrollment_results = self._auto_enroll_students(pattern, created_classes)
         except (ValueError, ValidationError) as e:
             logger.error(f"Class generation validation failed for pattern '{pattern.name}': {str(e)}")
             return response.Response({
                 "error": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        created_classes = ScheduledClass.objects.bulk_create(classes)
-        
-        # Auto-enroll pattern students in generated classes
-        enrollment_results = self._auto_enroll_students(pattern, created_classes)
+        except Exception as e:
+            logger.error(f"Class generation failed for pattern '{pattern.name}': {str(e)}")
+            return response.Response({
+                "error": "An unexpected error occurred during class generation."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         action_time = time.time() - start_time
         
         if settings.DEBUG:
             logger.info(f"Completed generate-classes action for pattern '{pattern.name}' in {action_time:.3f}s - created {len(classes)} classes")
-            logger.info(f"Auto-enrollment results: {enrollment_results}")
         
         # Send notifications
-        self._send_generation_notifications(pattern, created_classes, enrollment_results)
+        self._send_generation_notifications(pattern, created_classes, enrolled_count=enrollment_results['enrolled'])
         
         # Return format compatible with react-admin dataProvider.create
-        # The dataProvider wraps the response in { data: ... }, so we just return the object with 'id'
         return response.Response({
             "id": pattern.id,
             "generated_count": len(created_classes),
@@ -1536,27 +1550,32 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
         
         # Generate new classes
         try:
-            pattern.validate_generation()  # Validate for overlaps
-            classes = pattern.generate_scheduled_classes()
+            with transaction.atomic():
+                pattern.validate_generation()  # Validate for overlaps
+                classes = pattern.generate_scheduled_classes()
+                
+                created_classes = ScheduledClass.objects.bulk_create(classes)
+                
+                # Auto-enroll students
+                enrollment_results = self._auto_enroll_students(pattern, created_classes)
         except (ValueError, ValidationError) as e:
             logger.error(f"Class generation validation failed for pattern '{pattern.name}': {str(e)}")
             return response.Response({
                 "error": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        created_classes = ScheduledClass.objects.bulk_create(classes)
-        
-        # Auto-enroll pattern students in generated classes
-        enrollment_results = self._auto_enroll_students(pattern, created_classes)
+        except Exception as e:
+            logger.error(f"Class generation failed for pattern '{pattern.name}': {str(e)}")
+            return response.Response({
+                "error": "An unexpected error occurred during class generation."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         action_time = time.time() - start_time
         
         if settings.DEBUG:
             logger.info(f"Completed regenerate-classes action for pattern '{pattern.name}' in {action_time:.3f}s - deleted {deleted_count}, created {len(classes)} classes")
-            logger.info(f"Auto-enrollment results: {enrollment_results}")
         
         # Send notifications
-        self._send_generation_notifications(pattern, created_classes, enrollment_results)
+        self._send_generation_notifications(pattern, created_classes, enrolled_count=enrollment_results['enrolled'])
         
         # Return format compatible with react-admin dataProvider.create
         return response.Response({
@@ -1568,69 +1587,55 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
 
     def _auto_enroll_students(self, pattern, created_classes):
         """
-        Auto-enroll students from pattern to generated classes
-        
-        Args:
-            pattern: ScheduledClassPattern instance
-            created_classes: List of created ScheduledClass instances
-            
-        Returns:
-            Dict with enrollment statistics
+        Auto-enroll students from the pattern to the generated classes.
         """
-        from django.db import transaction
+        import logging
+        logger = logging.getLogger(__name__)
         
-        # Fetch all students once to avoid N queries
         students = list(pattern.students.all())
+        logger.info(f"Auto-enrolling students for pattern {pattern.id}: Found {len(students)} students to enroll.")
         
-        results = {
+        if not students:
+            return {
+                'total_students': 0,
+                'enrolled': 0,
+                'failed': 0,
+                'errors': []
+            }
+
+        # Enroll students in all created classes, respecting capacity
+        for scheduled_class in created_classes:
+            if not scheduled_class.pk:
+                logger.warning("ScheduledClass instance has no PK after bulk_create. Skipping enrollment.")
+                continue
+
+            students_to_add = students
+            if scheduled_class.max_students:
+                students_to_add = students[:scheduled_class.max_students]
+            
+            if students_to_add:
+                logger.info(f"Adding {len(students_to_add)} students to class {scheduled_class.id}")
+                scheduled_class.students.add(*students_to_add)
+        
+        return {
             'total_students': len(students),
-            'enrolled': 0,
+            'enrolled': len(students),
             'failed': 0,
             'errors': []
         }
-        
-        if not students:
-            return results
-        
-        try:
-            with transaction.atomic():
-                # Iterate through created classes (instances)
-                for scheduled_class in created_classes:
-                    # Since these are new classes, they are empty.
-                    # We can enroll students up to max_capacity.
-                    
-                    max_students = scheduled_class.max_students
-                    
-                    # Determine who can be enrolled
-                    students_to_enroll = students[:max_students]
-                    students_not_enrolled = students[max_students:]
-                    
-                    if students_to_enroll:
-                        # Bulk add students to the class
-                        scheduled_class.students.add(*students_to_enroll)
-                        results['enrolled'] += len(students_to_enroll)
-                    
-                    if students_not_enrolled:
-                        results['failed'] += len(students_not_enrolled)
-                        
-        except Exception as e:
-            results['errors'].append(f"Auto-enrollment failed: {str(e)}")
-            
-        return results
 
-    def _send_generation_notifications(self, pattern, created_classes, enrollment_results):
+    def _send_generation_notifications(self, pattern, created_classes, enrolled_count=0):
         """
         Send notifications about class generation
         
         Args:
             pattern: ScheduledClassPattern instance
             created_classes: List of created ScheduledClass instances
-            enrollment_results: Results from auto-enrollment
+            enrolled_count: Number of students enrolled
         """
         from .notifications import (
             notification_service,
             ClassGenerationNotificationTemplate,
-            StudentEnrollmentNotificationTemplate
         )
         
         # Send notification to pattern instructor
@@ -1641,40 +1646,134 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             pattern_name=pattern.name,
             class_count=len(created_classes),
             start_date=pattern.start_date.strftime('%Y-%m-%d'),
-            enrolled_students=enrollment_results['enrolled']
+            enrolled_students=enrolled_count
         )
         
-        # Send enrollment notifications to auto-enrolled students
-        if enrollment_results['enrolled'] > 0:
-            student_template = StudentEnrollmentNotificationTemplate()
+        # Student notifications skipped to avoid spamming for multiple classes
+        # TODO: Implement a summary notification for students enrolled in a pattern
+
+    @decorators.action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+        fields = [
+            "id",
+            "name",
+            "course",
+            "instructor",
+            "resource",
+            "recurrence_days",
+            "times",
+            "start_date",
+            "num_lessons",
+            "default_duration_minutes",
+            "default_max_students",
+            "students",
+        ]
+        buffer = StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(fields)
+        for obj in qs:
+            # Export student IDs as pipe-separated string
+            student_ids = "|".join(str(s.id) for s in obj.students.all())
             
-            # Optimize: Fetch all student enrollments for these classes in one query
-            # instead of querying for each class
-            ScheduledClassStudent = ScheduledClass.students.through
-            relations = ScheduledClassStudent.objects.filter(
-                scheduledclass__in=created_classes
-            ).select_related('student')
-            
-            # Group students by class
-            class_students = {}
-            for rel in relations:
-                if rel.scheduledclass_id not in class_students:
-                    class_students[rel.scheduledclass_id] = []
-                class_students[rel.scheduledclass_id].append(rel.student)
-            
-            # Send notification for each generated class
-            for scheduled_class in created_classes:
-                students = class_students.get(scheduled_class.id, [])
-                
-                for student in students:
-                    notification_service.send_notification(
-                        template=student_template,
-                        recipients=[student],
-                        class_name=scheduled_class.name,
-                        instructor_name=f"{pattern.instructor.first_name} {pattern.instructor.last_name}",
-                        scheduled_time=scheduled_class.scheduled_time.strftime('%Y-%m-%d %H:%M'),
-                        location=pattern.resource.name if pattern.resource else "TBD"
-                    )
+            row = [
+                obj.id,
+                obj.name,
+                obj.course_id,
+                obj.instructor_id,
+                obj.resource_id,
+                json.dumps(obj.recurrence_days),
+                json.dumps(obj.times),
+                obj.start_date.isoformat() if obj.start_date else "",
+                obj.num_lessons,
+                obj.default_duration_minutes,
+                obj.default_max_students,
+                student_ids,
+            ]
+            writer.writerow(row)
+
+        resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
+        resp["Content-Disposition"] = "attachment; filename=scheduled_class_patterns.csv"
+        return resp
+
+    @decorators.action(detail=False, methods=["post"], url_path="import")
+    def import_csv(self, request):
+        upload = request.FILES.get("file") or request.FILES.get("csv")
+        if not upload:
+            return response.Response(
+                {"detail": "No file uploaded. Use form field 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        text_stream = (
+            TextIOWrapper(upload.file, encoding="utf-8") if hasattr(upload, "file") else upload
+        )
+        reader = csv.DictReader(text_stream)
+
+        required_cols = {
+            "name",
+            "course",
+            "instructor",
+            "resource",
+            "recurrence_days",
+            "times",
+            "start_date",
+            "num_lessons",
+        }
+        missing = required_cols - set([c.strip() for c in reader.fieldnames or []])
+        if missing:
+            return response.Response(
+                {"detail": f"Missing required columns: {', '.join(sorted(missing))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created_ids = []
+        errors = []
+        for idx, row in enumerate(reader, start=2):
+            try:
+                recurrence_days = json.loads(row.get("recurrence_days", "[]"))
+                times = json.loads(row.get("times", "[]"))
+            except json.JSONDecodeError:
+                errors.append({"row": idx, "errors": {"recurrence_days": ["Invalid JSON"]}})
+                continue
+
+            # Parse students (pipe-separated IDs)
+            student_ids = []
+            raw_students = row.get("students", "").strip()
+            if raw_students:
+                try:
+                    student_ids = [int(s_id) for s_id in raw_students.split("|") if s_id.strip()]
+                except ValueError:
+                    errors.append({"row": idx, "errors": {"students": ["Invalid student ID format"]}})
+                    continue
+
+            data = {
+                "name": row.get("name", "").strip(),
+                "course_id": row.get("course", "").strip(),
+                "instructor_id": row.get("instructor", "").strip(),
+                "resource_id": row.get("resource", "").strip(),
+                "recurrence_days": recurrence_days,
+                "times": times,
+                "start_date": row.get("start_date", "").strip(),
+                "num_lessons": row.get("num_lessons", "").strip(),
+                "default_duration_minutes": row.get("default_duration_minutes", "60").strip(),
+                "default_max_students": row.get("default_max_students", "10").strip(),
+                "student_ids": student_ids,
+            }
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                obj = serializer.save()
+                created_ids.append(obj.id)
+            else:
+                errors.append({"row": idx, "errors": serializer.errors})
+
+        return response.Response(
+            {
+                "created": len(created_ids),
+                "created_ids": created_ids,
+                "errors": errors,
+            }
+        )
 
     @decorators.action(detail=True, methods=["get"], url_path="statistics")
     def get_statistics(self, request, pk=None):
@@ -1716,47 +1815,7 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             "capacity_utilization_percent": round(capacity_utilization, 2),
         })
 
-    @decorators.action(detail=False, methods=["get"], url_path="export")
-    def export_csv(self, request):
-        """Export scheduled class patterns to CSV."""
-        fields = [
-            "id",
-            "name",
-            "course_id",
-            "instructor_id",
-            "resource_id",
-            "recurrence_days",
-            "times",
-            "start_date",
-            "num_lessons",
-            "duration_minutes",
-            "max_students",
-            "status",
-            "created_at",
-        ]
-        qs = self.filter_queryset(self.get_queryset())
-        buffer = StringIO()
-        writer = csv.writer(buffer)
-        writer.writerow(fields)
-        for obj in qs:
-            writer.writerow([
-                obj.id,
-                obj.name,
-                obj.course_id,
-                obj.instructor_id,
-                obj.resource_id,
-                ",".join(obj.recurrence_days) if obj.recurrence_days else "",
-                ",".join(obj.times) if obj.times else "",
-                obj.start_date.isoformat() if obj.start_date else "",
-                obj.num_lessons,
-                obj.duration_minutes,
-                obj.max_students,
-                obj.status,
-                obj.created_at.isoformat() if obj.created_at else "",
-            ])
-        resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
-        resp["Content-Disposition"] = "attachment; filename=scheduled-class-patterns.csv"
-        return resp
+
 
 
 class ScheduledClassViewSet(FullCrudViewSet):

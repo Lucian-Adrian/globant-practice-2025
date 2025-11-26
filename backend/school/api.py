@@ -44,7 +44,11 @@ class StudentViewSet(FullCrudViewSet):
     filterset_fields = {
         "status": ["exact"],
         "enrollment_date": ["gte", "lte", "gt", "lt"],
+        "enrollments__course": ["exact"],
     }
+
+    def get_queryset(self):
+        return super().get_queryset().distinct()
 
     @decorators.action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):

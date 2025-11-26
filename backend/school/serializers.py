@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from .models import (
@@ -466,7 +465,7 @@ class LessonSerializer(serializers.ModelSerializer):
                     continue
                 other_end = other.scheduled_time + timedelta(minutes=int(getattr(other, "duration_minutes", 60) or 60))
                 if (context.start < other_end) and (other.scheduled_time < end):
-                    raise serializers.ValidationError({"resource_id": [_("validation.resourceConflict")]})
+                    raise serializers.ValidationError({"resource_id": ["Resource conflict detected"]})
 
         # Resource availability
         validate_lesson_resource_availability(context.resource, context.status)
@@ -536,7 +535,7 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
         for day in value:
             if day not in valid_days:
-                raise serializers.ValidationError(f"Invalid day: {day}. Must be one of {valid_days}.")
+                raise serializers.ValidationError("Invalid day: %(day)s. Must be one of %(valid_days)s." % {'day': day, 'valid_days': valid_days})
         return value
 
     def validate_times(self, value):
@@ -548,7 +547,7 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
         for time_str in value:
             if not isinstance(time_str, str) or not time_pattern.match(time_str):
-                raise serializers.ValidationError(f"Invalid time format: {time_str}. Must be HH:MM (e.g., 09:30).")
+                raise serializers.ValidationError("Invalid time format: %(time_str)s. Must be HH:MM (e.g., 09:30)." % {'time_str': time_str})
         return value
 
     def validate_start_date(self, value):
@@ -612,7 +611,6 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
         source="students",
         many=True,
         required=False,
-        write_only=True
     )
 
     class Meta:
@@ -673,15 +671,15 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
 
         errors = {}
         if not course:
-            errors["course_id"] = [_("validation.requiredField")]
+            errors["course_id"] = ["This field is required."]
         if not instructor:
-            errors["instructor_id"] = [_("validation.requiredField")]
+            errors["instructor_id"] = ["This field is required."]
         if resource is None:
-            errors["resource_id"] = [_("validation.requiredField")]
+            errors["resource_id"] = ["This field is required."]
         if not start:
-            errors["scheduled_time"] = [_("validation.requiredField")]
+            errors["scheduled_time"] = ["This field is required."]
         if max_students is None:
-            errors["max_students"] = [_("validation.requiredField")]
+            errors["max_students"] = ["This field is required."]
         if errors:
             raise serializers.ValidationError(errors)
 
