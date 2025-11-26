@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { List, Datagrid, TextField, FunctionField, NumberField, DateField, useTranslate, useListContext } from 'react-admin';
+import { List, Datagrid, TextField, FunctionField, NumberField, DateField, useTranslate, useListContext, ArrayField, SingleFieldList, ChipField } from 'react-admin';
+import { Chip } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import ScheduledClassListEmpty from './ScheduledClassListEmpty.jsx';
 import ScheduledClassListAside from './ScheduledClassListAside.jsx';
@@ -42,7 +43,7 @@ const FilteredDatagrid = (props) => {
 
   return (
     <Datagrid {...props} data={filteredData} rowClick="edit">
-      <NumberField source="id" label="ID" />
+      <NumberField source="id" label={t('scheduledclasspatternlist.id', 'ID')} />
       <TextField source="name" label={t('resources.scheduledclasses.fields.name', 'Name')} />
       <TextField source="course.name" label={t('resources.scheduledclasses.fields.course', 'Course')} />
       <TextField source="pattern.name" label={t('resources.scheduledclasses.fields.pattern', 'Pattern')} />
@@ -64,6 +65,11 @@ const FilteredDatagrid = (props) => {
       <NumberField source="current_enrollment" label={t('resources.scheduledclasses.fields.current_enrollment', 'Current enrollment')} />
       <NumberField source="available_spots" label={t('resources.scheduledclasses.fields.available_spots', 'Available spots')} />
       <NumberField source="max_students" label={t('resources.scheduledclasses.fields.max_students', 'Max students')} />
+      <ArrayField source="students" label={t('resources.scheduledclasses.fields.students', 'Students')} sortable={false}>
+        <SingleFieldList linkType={false}>
+          <FunctionField render={record => <Chip label={`${record.first_name} ${record.last_name}`} size="small" />} />
+        </SingleFieldList>
+      </ArrayField>
       <FunctionField
         label={t('filters.status', { defaultValue: 'Status' })}
         render={(record) => {

@@ -101,6 +101,11 @@ export default function ScheduledClassPatternShow(props) {
         <NumberField source="num_lessons" label={t('admin.resources.scheduledclasspatterns.fields.num_lessons', 'Number of Lessons')} />
         <NumberField source="default_duration_minutes" label={t('admin.resources.scheduledclasspatterns.fields.default_duration_minutes', 'Default Duration (min)')} />
         <NumberField source="default_max_students" label={t('admin.resources.scheduledclasspatterns.fields.default_max_students', 'Default Max Students')} />
+        <ArrayField source="students" label={t('resources.scheduledclasspatterns.fields.students', 'Students')}>
+          <SingleFieldList>
+            <FunctionField render={record => <Chip label={`${record.first_name} ${record.last_name}`} size="small" />} />
+          </SingleFieldList>
+        </ArrayField>
       </SimpleShowLayout>
     </Show>
   );
