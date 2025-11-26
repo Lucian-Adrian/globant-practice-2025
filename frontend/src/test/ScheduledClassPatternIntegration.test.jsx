@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { DataProviderContext, I18nContextProvider } from 'react-admin'
-import { raI18nProvider } from '../i18n/index.js'
+import { raI18nProvider } from '../i18n/index.jsx'
 
 // Mock react-router-dom hooks but keep MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) => {

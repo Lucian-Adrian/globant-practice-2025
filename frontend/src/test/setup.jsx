@@ -89,7 +89,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 // Mock the raI18nProvider
-vi.mock('../i18n/index.js', () => ({
+vi.mock('../i18n/index.jsx', () => ({
   raI18nProvider: {
     translate: (key, optionsOrDefault) => {
       // Handle both patterns: translate(key, options) and translate(key, defaultValue)
