@@ -69,8 +69,8 @@ export default function ListImportActions({ endpoint, label = 'ra.custom.import_
   return (
     <TopToolbar>
       <CreateButton />
-  <ImportButton label={label} accept={accept} onImport={onImport} />
-  <Button label="ra.custom.export_csv" onClick={onExport} />
+      <ImportButton label={label} accept={accept} onImport={onImport} />
+      <Button label="ra.action.export" onClick={onExport} />
     </TopToolbar>
   );
 }
