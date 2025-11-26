@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTranslation } from 'react-i18next';
-import { useAppLocaleState, useI18nForceUpdate } from '../../i18n/index.js';
+import { useAppLocaleState, useI18nForceUpdate } from '../../i18n/index.jsx';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';

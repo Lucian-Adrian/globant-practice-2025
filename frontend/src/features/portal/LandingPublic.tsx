@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
+import { useI18nForceUpdate } from '../../i18n/index.jsx';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -54,6 +55,7 @@ const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const loggedIn = useIsLoggedIn();
   const { t } = useTranslation('portal');
+  useI18nForceUpdate();
   return (
     <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4">
       <div className="tw-bg-white tw-rounded-full tw-px-6 tw-py-3 tw-shadow-lg">
@@ -110,7 +112,22 @@ const NavBar: React.FC = () => {
 
 const LandingPublic: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation('portal');
+  const { t, i18n } = useTranslation('portal');
+  useI18nForceUpdate();
+
+  // Log translations when language changes
+  React.useEffect(() => {
+    const title = t('portal.landing.public.hero.title');
+    const subtitle = t('portal.landing.public.hero.subtitle');
+    const appName = t('appName', { defaultValue: 'DriveAdmin' });
+    console.log('🌐 Landing page translations updated:', {
+      language: i18n.language,
+      title,
+      subtitle,
+      appName
+    });
+  }, [i18n.language, t]);
+
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
       {/* Language selector top-right (portal specific) */}
