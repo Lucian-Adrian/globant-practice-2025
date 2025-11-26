@@ -1,15 +1,70 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, useTranslate, ReferenceArrayInput, SelectArrayInput, required } from 'react-admin';
-import { useTranslation } from 'react-i18next';
+import { Create, SimpleForm, TextInput, ReferenceInput, SelectInput, DateInput, NumberInput, ArrayInput, SimpleFormIterator, useTranslate, ReferenceArrayInput, SelectArrayInput, required, Button, useNotify } from 'react-admin';
+import { useWatch, useFormContext } from 'react-hook-form';
 import { validateTimeFormat } from '../../shared/validation/validators';
+import { httpJson, API_PREFIX } from '../../api/httpClient';
+
+const CheckAvailabilityButton = () => {
+  const t = useTranslate();
+  const notify = useNotify();
+  const { getValues } = useFormContext();
+
+  const checkAvailability = async () => {
+    const values = getValues();
+    const instructorId = values.instructor_id;
+    const recurrences = values.recurrences || [];
+    if (!instructorId) {
+      notify(t('validation.selectInstructorFirst', 'Please select an instructor first'), { type: 'warning' });
+      return;
+    }
+    if (!recurrences.length) {
+      notify(t('validation.atLeastOneRecurrence', 'At least one recurrence is required'), { type: 'warning' });
+      return;
+    }
+    try {
+      const results = await Promise.all(recurrences.map(async (rec) => {
+        const day = rec.day;
+        const time = rec.time;
+        const response = await httpJson(`${API_PREFIX}/instructor-availabilities/?instructor_id=${instructorId}&day=${day}`);
+        const json = response.json;
+        const availabilities = (json && Array.isArray(json.results)) ? json.results : (Array.isArray(json) ? json : []);
+        const isAvailable = availabilities.some(avail => avail.hours.includes(time));
+        return { day, time, isAvailable };
+      }));
+      const unavailable = results.filter(r => !r.isAvailable);
+      if (unavailable.length === 0) {
+        notify(t('availability.allAvailable', 'All selected times are available'), { type: 'success' });
+      } else {
+        const msg = unavailable.map(r => `${r.day} ${r.time}`).join(', ');
+        notify(t('availability.notAvailable', `Not available: ${msg}`), { type: 'warning' });
+      }
+    } catch (error) {
+      console.error('Availability check failed:', error);
+      notify(t('availability.checkFailed', `Failed to check availability: ${error.message}`), { type: 'error' });
+    }
+  };
+
+  return <Button label={t('buttons.checkAvailability', 'Check Availability')} onClick={checkAvailability} />;
+};
+
+const StudentsInput = () => {
+  const t = useTranslate();
+  const courseId = useWatch({ name: 'course_id' });
+  return (
+    <ReferenceArrayInput 
+      source="student_ids" 
+      reference="students" 
+      perPage={100}
+      filter={courseId ? { enrollments: courseId } : {}}
+    >
+      <SelectArrayInput label={t('resources.scheduledclasspatterns.fields.students', 'Students')} optionText={(r) => `${r.first_name} ${r.last_name}`} />
+    </ReferenceArrayInput>
+  );
+};
 
 export default function ScheduledClassPatternCreate(props) {
   const t = useTranslate();
-  const statusChoices = React.useMemo(() => [
-    { id: 'SCHEDULED', name: t('filters.scheduled', 'Scheduled') },
-    { id: 'COMPLETED', name: t('filters.completed', 'Completed') },
-    { id: 'CANCELED', name: t('filters.canceled', 'Canceled') },
-  ], [t]);
+  const notify = useNotify();
 
   return (
     <Create {...props} transform={(data) => {
@@ -30,43 +85,43 @@ export default function ScheduledClassPatternCreate(props) {
       }}>
       <SimpleForm>
         <TextInput source="name" label={t('resources.scheduledclasspatterns.fields.name', 'Name')} validate={[required()]} />
-        <ReferenceInput source="course_id" reference="classes" perPage={100}>
+        <ReferenceInput source="course_id" reference="classes" perPage={100} filter={{ type: 'THEORY' }}>
           <SelectInput label={t('resources.scheduledclasspatterns.fields.course', 'Course')} optionText="name" optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
           <SelectInput label={t('resources.scheduledclasspatterns.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
-        <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 10 }}>
-          <SelectInput label={t('resources.scheduledclasspatterns.fields.resource', 'Resource')} optionText={(r) => r.name || r.license_plate} optionValue="id" validate={[required()]} />
+        <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 3 }}>
+          <SelectInput label={t('resources.scheduledclasspatterns.fields.resource', 'Resource (Classroom)')} optionText={(r) => r.name || `${r.make} ${r.model}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         
         <ArrayInput source="recurrences" label={t('resources.scheduledclasspatterns.fields.recurrences', 'Recurrences')} validate={[required()]}>
           <SimpleFormIterator>
             <SelectInput source="day" label={t('resources.scheduledclasspatterns.fields.day', 'Day')} choices={[
-              { id: 'MONDAY', name: 'Monday' },
-              { id: 'TUESDAY', name: 'Tuesday' },
-              { id: 'WEDNESDAY', name: 'Wednesday' },
-              { id: 'THURSDAY', name: 'Thursday' },
-              { id: 'FRIDAY', name: 'Friday' },
-              { id: 'SATURDAY', name: 'Saturday' },
-              { id: 'SUNDAY', name: 'Sunday' },
+              { id: 'MONDAY', name: t('common.days.MONDAY', 'Monday') },
+              { id: 'TUESDAY', name: t('common.days.TUESDAY', 'Tuesday') },
+              { id: 'WEDNESDAY', name: t('common.days.WEDNESDAY', 'Wednesday') },
+              { id: 'THURSDAY', name: t('common.days.THURSDAY', 'Thursday') },
+              { id: 'FRIDAY', name: t('common.days.FRIDAY', 'Friday') },
+              { id: 'SATURDAY', name: t('common.days.SATURDAY', 'Saturday') },
+              { id: 'SUNDAY', name: t('common.days.SUNDAY', 'Sunday') },
             ]} validate={[required()]} />
             <TextInput source="time" label={t('resources.scheduledclasspatterns.fields.time', 'Time')} validate={[required(), validateTimeFormat(t)]} />
           </SimpleFormIterator>
         </ArrayInput>
 
+        <CheckAvailabilityButton />
+
         <DateInput 
           source="start_date" 
-          label={t('resources.scheduledclasspatterns.fields.start_date', 'Pattern Start Date')} 
+          label={t('scheduledclasspatterncreate.patternStartDate', 'Pattern Start Date')} 
           validate={[required()]}
         />
-        <NumberInput source="num_lessons" label={t('resources.scheduledclasspatterns.fields.num_lessons', 'Number of Lessons')} validate={[required()]} />
-        <NumberInput source="default_duration_minutes" label={t('resources.scheduledclasspatterns.fields.default_duration_minutes', 'Default Duration (min)')} defaultValue={60} />
-        <NumberInput source="default_max_students" label={t('resources.scheduledclasspatterns.fields.default_max_students', 'Default Max Students')} />
+        <NumberInput source="num_lessons" label={t('scheduledclasspatterncreate.numberOfLessons', 'Number of Lessons')} validate={[required()]} />
+        <NumberInput source="default_duration_minutes" label={t('scheduledclasspatterncreate.defaultDurationMin', 'Default Duration (min)')} defaultValue={60} />
+        <NumberInput source="default_max_students" label={t('scheduledclasspatterncreate.defaultMaxStudents', 'Default Max Students')} />
         {/* Removed: status - patterns don't have status, only generated classes do */}
-        <ReferenceArrayInput source="student_ids" reference="students" perPage={100}>
-          <SelectArrayInput label={t('resources.scheduledclasspatterns.fields.students', 'Students')} optionText={(r) => `${r.first_name} ${r.last_name}`} />
-        </ReferenceArrayInput>
+        <StudentsInput />
       </SimpleForm>
     </Create>
   );
