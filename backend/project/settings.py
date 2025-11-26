@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "corsheaders",
+    "phonenumber_field",
     "solo",
     "school",
 ]
@@ -239,3 +240,7 @@ SIMPLE_JWT = {
 # Email settings
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@drivingschool.com")
+
+# Phone number field settings
+PHONENUMBER_DEFAULT_REGION = "MD"  # Moldova as default region
+PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"  # E.164 format
