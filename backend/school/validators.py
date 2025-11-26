@@ -606,6 +606,10 @@ def normalize_phone(raw: str) -> str:
     - If no leading '+', assume Moldova +373 and strip local leading zeros.
     - Perform a minimal digit length check (>= 8 national digits total).
     NOTE: Further strict format enforcement happens in ``validate_phone``.
+
+    NOTE: For SchoolConfig phone fields, django-phonenumber-field is now used
+    which provides more robust international validation automatically.
+    This function remains for Student/Instructor models and manual validation.
     """
     if not raw:
         return raw
