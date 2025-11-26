@@ -1,0 +1,12 @@
+id,name,category,type,description,price,required_lessons
+1,Category B Theory,B,THEORY,Comprehensive theory course for Category B license covering traffic rules, road signs, and safety regulations,1500.00,20
+2,Category B Practice,B,PRACTICE,Practical driving lessons for Category B license including city driving, highway, and parking,2500.00,25
+3,Category A Theory,A,THEORY,Theory course for Category A motorcycle license covering motorcycle-specific rules and safety,1200.00,15
+4,Category A Practice,A,PRACTICE,Practical motorcycle riding lessons including balance, traffic, and safety maneuvers,2000.00,20
+5,Category C Theory,C,THEORY,Theory course for Category C truck license covering heavy vehicle regulations,1000.00,12
+6,Category C Practice,C,PRACTICE,Practical truck driving lessons including maneuvering large vehicles,1800.00,18
+7,Category BE Theory,BE,THEORY,Theory course for Category BE trailer license covering trailer-specific regulations,800.00,8
+8,Category BE Practice,BE,PRACTICE,Practical trailer driving lessons including coupling and maneuvering,1200.00,12
+9,Category C1 Theory,C1,THEORY,Theory course for Category C1 medium truck license,900.00,10
+10,Category C1 Practice,C1,PRACTICE,Practical medium truck driving lessons,1500.00,15</content>
+<parameter name="filePath">d:\Programming\drive-admin\globant-practice-2025\docs\mock\courses.csv

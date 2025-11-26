@@ -1,0 +1,2 @@
+id,name,course_id,instructor_id,resource_id,recurrence_days,times,start_date,num_lessons,default_duration_minutes,default_max_students,status,created_at
+1,pattern100,6,1,1,MONDAY,10:00,2025-11-26,2,60,2,,2025-11-24T23:29:33.383710+00:00

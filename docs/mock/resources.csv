@@ -1,0 +1,16 @@
+id,name,max_capacity,category,is_available,license_plate,make,model,year
+1,Classroom A,30,B,true,,,,
+2,Classroom B,25,C,true,,,,
+3,Classroom C,20,A,true,,,,
+4,Classroom D,35,BE,true,,,,
+5,Vehicle B001,2,B,true,B001,Toyota,Corolla,2020
+6,Vehicle B002,2,B,true,B002,Honda,Civic,2019
+7,Vehicle B003,2,B,true,B003,Volkswagen,Golf,2021
+8,Vehicle B004,2,B,true,B004,Ford,Focus,2018
+9,Vehicle A001,2,A,true,A001,Honda,CBR600,2022
+10,Vehicle A002,2,A,true,A002,Yamaha,R1,2021
+11,Vehicle C001,2,C,true,C001,Volvo,FH16,2019
+12,Vehicle C002,2,C,true,C002,Scania,R500,2020
+13,Vehicle BE001,2,BE,true,BE001,MAN,TGX,2021
+14,Vehicle C1E001,2,C1E,true,C1E001,Mercedes,Sprinter,2020</content>
+<parameter name="filePath">d:\Programming\drive-admin\globant-practice-2025\docs\mock\resources.csv

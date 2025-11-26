@@ -1,0 +1,9 @@
+row,field,error
+7,status,"""PENDING"" is not a valid choice."
+14,status,"""PENDING"" is not a valid choice."
+16,course_id,"Invalid pk ""7"" - object does not exist."
+17,course_id,"Invalid pk ""8"" - object does not exist."
+18,course_id,"Invalid pk ""9"" - object does not exist."
+19,course_id,"Invalid pk ""10"" - object does not exist."
+21,status,"""PENDING</content>"" is not a valid choice."
+22,general,"Field 'id' expected a number but got ''."

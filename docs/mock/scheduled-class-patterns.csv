@@ -1,0 +1,2 @@
+id,name,course,instructor,resource,recurrence_days,times,start_date,num_lessons,default_duration_minutes,default_max_students,students
+1,pattern100,6,1,1,"[""MONDAY""]","[""10:00""]",2025-11-26,2,60,2,14
