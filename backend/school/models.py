@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 from solo.models import SingletonModel
 
+from .model_validators import validate_school_logo, validate_landing_image
 from .enums import (
     CourseType,
     DayOfWeek,
@@ -524,12 +525,24 @@ class Address(models.Model):
 class SchoolConfig(SingletonModel):
     """Singleton model for school-wide configuration settings."""
     school_name = models.CharField(max_length=200, default="Driving School")
-    school_logo = models.ImageField(upload_to="logos/", null=True, blank=True)
+    school_logo = models.ImageField(
+        upload_to="logos/",
+        null=True,
+        blank=True,
+        validators=[validate_school_logo],
+        help_text="School logo image (max 5MB, formats: jpg, png, gif, webp)"
+    )
     business_hours = models.CharField(max_length=200, default="Mon-Fri: 9AM-6PM")
     email = models.EmailField(default="contact@school.com")
     contact_phone1 = models.CharField(max_length=20, default="+37360000000")
     contact_phone2 = models.CharField(max_length=20, null=True, blank=True)
-    landing_image = models.ImageField(upload_to="landing/", null=True, blank=True)
+    landing_image = models.ImageField(
+        upload_to="landing/",
+        null=True,
+        blank=True,
+        validators=[validate_landing_image],
+        help_text="Landing page hero image (max 5MB, formats: jpg, png, gif, webp)"
+    )
     landing_text = models.JSONField(
         default=dict,
         help_text="Translation dictionary for landing page text, e.g., {'en': 'Welcome', 'ro': 'Bun venit'}"
