@@ -35,16 +35,24 @@ export const authProvider = {
     localStorage.removeItem('student_access_token');
     console.info('Auth success in', Date.now() - start, 'ms');
   },
-  logout: async () => { clearTokens(); },
+  logout: async () => {
+    clearTokens();
+    // Also clear student tokens when admin logs out
+    localStorage.removeItem('student_access_token');
+    localStorage.removeItem('student_refresh_token');
+    return Promise.resolve();
+  },
   checkAuth: () => {
     const token = getAccessToken();
-    if (!token) return Promise.reject();
+    if (!token) {
+      return Promise.reject(new Error('No access token'));
+    }
     
     // Check if there's a student token, which should not access admin
     const studentToken = localStorage.getItem('student_access_token');
     if (studentToken) {
       clearTokens();
-      return Promise.reject();
+      return Promise.reject(new Error('Student token detected'));
     }
     
     // Decode token to check if it's an admin token (not a student token)
@@ -53,36 +61,56 @@ export const authProvider = {
       if (payload.student_id) {
         // This is a student token, reject for admin routes
         clearTokens();
-        return Promise.reject();
+        return Promise.reject(new Error('Invalid token type for admin'));
+      }
+      
+      // Check token expiration
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        // Token is expired, try to refresh
+        return Promise.reject(new Error('Token expired'));
       }
     } catch (e) {
       // Invalid token format
       clearTokens();
-      return Promise.reject();
+      return Promise.reject(new Error('Invalid token format'));
     }
     
     return Promise.resolve();
   },
   checkError: (error) => {
-    if (error?.status === 401 || error?.status === 403) {
+    const status = error?.status || error?.response?.status;
+    if (status === 401 || status === 403) {
       clearTokens();
-      return Promise.reject();
+      return Promise.reject(error || new Error('Authentication error'));
     }
     return Promise.resolve();
   },
   getPermissions: () => Promise.resolve(),
   refreshAccessToken: async () => {
     const refresh = getRefreshToken();
-    if (!refresh) throw new Error('No refresh token');
-    const resp = await fetch('/api/auth/token/refresh/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh })
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok || !data.access) throw new Error('Refresh failed');
-    setAccessToken(data.access);
-    return data.access;
+    if (!refresh) {
+      throw new Error('No refresh token available');
+    }
+    try {
+      const resp = await fetch('/api/auth/token/refresh/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.access) {
+        throw new Error(data?.detail || 'Token refresh failed');
+      }
+      setAccessToken(data.access);
+      return data.access;
+    } catch (e) {
+      clearTokens();
+      throw e;
+    }
+  },
+  getIdentity: async () => {
+    // Return minimal identity info for the logged-in admin
+    return { id: 'admin', fullName: 'Administrator' };
   },
 };
 

@@ -1,7 +1,7 @@
 // Extracted dataProvider from App.jsx (working logic only)
 import { httpJson, rawFetch, API_PREFIX } from './httpClient';
 import { HttpError } from 'react-admin';
-import { raI18nProvider } from '../i18n/index.js';
+import { raI18nProvider } from '../i18n/index';
 
 const baseApi = API_PREFIX; // consistent single source
 
@@ -22,7 +22,12 @@ const buildQuery = (params) => {
 
   if (params.filter) {
     Object.entries(params.filter).forEach(([k, v]) => {
-      if (v === undefined || v === null || v === '') return;
+      if (v === undefined) return;
+      if (v === null) {
+        query.set(`${k}__isnull`, 'true');
+        return;
+      }
+      if (v === '') return;
       const m = k.match(/^(.*)_(gte|lte|gt|lt)$/);
       const key = m ? `${m[1]}__${m[2]}` : k;
       query.set(key, String(v));
