@@ -122,3 +122,39 @@ class ScheduledClassModelTest(TestCase):
         self.assertEqual(self.scheduled_class.current_enrollment(), 25)
         self.assertEqual(self.scheduled_class.available_spots(), 0)
         self.assertTrue(self.scheduled_class.is_full())
+
+    def test_capacity_validation(self):
+        from django.core.exceptions import ValidationError
+        # Try to create class with max_students > resource capacity
+        with self.assertRaises(ValidationError):
+            ScheduledClass.objects.create(
+                pattern=self.pattern,
+                name="Overbooked Class",
+                scheduled_time=timezone.now(),
+                duration_minutes=60,
+                max_students=35,  # Resource capacity is 30
+                status="SCHEDULED",
+                resource=self.resource,
+                course=self.course
+            )
+
+    def test_theory_only_validation(self):
+        from django.core.exceptions import ValidationError
+        practice_course = Course.objects.create(
+            name="Practice Course",
+            category="B",
+            type="PRACTICE",
+            price=1000.00,
+            required_lessons=20,
+        )
+        with self.assertRaises(ValidationError):
+            ScheduledClass.objects.create(
+                pattern=self.pattern,
+                name="Practice Class",
+                scheduled_time=timezone.now(),
+                duration_minutes=60,
+                max_students=10,
+                status="SCHEDULED",
+                resource=self.resource,
+                course=practice_course
+            )
