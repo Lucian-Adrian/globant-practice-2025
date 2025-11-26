@@ -422,3 +422,71 @@ Authorization: Bearer <access_token>
   "errors": []
 }
 ```
+
+
+## School Configuration
+
+### Get School Configuration
+
+**Endpoint:** `GET /api/school/config/`
+
+**Description:** Retrieves the singleton school configuration settings.
+
+**Response (Success - 200 OK):**
+```json
+{
+  "id": 1,
+  "school_name": "Learn Drive Shine",
+  "school_logo": "http://localhost:8000/media/logos/logo.png",
+  "business_hours": "Mon-Fri: 9AM-6PM",
+  "email": "contact@school.com",
+  "contact_phone1": "+37360123456",
+  "contact_phone2": "+37360654321",
+  "landing_image": "http://localhost:8000/media/landing/hero.jpg",
+  "landing_text": {"en": "Welcome", "ro": "Bun venit"},
+  "social_links": {"facebook": "https://...", "instagram": "https://..."},
+  "rules": {"min_theory_hours_before_practice": 20},
+  "available_categories": ["A", "B", "C"],
+  "addresses": [
+    {"id": 1, "street": "Main St 123", "city": "Chisinau"}
+  ]
+}
+```
+
+**Phone Number Format:**
+- `contact_phone1` and `contact_phone2` use international E.164 format
+- Examples: `+37360123456`, `+1234567890`
+- Local numbers are automatically converted (e.g., `060123456` → `+37360123456`)
+- Validates country code, area code, and number length
+
+### Update School Configuration
+
+**Endpoint:** `PUT /api/school/config/1/`
+
+**Description:** Updates the school configuration (singleton instance).
+
+**Request Body:**
+```json
+{
+  "school_name": "New School Name",
+  "contact_phone1": "+37360123456",
+  "contact_phone2": "+37360654321",
+  "business_hours": "Mon-Sun: 8AM-8PM",
+  "email": "newemail@school.com",
+  "address_ids": [1, 2]
+}
+```
+
+**Response (Error - 400 Bad Request):**
+```json
+{
+  "contact_phone1": ["Enter a valid phone number (e.g. +12125552368)."],
+  "contact_phone2": ["The phone number entered is not valid."]
+}
+```
+
+**Phone Validation Rules:**
+- Must include country code (+ prefix)
+- Minimum 8 digits, maximum 16 digits
+- No letters or special characters except '+'
+- International format preferred: +[country][area][number]
