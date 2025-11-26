@@ -239,3 +239,7 @@ SIMPLE_JWT = {
 # Email settings
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@drivingschool.com")
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
