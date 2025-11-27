@@ -5,7 +5,7 @@ import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import TuneIcon from '@mui/icons-material/Tune';
 import { useAsidePanel } from '../shared/state/AsidePanelContext.jsx';
-import { useI18nForceUpdate } from '../i18n/index.js';
+import { useI18nForceUpdate } from '../i18n/index.jsx';
 
 export default function Menu() {
   const translate = useTranslate();

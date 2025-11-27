@@ -25,8 +25,21 @@ import PortalLanguageSelect from './PortalLanguageSelect.jsx';
  */
 const StudentLogin = () => {
   // Include 'portal' namespace first so auth/landing keys stored in portal locale JSON resolve correctly
-  const { t } = useTranslation(['portal','common','validation']);
+  const { t, i18n } = useTranslation(['portal','common','validation']);
   const navigate = useNavigate();
+
+  // Log translations when language changes
+  React.useEffect(() => {
+    const loginTitle = t('portal.login.title', { defaultValue: 'Student Login' });
+    const signupTitle = t('portal.signup.title', { defaultValue: 'Student Signup' });
+    const loginSubtitle = t('portal.login.subtitle', { defaultValue: 'Welcome back' });
+    console.log('🔐 Login page translations updated:', {
+      language: i18n.language,
+      loginTitle,
+      signupTitle,
+      loginSubtitle
+    });
+  }, [i18n.language, t]);
 
   // Mode toggle
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
@@ -94,14 +107,14 @@ const StudentLogin = () => {
   const renderSignupError = (err) => {
     if (!err || !err.key) return '';
     const map = {
-      required: t('validation:required', 'Required'),
-      invalidEmail: t('validation:invalidEmail', 'Invalid email'),
-      invalidPhone: t('validation:invalidPhone', 'Invalid phone'),
-      passwordTooShort: t('validation:passwordTooShort', 'Min 6 chars'),
-      passwordsDontMatch: t('validation:passwordsDontMatch', "Passwords don't match"),
-      invalidDob: t('validation:invalidDob', 'Invalid date'),
-      tooYoung: t('validation:tooYoung', { years: MIN_AGE_YEARS, defaultValue: `You must be at least ${MIN_AGE_YEARS}` }),
-      nameChars: t('validation:nameChars', 'Invalid characters')
+      required: t('validation.requiredField', 'Required'),
+      invalidEmail: t('validation.invalidEmail', 'Invalid email'),
+      invalidPhone: t('validation.invalidPhone', 'Invalid phone'),
+      passwordTooShort: t('validation.passwordTooShort', 'Min 6 chars'),
+      passwordsDontMatch: t('validation.passwordsDontMatch', "Passwords don't match"),
+      invalidDob: t('validation.invalidDob', 'Invalid date'),
+      tooYoung: t('validation.tooYoung', { years: MIN_AGE_YEARS, defaultValue: `You must be at least ${MIN_AGE_YEARS}` }),
+      nameChars: t('validation.nameChars', 'Invalid characters')
     };
     return map[err.key] || '';
   };

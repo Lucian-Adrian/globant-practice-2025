@@ -7,7 +7,6 @@ import {
   NumberField,
   ReferenceField,
   BulkDeleteButton,
-  BulkUpdateButton,
   useDataProvider,
   useNotify,
   useRefresh,
@@ -20,7 +19,6 @@ import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ListImportActions from '../../shared/components/ListImportActions.jsx';
 import Breadcrumb from '../../shared/components/Breadcrumb.jsx';
@@ -65,22 +63,22 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
     {
       onSuccess: ({ totalGenerated, failureCount }) => {
         if (failureCount > 0) {
-            notify(t('resources.scheduledclasspatterns.bulk.generate_partial_success', { 
+            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_partial_success', { 
                 success_count: selectedIds.length - failureCount,
                 fail_count: failureCount,
                 classes: totalGenerated 
             }), { type: 'warning' });
         } else {
-            notify(t('resources.scheduledclasspatterns.bulk.generate_success', { 
+            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_success', { 
                 count: selectedIds.length, 
                 classes: totalGenerated 
             }), { type: 'success' });
         }
         refresh();
-        unselectAll('scheduled-class-patterns');
+        unselectAll('scheduledclasspatterns');
       },
       onError: (error) => {
-        notify(t('resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
+        notify(t('admin.resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
       },
     }
   );
@@ -98,93 +96,17 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
   return (
     <>
       <Button
-        label={t('resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
+        label={t('admin.resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
         onClick={handleClick}
         disabled={isLoading || safeSelectedIds.length === 0}
         startIcon={isLoading ? <CircularProgress size={16} /> : <PlayArrowIcon />}
       />
       <Confirm
         isOpen={open}
-        title={t('resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
-        content={t('resources.scheduledclasspatterns.bulk.generate_confirm_content', {
+        title={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
+        content={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_content', {
           count: safeSelectedIds.length,
           defaultValue: 'Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.'
-        })}
-        onConfirm={handleConfirm}
-        onClose={() => setOpen(false)}
-        confirm={t('ra.action.confirm', 'Confirm')}
-        cancel={t('ra.action.cancel', 'Cancel')}
-      />
-    </>
-  );
-};
-
-// Custom bulk action for regenerating classes
-const BulkRegenerateClassesButton = ({ selectedIds }) => {
-  const dataProvider = useDataProvider();
-  const notify = useNotify();
-  const refresh = useRefresh();
-  const unselectAll = useUnselectAll();
-  const t = useTranslate();
-  const [open, setOpen] = React.useState(false);
-
-  const { mutate, isLoading } = useMutation(
-    async () => {
-      const promises = selectedIds.map(id =>
-        dataProvider.create(`scheduled-class-patterns/${id}/regenerate-classes`, {
-          data: {}
-        })
-      );
-      const results = await Promise.all(promises);
-      // Count total generated and deleted classes
-      const stats = results.reduce((acc, result) => {
-        return {
-          deleted: acc.deleted + (result?.data?.deleted_count || 0),
-          generated: acc.generated + (result?.data?.generated_count || 0)
-        };
-      }, { deleted: 0, generated: 0 });
-      return stats;
-    },
-    {
-      onSuccess: ({ deleted, generated }) => {
-        notify(t('resources.scheduledclasspatterns.bulk.regenerate_success', { 
-          count: selectedIds.length,
-          deleted,
-          generated
-        }), { type: 'success' });
-        refresh();
-        unselectAll('scheduled-class-patterns');
-      },
-      onError: (error) => {
-        notify(t('resources.scheduledclasspatterns.bulk.regenerate_error', { error: error.message }), { type: 'error' });
-      },
-    }
-  );
-
-  const handleConfirm = () => {
-    mutate();
-    setOpen(false);
-  };
-
-  const handleClick = () => {
-    setOpen(true);
-  };
-
-  const safeSelectedIds = selectedIds || [];
-  return (
-    <>
-      <Button
-        label={t('resources.scheduledclasspatterns.bulk.regenerate', 'Regenerate Classes')}
-        onClick={handleClick}
-        disabled={isLoading || safeSelectedIds.length === 0}
-        startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
-      />
-      <Confirm
-        isOpen={open}
-        title={t('resources.scheduledclasspatterns.bulk.regenerate_confirm_title', 'Regenerate Classes')}
-        content={t('resources.scheduledclasspatterns.bulk.regenerate_confirm_content', {
-          count: safeSelectedIds.length,
-          defaultValue: 'Are you sure you want to regenerate classes for {{count}} pattern(s)? This will delete existing classes and create new ones.'
         })}
         onConfirm={handleConfirm}
         onClose={() => setOpen(false)}
@@ -200,19 +122,15 @@ const ViewClassesButton = ({ record }) => {
   const navigate = useNavigate();
   const t = useTranslate();
 
-  const handleClick = (e) => {
-    e.stopPropagation();
-    if (record && record.id) {
-        navigate(`/admin/scheduled-classes?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
-    }
+  const handleClick = () => {
+    // Navigate to scheduled classes list filtered by this pattern
+    navigate(`/admin/scheduledclasses?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
   };
-
-  if (!record) return null;
 
   return (
     <Button
       onClick={handleClick}
-      label={t('resources.scheduledclasspatterns.viewClasses', 'View Classes')}
+      label={t('admin.resources.scheduledclasspatterns.viewClasses', 'View Classes')}
       startIcon={<VisibilityIcon />}
       size="small"
     />
@@ -220,33 +138,34 @@ const ViewClassesButton = ({ record }) => {
 };
 
 export default function ScheduledClassPatternList(props) {
+  const t = useTranslate();
   return (
     <>
       <Breadcrumb />
       <List
         {...props}
         actions={<ListImportActions endpoint="scheduled-class-patterns" />}
+        exporter={false} // We use custom export action in ListImportActions if needed, or we can enable default exporter if it works with our dataProvider
       >
         <Datagrid
           rowClick="edit"
           bulkActionButtons={
             <>
               <BulkGenerateClassesButton />
-              <BulkRegenerateClassesButton />
               <BulkDeleteButton />
             </>
           }
         >
-          <TextField source="id" />
-          <TextField source="name" />
+          <TextField source="id" label={t('scheduledclasspatternlist.id', 'ID')} />
+          <TextField source="name" label={t('scheduledclasspatternlist.name', 'Name')} />
           <ReferenceField source="course_id" reference="classes" link="show">
             <TextField source="name" />
           </ReferenceField>
           <ReferenceField source="instructor_id" reference="instructors" link="show">
             <TextField source="first_name" />
           </ReferenceField>
-          <DateField source="start_date" />
-          <NumberField source="num_lessons" />
+          <DateField source="start_date" label={t('scheduledclasspatternlist.startDate', 'Start Date')} />
+          <NumberField source="num_lessons" label={t('scheduledclasspatternlist.numLessons', 'Number of Lessons')} />
           <ViewClassesButton />
         </Datagrid>
       </List>

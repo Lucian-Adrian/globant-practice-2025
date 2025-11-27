@@ -1,0 +1,12 @@
+id,pattern_id,course_id,instructor_id,resource_id,name,scheduled_time,duration_minutes,max_students,status
+1,,,1,1,1,"Standalone Theory Class",2025-03-15T08:00:00+00:00,60,25,SCHEDULED
+2,,,2,2,2,"Standalone Theory Class",2025-03-16T09:00:00+00:00,60,20,SCHEDULED
+3,,,3,5,3,"Standalone Practice Class",2025-03-17T14:00:00+00:00,90,1,SCHEDULED
+4,,,4,6,4,"Standalone Practice Class",2025-03-18T13:00:00+00:00,90,1,SCHEDULED
+5,,,6,3,9,"Standalone Motorcycle Practice",2025-03-19T10:00:00+00:00,90,1,SCHEDULED
+6,,,8,2,11,"Standalone Truck Practice",2025-03-20T14:30:00+00:00,90,1,SCHEDULED
+7,,,1,1,1,"Completed Theory Class",2025-02-15T08:00:00+00:00,60,25,COMPLETED
+8,,,2,2,2,"Completed Theory Class",2025-02-16T09:00:00+00:00,60,20,COMPLETED
+9,,,3,5,3,"Completed Practice Class",2025-02-17T14:00:00+00:00,90,1,COMPLETED
+10,,,4,6,4,"Canceled Practice Class",2025-02-18T13:00:00+00:00,90,1,CANCELED</content>
+<parameter name="filePath">d:\Programming\drive-admin\globant-practice-2025\docs\mock\scheduled_classes.csv

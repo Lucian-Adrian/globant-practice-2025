@@ -1,0 +1,22 @@
+id,enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status,notes
+1,1,1,5,2025-03-15T08:00:00+00:00,90,SCHEDULED,First practice lesson
+2,2,2,6,2025-03-16T09:00:00+00:00,90,SCHEDULED,First practice lesson
+3,3,3,7,2025-03-17T14:00:00+00:00,90,SCHEDULED,First practice lesson
+4,4,4,8,2025-03-18T13:00:00+00:00,90,SCHEDULED,First practice lesson
+5,5,6,9,2025-03-19T10:00:00+00:00,90,SCHEDULED,Motorcycle practice lesson
+6,6,8,11,2025-03-20T14:30:00+00:00,90,SCHEDULED,Truck practice lesson
+7,7,1,5,2025-02-15T08:00:00+00:00,90,COMPLETED,Completed practice lesson - good progress
+8,8,2,6,2025-02-16T09:00:00+00:00,90,COMPLETED,Completed practice lesson - needs more work on parking
+9,9,3,7,2025-02-17T14:00:00+00:00,90,COMPLETED,Completed practice lesson - excellent driving
+10,10,4,8,2025-02-18T13:00:00+00:00,90,CANCELED,Canceled due to instructor illness
+11,11,1,5,2025-03-22T08:00:00+00:00,90,SCHEDULED,Second practice lesson
+12,12,2,6,2025-03-23T09:00:00+00:00,90,SCHEDULED,Second practice lesson
+13,13,3,7,2025-03-24T14:00:00+00:00,90,SCHEDULED,Second practice lesson
+14,14,4,8,2025-03-25T13:00:00+00:00,90,SCHEDULED,Second practice lesson
+15,15,6,9,2025-03-26T10:00:00+00:00,90,SCHEDULED,Second motorcycle lesson
+16,16,8,11,2025-03-27T14:30:00+00:00,90,SCHEDULED,Second truck lesson
+17,17,1,5,2025-02-22T08:00:00+00:00,90,COMPLETED,Third practice lesson - passed parallel parking
+18,18,2,6,2025-02-23T09:00:00+00:00,90,COMPLETED,Third practice lesson - ready for exam
+19,19,3,7,2025-02-24T14:00:00+00:00,90,COMPLETED,Third practice lesson - good highway driving
+20,20,4,8,2025-02-25T13:00:00+00:00,90,CANCELED,Canceled due to bad weather</content>
+<parameter name="filePath">d:\Programming\drive-admin\globant-practice-2025\docs\mock\lessons.csv

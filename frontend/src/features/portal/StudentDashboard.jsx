@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppLocaleState } from '../../i18n/index.js';
+import { useI18nForceUpdate } from '../../i18n/index.jsx';
 import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
@@ -8,7 +8,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { t } = useTranslation('portal');
-  const [locale, setLocale] = useAppLocaleState();
+  useI18nForceUpdate();
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -203,18 +203,20 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
         self.pattern.students.set([self.student1, self.student2])
 
     def test_generate_classes_action(self):
-        """Test the generate-classes action with pagination."""
+        """Test the generate-classes action."""
         self.client.force_authenticate(user=self.admin_user)
         url = f'/api/scheduled-class-patterns/{self.pattern.id}/generate-classes/'
         
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # Check pagination structure
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertIn('next', response.data)
-        self.assertIn('previous', response.data)
+        # Check response structure
+        self.assertIn('id', response.data)
+        self.assertIn('generated_count', response.data)
+        self.assertIn('enrollment_results', response.data)
+        self.assertEqual(response.data['generated_count'], 4)
+        # Auto-enrollment removed, so enrolled count should be 0
+        self.assertEqual(response.data['enrollment_results']['enrolled'], 0)
         
         # Check that classes were created
         classes_count = ScheduledClass.objects.filter(pattern=self.pattern).count()
@@ -237,14 +239,16 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # Check response structure
-        self.assertIn('results', response.data)
-        results = response.data['results']
-        self.assertIn('deleted_count', results)
-        self.assertIn('generated_count', results)
+        self.assertIn('id', response.data)
+        self.assertIn('deleted_count', response.data)
+        self.assertIn('generated_count', response.data)
+        self.assertIn('enrollment_results', response.data)
         
         # Should have deleted and recreated the same number
-        self.assertEqual(results['deleted_count'], 4)
-        self.assertEqual(results['generated_count'], 4)
+        self.assertEqual(response.data['deleted_count'], 4)
+        self.assertEqual(response.data['generated_count'], 4)
+        # Auto-enrollment removed
+        self.assertEqual(response.data['enrollment_results']['enrolled'], 0)
         
         # Total count should still be 4
         final_count = ScheduledClass.objects.filter(pattern=self.pattern).count()
@@ -310,6 +314,7 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
         
         # Create patterns with different dates
+        # Create with valid date first, then update to past to bypass clean() validation
         past_pattern = ScheduledClassPattern.objects.create(
             name="Past Pattern",
             course=self.course,
@@ -317,10 +322,12 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
             resource=self.resource,
             recurrence_days=['TUESDAY'],
             times=["10:00"],
-            start_date=date.today() - timedelta(days=30),
+            start_date=date.today(),
             num_lessons=2,
             default_max_students=20,
         )
+        ScheduledClassPattern.objects.filter(pk=past_pattern.pk).update(start_date=date.today() - timedelta(days=30))
+        past_pattern.refresh_from_db()
         
         future_pattern = ScheduledClassPattern.objects.create(
             name="Future Pattern",
@@ -547,8 +554,8 @@ class ScheduledClassPatternViewSetTestCase(APITestCase):
         regenerate_url = f'/api/scheduled-class-patterns/{pattern_id}/regenerate-classes/'
         response = self.client.post(regenerate_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results']['deleted_count'], 3)
-        self.assertEqual(response.data['results']['generated_count'], 3)
+        self.assertEqual(response.data['deleted_count'], 3)
+        self.assertEqual(response.data['generated_count'], 3)
 
         # Count should still be 3
         final_count = ScheduledClass.objects.filter(pattern_id=pattern_id).count()

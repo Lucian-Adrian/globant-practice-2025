@@ -532,6 +532,40 @@ class ScheduledClassPatternSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    def validate_recurrence_days(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Recurrence days must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one recurrence day is required.")
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        for day in value:
+            if day not in valid_days:
+                raise serializers.ValidationError("Invalid day: %(day)s. Must be one of %(valid_days)s." % {'day': day, 'valid_days': valid_days})
+        return value
+
+    def validate_times(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Times must be a list.")
+        if not value:
+            raise serializers.ValidationError("At least one time is required.")
+        import re
+        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
+        for time_str in value:
+            if not isinstance(time_str, str) or not time_pattern.match(time_str):
+                raise serializers.ValidationError("Invalid time format: %(time_str)s. Must be HH:MM (e.g., 09:30)." % {'time_str': time_str})
+        return value
+
+    def validate_start_date(self, value):
+        from datetime import date
+        if value < date.today():
+            raise serializers.ValidationError("Start date cannot be in the past.")
+        return value
+
+    def validate_num_lessons(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Number of lessons must be positive.")
+        return value
+
     class Meta:
         model = ScheduledClassPattern
         fields = [

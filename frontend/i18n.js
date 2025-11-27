@@ -55,7 +55,6 @@ const resources = {
         classes: { name: 'Courses' },
         payments: { name: 'Payments' },
         scheduledclasses: { name: 'Scheduled Classes', helper: 'Create a scheduled class to start planning lessons.', create: 'Create Scheduled Class' },
-        scheduledclasspatterns: { name: 'Scheduled Class Patterns' },
       },
       fields: {
         id: 'ID',
@@ -92,7 +91,6 @@ const resources = {
         max_students: 'Max Students',
         start_date: 'Start Date',
         instructor: 'Instructor',
-        pattern: 'Pattern',
         scheduled_time: 'Scheduled Time',
         current_enrollment: 'Current Enrollment',
         available_spots: 'Available Spots',
@@ -110,13 +108,11 @@ const resources = {
         students: 'No students yet. Create one or import a batch.', instructors: 'No instructors yet. Create one or import a batch.',
         vehicles: 'No vehicles yet. Create one or import a batch.', classes: 'No courses yet. Create one or import a batch.',
         payments: 'No payments yet. Create one or import a batch.', scheduledclasses: 'No scheduled classes yet. Create one or import a batch.',
-        scheduledclasspatterns: 'No scheduled class patterns yet. Create one to start planning recurring lessons.',
       },
       invite: {
         students: 'Create a new student or import a CSV to get started.', instructors: 'Create a new instructor or import a CSV to get started.',
         vehicles: 'Create a new vehicle or import a CSV to get started.', classes: 'Create a new course or import a CSV to get started.',
         payments: 'Create a new payment or import a CSV to get started.', scheduledclasses: 'Create a new scheduled class or import a CSV to get started.',
-        scheduledclasspatterns: 'Create a new scheduled class pattern to start planning recurring lessons.',
       },
       filters: {
         lastActivity: 'Last activity',
@@ -176,7 +172,6 @@ const resources = {
         classes: { name: 'Cursuri' },
         payments: { name: 'Plăți' },
         scheduledclasses: { name: 'Clase Programate', helper: 'Creați o clasă programată pentru a începe planificarea lecțiilor.', create: 'Creați Clasă Programată' },
-        scheduledclasspatterns: { name: 'Modele Clase Programate' },
       },
       fields: {
         id: 'ID',
@@ -213,7 +208,6 @@ const resources = {
         max_students: 'Max Studenți',
         start_date: 'Data Început',
         instructor: 'Instructor',
-        pattern: 'Model',
         scheduled_time: 'Ora Programată',
         current_enrollment: 'Înscriere Curentă',
         available_spots: 'Locuri Disponibile',
@@ -231,13 +225,11 @@ const resources = {
         students: 'Niciun student încă. Creați sau importați un lot.', instructors: 'Niciun instructor încă. Creați sau importați un lot.',
         vehicles: 'Niciun vehicul încă. Creați sau importați un lot.', classes: 'Niciun curs încă. Creați sau importați un lot.',
         payments: 'Nicio plată încă. Creați sau importați un lot.', scheduledclasses: 'Nicio clasă programată încă. Creați sau importați un lot.',
-        scheduledclasspatterns: 'Niciun model de clasă programată încă. Creați unul pentru a începe planificarea lecțiilor recurente.',
       },
       invite: {
         students: 'Creați un student nou sau importați un CSV pentru a începe.', instructors: 'Creați un instructor nou sau importați un CSV pentru a începe.',
         vehicles: 'Creați un vehicul nou sau importați un CSV pentru a începe.', classes: 'Creați un curs nou sau importați un CSV pentru a începe.',
         payments: 'Creați o plată nouă sau importați un CSV pentru a începe.', scheduledclasses: 'Creați o clasă programată nouă sau importați un CSV pentru a începe.',
-        scheduledclasspatterns: 'Creați un model nou de clasă programată pentru a începe planificarea lecțiilor recurente.',
       },
       filters: {
         lastActivity: 'Ultima activitate',
@@ -283,7 +275,6 @@ const resources = {
       resources: {
         students: { name: 'Студенты' }, instructors: { name: 'Инструкторы' }, vehicles: { name: 'Транспорт' },
         classes: { name: 'Занятия' }, payments: { name: 'Платежи' }, scheduledclasses: { name: 'Запланированные Классы', helper: 'Создайте запланированный класс для начала планирования уроков.', create: 'Создать Запланированный Класс' },
-        scheduledclasspatterns: { name: 'Шаблоны Запланированных Классов' },
       },
       fields: {
         id: 'ID', name: 'Название', amount: 'Сумма', enrollment: 'Зачисление', first_name: 'Имя', last_name: 'Фамилия',
@@ -293,7 +284,7 @@ const resources = {
         required_lessons: 'Необходимые уроки', payment_date: 'Дата платежа', payment_method: 'Способ оплаты',
         description: 'Описание', course: 'Курс', resource: 'Ресурс', recurrences: 'Повторения', day: 'День', time: 'Время',
         num_lessons: 'Количество Уроков', duration_minutes: 'Длительность (минуты)', max_students: 'Макс Студентов',
-        start_date: 'Дата Начала', instructor: 'Инструктор', pattern: 'Шаблон', scheduled_time: 'Запланированное Время',
+        start_date: 'Дата Начала', instructor: 'Инструктор', scheduled_time: 'Запланированное Время',
         current_enrollment: 'Текущая Запись', available_spots: 'Доступные Места', students: 'Студенты',
         default_duration_minutes: 'Длительность по Умолчанию (мин)', default_max_students: 'Макс Студентов по Умолчанию',
       },
@@ -302,13 +293,11 @@ const resources = {
         students: 'Пока нет студентов. Создайте или импортируйте пакет.', instructors: 'Пока нет инструкторов. Создайте или импортируйте пакет.',
         vehicles: 'Пока нет транспортных средств. Создайте или импортируйте пакет.', classes: 'Пока нет курсов. Создайте или импортируйте пакет.',
         payments: 'Пока нет платежей. Создайте или импортируйте пакет.', scheduledclasses: 'Пока нет запланированных классов. Создайте или импортируйте пакет.',
-        scheduledclasspatterns: 'Пока нет шаблонов запланированных классов. Создайте один для начала планирования повторяющихся уроков.',
       },
       invite: {
         students: 'Создайте нового студента или импортируйте CSV, чтобы начать.', instructors: 'Создайте нового инструктора или импортируйте CSV, чтобы начать.',
         vehicles: 'Создайте новое транспортное средство или импортируйте CSV, чтобы начать.', classes: 'Создайте новый курс или импортируйте CSV, чтобы начать.',
         payments: 'Создайте новый платеж или импортируйте CSV, чтобы начать.', scheduledclasses: 'Создайте новый запланированный класс или импортируйте CSV, чтобы начать.',
-        scheduledclasspatterns: 'Создайте новый шаблон запланированного класса для начала планирования повторяющихся уроков.',
       },
       filters: {
         lastActivity: 'Последняя активность', today: 'Сегодня', thisWeek: 'На этой неделе', lastWeek: 'На прошлой неделе',

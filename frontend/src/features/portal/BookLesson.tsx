@@ -1,7 +1,7 @@
 import * as React from "react";
 import PortalNavBar from "./PortalNavBar";
 import { useTranslation } from 'react-i18next';
-import { useI18nForceUpdate } from '../../i18n/index.js';
+import { useI18nForceUpdate } from '../../i18n/index.jsx';
 import { useNavigate } from "react-router-dom";
 import { studentRawFetch } from "../../api/httpClient";
 import InstructorCalendarAvailability from "./InstructorCalendarAvailability";

@@ -96,7 +96,7 @@ DATABASES = {
         "NAME": os.getenv("POSTGRES_DB", "drivingschool"),
         "USER": os.getenv("POSTGRES_USER", "drivingschool"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "drivingschoolpwd"),
-        "HOST": os.getenv("DB_HOST", "db"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT", "5432"),
     }
 }

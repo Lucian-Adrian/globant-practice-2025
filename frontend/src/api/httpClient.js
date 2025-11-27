@@ -71,6 +71,7 @@ export async function httpJson(url, options = {}) {
     return await fetchUtils.fetchJson(url, merged);
   } catch (err) {
     const status = err?.status;
+    // Don't retry if already retried or if it's a client error other than auth
     if (!retry && (status === 401 || status === 403)) {
       const token = await refreshAccessToken();
       if (token) {
@@ -78,6 +79,10 @@ export async function httpJson(url, options = {}) {
         newHeaders.set('Authorization', `Bearer ${token}`);
         return fetchUtils.fetchJson(url, { ...merged, headers: newHeaders, retry: true });
       }
+    }
+    // Ensure error has a message for React Query
+    if (err && !err.message) {
+      err.message = `HTTP Error ${status || 'unknown'}`;
     }
     throw err;
   }
@@ -112,7 +117,14 @@ export async function studentHttpJson(url, options = {}) {
         const newHeaders = new Headers(merged.headers || {});
         newHeaders.set('Authorization', `Bearer ${token}`);
         return fetchUtils.fetchJson(url, { ...merged, headers: newHeaders, retry: true });
+      } else {
+        // If refresh failed, clear tokens
+        clearStudentTokens();
       }
+    }
+    // Ensure error has a message for React Query
+    if (err && !err.message) {
+      err.message = `HTTP Error ${status || 'unknown'}`;
     }
     throw err;
   }

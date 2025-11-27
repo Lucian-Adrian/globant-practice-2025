@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Admin, Resource, CustomRoutes } from 'react-admin';
-import { raI18nProvider } from '../i18n/index.js';
+import { raI18nProvider } from '../i18n/index.jsx';
 import Layout from './Layout.jsx';
 import dataProvider from '../api/dataProvider';
 import { authProvider } from '../auth/authProvider';

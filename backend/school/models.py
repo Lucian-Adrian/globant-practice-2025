@@ -247,6 +247,14 @@ class ScheduledClassPattern(models.Model):
         valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
         if not all(day in valid_days for day in self.recurrence_days):
             raise ValidationError("Invalid recurrence days.")
+        
+        # Validate max students vs resource capacity
+        if self.resource and self.default_max_students > self.resource.max_capacity:
+            raise ValidationError(f"Default max students ({self.default_max_students}) cannot exceed resource capacity ({self.resource.max_capacity}).")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def validate_generation(self):
         """Validate before generating classes to prevent overlaps."""
@@ -282,9 +290,9 @@ class ScheduledClassPattern(models.Model):
                 # Overlap: StartA < EndB and EndA > StartB
                 if cls.scheduled_time < conflict_end and cls_end > conflict.scheduled_time:
                     if conflict.instructor == self.instructor:
-                        raise ValidationError(f"Overlap detected for instructor at {cls.scheduled_time}.")
+                        raise ValidationError("Overlap detected for instructor at %(time)s." % {'time': cls.scheduled_time})
                     if conflict.resource == self.resource:
-                        raise ValidationError(f"Overlap detected for resource at {cls.scheduled_time}.")
+                        raise ValidationError("Overlap detected for resource at %(time)s." % {'time': cls.scheduled_time})
             
 
 
@@ -436,6 +444,20 @@ class ScheduledClass(models.Model):
     def is_full(self):
         """Check if class is at capacity"""
         return self.current_enrollment() >= self.max_students
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        # Validate max students vs resource capacity
+        if self.resource and self.max_students > self.resource.max_capacity:
+            raise ValidationError(f"Max students ({self.max_students}) cannot exceed resource capacity ({self.resource.max_capacity}).")
+        
+        # Validate theory only
+        if self.course and self.course.type != CourseType.THEORY.value:
+             raise ValidationError("Only theory courses are allowed for scheduled classes.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["scheduled_time"]

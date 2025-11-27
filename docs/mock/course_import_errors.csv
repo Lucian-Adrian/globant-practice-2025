@@ -1,0 +1,13 @@
+row,field,error
+2,price,"A valid number is required."
+2,required_lessons,"A valid integer is required."
+3,price,"A valid number is required."
+3,required_lessons,"A valid integer is required."
+5,price,"A valid number is required."
+5,required_lessons,"A valid integer is required."
+11,required_lessons,"A valid integer is required."
+12,name,"This field may not be blank."
+12,category,""""" is not a valid choice."
+12,description,"This field may not be blank."
+12,price,"A valid number is required."
+12,required_lessons,"A valid integer is required."

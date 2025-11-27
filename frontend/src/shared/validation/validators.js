@@ -17,12 +17,12 @@ export const validateDOB = (value) => {
 
 export const validateEmail = (value) => {
   if (!value) return 'Email is required';
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) return 'Enter a valid email address';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) return 'Invalid email format';
 };
 
 export const validatePhoneClient = (value) => {
   if (!value) return 'Phone number is required';
-  if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number';
+  if (!/^\+?\d[\d ]{7,15}$/.test(value)) return 'Invalid phone number format';
 };
 
 // Allowed vehicle categories – keep in sync with backend VehicleCategory
@@ -49,9 +49,9 @@ export const parseLicenseCategories = (value) => {
 
 export const validateLicenseCategoriesClient = (value) => {
   const str = parseLicenseCategories(value);
-  if (!str) return 'At least one category is required';
+  if (!str) return 'validators.licenseCategoriesRequired';
   const invalid = str.split(',').filter((p) => !ALLOWED_CATEGORIES.includes(p));
-  if (invalid.length) return `Invalid categories: ${invalid.join(', ')}`;
+  if (invalid.length) return `validators.licenseCategoriesInvalid:${invalid.join(', ')}`;
   return undefined;
 };
 
@@ -82,7 +82,7 @@ export const validateTimeFormat = (t) => (value) => {
     if (t && typeof t === 'function') {
       return t('validation.timeFormat');
     } else {
-      return 'Time must be in HH:MM format (e.g., 09:30 or 14:00)'; // Fallback
+      return 'validation.timeFormat'; // Return key instead of hardcoded string
     }
   }
   return undefined;

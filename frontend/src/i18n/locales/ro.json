@@ -439,6 +439,41 @@
         "hero": { "kicker": "Bine ai revenit", "title": "Hub-ul tău de învățare", "subtitle": "Accesează lecții, progres, plăți și altele.", "ctaBook": "Programează lecție", "ctaPractice": "Deschide Practica" },
         "img": { "alt": { "avatar": "Avatar student" } }
       }
+    },
+    "login": {
+      "title": "Autentificare Student",
+      "subtitle": "Accesează tabloul tău de învățare",
+      "phoneOrEmail": "Telefon sau Email",
+      "password": "Parolă",
+      "loginButton": "Autentificare",
+      "loggingIn": "Se autentifică...",
+      "forgotPassword": "Ai uitat parola?",
+      "noAccount": "Nu ai cont?",
+      "createAccount": "Creează unul",
+      "loginSuccess": "Autentificat cu succes.",
+      "loginPendingSweet": "Nu te-am putut autentifica acum — contul tău așteaptă aprobare. Te rugăm să aștepți sau contactați-ne la 069 155 877.",
+      "loginFailed": "Autentificare eșuată",
+      "networkError": "Eroare de rețea. Te rugăm să încerci din nou."
+    },
+    "signup": {
+      "title": "Creează Cont",
+      "subtitle": "Alătură-te școlii noastre de șoferi",
+      "firstName": "Prenume",
+      "lastName": "Nume",
+      "email": "Email",
+      "phone": "Număr de telefon",
+      "countryCode": "+373",
+      "dob": "Data nașterii",
+      "category": "Categorie permis",
+      "password": "Parolă",
+      "confirmPassword": "Confirmă parola",
+      "signupButton": "Creează cont",
+      "signingUp": "Se creează contul...",
+      "haveAccount": "Ai deja cont?",
+      "loginInstead": "Autentifică-te",
+      "signupSuccess": "Cont creat cu succes.",
+      "signupFailed": "Crearea contului a eșuat",
+      "agreeToTerms": "Sunt de acord cu Termenii de utilizare și Politica de confidențialitate"
     }
   },
   "ra": {
@@ -460,6 +495,62 @@
     "requiredField": "Acest câmp este obligatoriu",
     "invalidEmail": "Vă rugăm să introduceți o adresă de email validă",
     "invalidPhone": "Vă rugăm să introduceți un număr de telefon valid",
-    "atLeastOneRecurrence": "Este necesară cel puțin o repetare"
+    "passwordTooShort": "Parola trebuie să aibă cel puțin 6 caractere",
+    "passwordsDontMatch": "Parolele nu se potrivesc",
+    "invalidDob": "Vă rugăm să introduceți o dată de naștere validă",
+    "tooYoung": "Trebuie să aveți cel puțin {{years}} ani",
+    "nameChars": "Numele conține caractere invalide",
+    "atLeastOneRecurrence": "Este necesară cel puțin o repetare",
+    "selectInstructorFirst": "Vă rugăm să selectați mai întâi un instructor",
+    "selectTimeFirst": "Vă rugăm să selectați mai întâi o oră programată",
+    "capacityBelowSelected": "Numărul maxim de studenți nu poate fi mai mic decât numărul de studenți selectați",
+    "selectedStudentsExceedCapacity": "Studenții selectați depășesc capacitatea sălii",
+    "studentNotEnrolledToCourseNames": "Următorii studenți nu sunt înscriși la cursul ales: {{names}}",
+    "theoryOnly": "Doar cursurile de teorie sunt permise pentru clasele programate",
+    "classroomResourceRequired": "Doar sălile de clasă sunt permise pentru cursurile de teorie",
+    "categoryMismatch": "Categoria resursei trebuie să corespundă categoriei cursului",
+    "instructorLicenseMismatch": "Categoriile de licență ale instructorului trebuie să includă categoria cursului",
+    "outsideAvailability": "Ora selectată este în afara disponibilității instructorului",
+    "instructorConflict": "Instructorul are un conflict de programare",
+    "studentConflict": "Studentul are un conflict de programare",
+    "resourceConflict": "Resursa are un conflict de programare",
+    "practiceEnrollmentRequired": "Doar înscrierile practice pot fi folosite pentru lecții"
+  },
+  "availability": {
+    "allAvailable": "Toate orele selectate sunt disponibile",
+    "notAvailable": "Nu este disponibil: {{times}}",
+    "available": "Instructorul este disponibil la această oră",
+    "checkFailed": "Eșuat verificarea disponibilității"
+  },
+  "buttons": {
+    "checkAvailability": "Verifică Disponibilitatea"
+  },
+  "scheduledclasscreate": {
+    "patternCreatedSuccess": "Model și clase programate create cu succes",
+    "patternCreatedError": "Model creat dar eșuat generarea claselor",
+    "patternCreateError": "Eroare la crearea modelului"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Data de Început a Modelului",
+    "numberOfLessons": "Număr de Lecții",
+    "defaultDurationMin": "Durată Implicită (min)",
+    "defaultMaxStudents": "Studenți Maximi Impliciți"
+  },
+  "scheduledclasspatternlist": {
+    "id": "ID",
+    "name": "Nume",
+    "startDate": "Data de Început",
+    "numLessons": "Număr de Lecții"
+  },
+  "validators": {
+    "dobRequired": "Data nașterii este obligatorie",
+    "dobFuture": "Data nașterii nu poate fi în viitor",
+    "tooYoung": "Trebuie să aveți cel puțin 15 ani",
+    "emailRequired": "Email-ul este obligatoriu",
+    "emailInvalid": "Introduceți o adresă de email validă",
+    "phoneRequired": "Numărul de telefon este obligatoriu",
+    "phoneInvalid": "Număr de telefon invalid",
+    "licenseCategoriesRequired": "Este necesară cel puțin o categorie",
+    "licenseCategoriesInvalid": "Categorii invalide: {{categories}}"
   }
 }
