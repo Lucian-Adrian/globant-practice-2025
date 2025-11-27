@@ -17,24 +17,13 @@ import { ScheduledClassList, ScheduledClassCreate, ScheduledClassEdit } from '..
 import { ScheduledClassPatternList, ScheduledClassPatternCreate, ScheduledClassPatternEdit, ScheduledClassPatternShow } from '../features/scheduledclasspatterns';
 import { VEHICLE_CATEGORIES as FALLBACK_VEHICLE, STUDENT_STATUS as FALLBACK_STUDENT, PAYMENT_METHODS as FALLBACK_PAYMENT } from '../shared/constants/drivingSchool';
 import { Route } from 'react-router-dom';
+import Configuration from '../pages/configuration.tsx';
 import StudentsKanban from '../features/students/kanban/StudentsKanban.jsx';
 import Dashboard from './Dashboard.jsx';
 
 export default function App() {
   const [enums, setEnums] = React.useState(null);
-  React.useEffect(() => {
-    let isActive = true;
-    fetchEnums()
-      .then((result) => {
-        if (isActive) setEnums(result);
-      })
-      .catch(() => {
-        // Swallow network errors here; the UI will fallback to static choices.
-      });
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  React.useEffect(() => { fetchEnums().then(setEnums).catch(() => {}); }, []);
   const vehicleChoices = enums ? mapToChoices(enums.vehicle_category) : FALLBACK_VEHICLE;
   const studentChoices = enums ? mapToChoices(enums.student_status) : FALLBACK_STUDENT;
   const courseTypeChoices = enums ? mapToChoices(enums.course_type) : [ { id: 'THEORY', name: 'THEORY' }, { id: 'PRACTICE', name: 'PRACTICE' } ];
@@ -43,6 +32,7 @@ export default function App() {
   <Admin basename="/admin" dataProvider={dataProvider} authProvider={authProvider} i18nProvider={raI18nProvider} layout={Layout} dashboard={Dashboard}>
       <CustomRoutes>
         <Route path="students/board" element={<StudentsKanban />} />
+        <Route path="configuration" element={<Configuration />} />
       </CustomRoutes>
       <Resource name="students" list={makeStudentList()} edit={makeStudentEdit(studentChoices)} create={makeStudentCreate()} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
@@ -52,8 +42,8 @@ export default function App() {
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
       <Resource name="enrollments" list={EnrollmentList} edit={EnrollmentEdit} create={EnrollmentCreate} />
       <Resource name="lessons" list={LessonList} edit={LessonEdit} create={LessonCreate} />
-      <Resource name="scheduledclasses" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
-      <Resource name="scheduledclasspatterns" list={ScheduledClassPatternList} create={ScheduledClassPatternCreate} edit={ScheduledClassPatternEdit} show={ScheduledClassPatternShow} />
+      <Resource name="scheduled-classes" list={ScheduledClassList} create={ScheduledClassCreate} edit={ScheduledClassEdit} />
+      <Resource name="scheduled-class-patterns" list={ScheduledClassPatternList} create={ScheduledClassPatternCreate} edit={ScheduledClassPatternEdit} show={ScheduledClassPatternShow} />
     </Admin>
   );
 }

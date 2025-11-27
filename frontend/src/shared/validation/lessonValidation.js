@@ -1,4 +1,4 @@
-import { API_PREFIX, rawFetch } from '../../api/httpClient';
+import { API_PREFIX } from '../../api/httpClient';
 
 const addMinutes = (date, mins) => new Date(new Date(date).getTime() + mins * 60000);
 const overlap = (startA, endA, startB, endB) => startA < endB && startB < endA; // adjacency allowed
@@ -44,18 +44,11 @@ function minutesOf(hhmm) {
 }
 
 async function getJson(url) {
-	const resp = await rawFetch(url, { headers: { 'Content-Type': 'application/json' } });
-	if (!resp.ok) {
-		throw new Error(`API Error: ${resp.status} ${resp.statusText}`);
-	}
+	const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
 	let body = {};
 	try {
 		body = await resp.json();
-	} catch (e) {
-		console.error('JSON parse error', e);
-		// Don't swallow parse errors if we expect JSON
-		throw e;
-	}
+	} catch (_) {}
 	const data = Array.isArray(body) ? body : Array.isArray(body?.results) ? body.results : body;
 	return { ok: resp.ok, data, raw: body };
 }
@@ -69,9 +62,9 @@ export async function validateLesson(values, t, currentId) {
 	const scheduled = values.scheduled_time;
 	const duration = Number(values.duration_minutes ?? 90);
 
-	if (!enrollmentId) errors.enrollment_id = 'This field is required';
-	if (!instructorId) errors.instructor_id = 'This field is required';
-	if (!scheduled) errors.scheduled_time = 'This field is required';
+	if (!enrollmentId) errors.enrollment_id = t('validation.requiredField');
+	if (!instructorId) errors.instructor_id = t('validation.requiredField');
+	if (!scheduled) errors.scheduled_time = t('validation.requiredField');
 	if (Object.keys(errors).length) return errors;
 
 	const start = new Date(scheduled);
@@ -87,7 +80,7 @@ export async function validateLesson(values, t, currentId) {
 	// Practice-only: lessons must be created for practice enrollments
 	const courseType = String(course.type || enrollment.type || '').toUpperCase();
 	if (courseType && courseType !== 'PRACTICE') {
-		errors.enrollment_id = 'Practice enrollment required';
+		errors.enrollment_id = t('validation.practiceEnrollmentRequired');
 	}
 
 	// Fetch instructor for license categories
@@ -137,24 +130,24 @@ export async function validateLesson(values, t, currentId) {
 				}
 			}
 		}
-		if (!ok) errors.scheduled_time = 'Scheduled time is outside instructor availability';
+		if (!ok) errors.scheduled_time = t('validation.outsideAvailability');
+	} else {
+		errors.instructor_id = t('validation.instructorNotWorking');
 	}
 
 	// Category & license checks
-	// Removed: category check for theory classes (classrooms are universal)
-	// if (resource && courseCategory && resource.category !== courseCategory) {
-	//     errors.resource_id = t('validation.categoryMismatch');
-	// }
-	// Removed: license check for theory classes
-	// if (courseCategory) {
-	//     const cats = String(instructor.license_categories || '')
-	//         .split(',')
-	//         .map((c) => c.trim().toUpperCase())
-	//         .filter(Boolean);
-	//     if (!cats.includes(String(courseCategory).toUpperCase())) {
-	//         errors.instructor_id = t('validation.instructorLicenseMismatch');
-	//     }
-	// }
+	if (resource && courseCategory && resource.category !== courseCategory) {
+		errors.resource_id = t('validation.categoryMismatch');
+	}
+	if (courseCategory) {
+		const cats = String(instructor.license_categories || '')
+			.split(',')
+			.map((c) => c.trim().toUpperCase())
+			.filter(Boolean);
+		if (!cats.includes(String(courseCategory).toUpperCase())) {
+			errors.instructor_id = t('validation.instructorLicenseMismatch');
+		}
+	}
 
 	// Overlaps: lessons in window, filter client-side by status and by entity
 	async function findAnyOverlap(url, predicate) {
@@ -194,7 +187,7 @@ export async function validateLesson(values, t, currentId) {
 		});
 	}
 	const instrHit = instrHitLessons || instrHitClasses;
-	if (instrHit) errors.instructor_id = 'Instructor conflict detected';
+	if (instrHit) errors.instructor_id = t('validation.instructorConflict');
 
 	// Student conflict
 	const studentId = enrollment?.student?.id ?? enrollment?.student_id;
@@ -215,7 +208,7 @@ export async function validateLesson(values, t, currentId) {
 				item.students.some((s) => (s?.id ?? s) === studentId);
 			return active && hasStudent && overlap(start, end, st, en);
 		});
-		if (stuHitLessons || stuHitClasses) errors.enrollment_id = 'Student conflict detected';
+		if (stuHitLessons || stuHitClasses) errors.enrollment_id = t('validation.studentConflict');
 	}
 
 	// Resource conflict
@@ -223,7 +216,7 @@ export async function validateLesson(values, t, currentId) {
 		// Use efficient server-side filter by resource id
 		const resUrl = `${API_PREFIX}/lessons/?resource_id=${encodeURIComponent(resourceId)}&${baseWin}`;
 		const resHit = await findAnyOverlap(resUrl, () => true);
-		if (resHit) errors.resource_id = 'Resource conflict detected';
+		if (resHit) errors.resource_id = t('validation.resourceConflict');
 	}
 
 	return errors;
@@ -239,11 +232,11 @@ export async function validateScheduledClass(values, t, currentId) {
 	const duration = Number(values.duration_minutes ?? 60);
 	const maxStudents = values.max_students;
 
-	if (!courseId) errors.course_id = 'This field is required';
-	if (!instructorId) errors.instructor_id = 'This field is required';
-	if (!resourceId) errors.resource_id = 'This field is required';
-	if (!scheduled) errors.scheduled_time = 'This field is required';
-	if (maxStudents == null) errors.max_students = 'This field is required';
+	if (!courseId) errors.course_id = t('validation.requiredField');
+	if (!instructorId) errors.instructor_id = t('validation.requiredField');
+	if (!resourceId) errors.resource_id = t('validation.requiredField');
+	if (!scheduled) errors.scheduled_time = t('validation.requiredField');
+	if (maxStudents == null) errors.max_students = t('validation.requiredField');
 	if (Object.keys(errors).length) return errors;
 
 	const start = new Date(scheduled);
@@ -266,13 +259,13 @@ export async function validateScheduledClass(values, t, currentId) {
 	// Theory-only
 	const ctype = String(course?.type || '').toUpperCase();
 	if (ctype && ctype !== 'THEORY') {
-		errors.course_id = 'Only theory courses are allowed for scheduled classes';
+		errors.course_id = t('validation.theoryOnly');
 	}
 
 	// Classroom-only (resource not vehicle)
 	const rcap = Number(resource?.max_capacity ?? NaN);
 	if (!Number.isNaN(rcap) && rcap <= 2) {
-		errors.resource_id = 'Classroom resource required for theory classes';
+		errors.resource_id = t('validation.classroomResourceRequired');
 	}
 
 	// Instructor availability (business-local)
@@ -311,24 +304,25 @@ export async function validateScheduledClass(values, t, currentId) {
 				}
 			}
 		}
-		if (!ok) errors.scheduled_time = 'Scheduled time is outside instructor availability';
+		if (!ok) errors.scheduled_time = t('validation.outsideAvailability');
+	} else {
+		errors.instructor_id = t('validation.instructorNotWorking');
 	}
 
 	// Category & license
-	// Removed: category check for theory classes (classrooms are universal)
-	// if (resource && courseCategory && resource.category !== courseCategory) {
-	//     errors.resource_id = t('validation.categoryMismatch');
-	// }
-	// Removed: license check for theory classes
-	// if (courseCategory) {
-	//     const cats = String(instructor?.license_categories || '')
-	//         .split(',')
-	//         .map((c) => c.trim().toUpperCase())
-	//         .filter(Boolean);
-	//     if (!cats.includes(String(courseCategory).toUpperCase())) {
-	//         errors.instructor_id = t('validation.instructorLicenseMismatch');
-	//     }
-	// }
+	const courseCategory = course?.category;
+	if (resource && courseCategory && resource.category !== courseCategory) {
+		errors.resource_id = t('validation.categoryMismatch');
+	}
+	if (courseCategory) {
+		const cats = String(instructor?.license_categories || '')
+			.split(',')
+			.map((c) => c.trim().toUpperCase())
+			.filter(Boolean);
+		if (!cats.includes(String(courseCategory).toUpperCase())) {
+			errors.instructor_id = t('validation.instructorLicenseMismatch');
+		}
+	}
 
 		// NEW: Each selected student must be enrolled in the chosen course
 		const studentIds = Array.isArray(values.student_ids)
@@ -368,7 +362,11 @@ export async function validateScheduledClass(values, t, currentId) {
 					})
 				);
 				const names = nameResults.join(', ');
-				errors.student_ids = `The following students are not enrolled in the chosen course: ${names}`;
+				const key = 'validation.studentNotEnrolledToCourseNames';
+				const translated = t(key, { names });
+				errors.student_ids = translated === key
+					? `The following students are not enrolled in the chosen course: ${names}`
+					: translated;
 			}
 		}
 
@@ -394,7 +392,7 @@ export async function validateScheduledClass(values, t, currentId) {
 					msg = t('capacityBelowSelected', { count: selectedCount });
 				}
 				if (msg === key || msg === 'capacityBelowSelected') {
-					msg = t('validation.capacityBelowSelected', 'Max students cannot be lower than number of selected students.');
+					msg = 'Max students cannot be lower than number of selected students.';
 				}
 				errors.max_students = msg;
 			}
@@ -403,7 +401,7 @@ export async function validateScheduledClass(values, t, currentId) {
 				let msg = t(key, { count: selectedCount, capacity: rcap });
 				if (msg === key) msg = t('selectedStudentsExceedCapacity', { count: selectedCount, capacity: rcap });
 				if (msg === key || msg === 'selectedStudentsExceedCapacity') {
-					msg = t('validation.selectedStudentsExceedCapacity', 'Selected students exceed room capacity.');
+					msg = 'Selected students exceed room capacity.';
 				}
 				errors.student_ids = msg;
 			}

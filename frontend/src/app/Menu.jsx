@@ -46,8 +46,8 @@ export default function Menu() {
       <RaMenu.ResourceItem name="payments" />
       <RaMenu.ResourceItem name="enrollments" />
       <RaMenu.ResourceItem name="lessons" />
-      <RaMenu.ResourceItem name="scheduledclasspatterns" />
-      <RaMenu.ResourceItem name="scheduledclasses" />
+      <RaMenu.ResourceItem name="scheduled-class-patterns" />
+      <RaMenu.ResourceItem name="scheduled-classes" />
       {isRu ? (
         // RU only: split label into two lines explicitly
         (() => {
@@ -76,6 +76,7 @@ export default function Menu() {
       )}
 
   <RaMenu.Item to="/admin/students/board" primaryText={translate('common.students.board.title', { defaultValue: 'Students Board' })} component={Link} />
+  <RaMenu.Item to="/admin/configuration" primaryText={translate('common.configuration.title', { defaultValue: 'Configuration' })} component={Link} />
     </RaMenu>
   );
 }

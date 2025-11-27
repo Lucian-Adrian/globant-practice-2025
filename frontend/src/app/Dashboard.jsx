@@ -10,7 +10,6 @@ import {
   BarChart as BarChartIcon
 } from '@mui/icons-material';
 
-// Fallback static dataset for local development if API is unavailable
 const fallbackStats = {
   todayScheduled: 2,
   thisWeekCompleted: 5,
@@ -28,13 +27,12 @@ const fallbackStats = {
   ],
 };
 
-// Fetch lesson statistics from backend; fallback to static data on error
 async function fetchLessonStatistics() {
   try {
     const resp = await fetch('/api/utils/lesson-stats/');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
-    // Basic shape guard
+
     if (json && typeof json === 'object' && 'todayScheduled' in json) return json;
     return fallbackStats;
   } catch (_) {
@@ -42,7 +40,6 @@ async function fetchLessonStatistics() {
   }
 }
 
-// Simple bar chart component
 const SimpleBarChart = ({ data, height = 100 }) => {
   const maxValue = Math.max(...data.map(d => d.lessons));
   
@@ -72,7 +69,6 @@ const SimpleBarChart = ({ data, height = 100 }) => {
   );
 };
 
-// Lesson statistics widget component
 const LessonStatsWidget = () => {
   const t = useTranslate();
   const [stats, setStats] = React.useState(fallbackStats);
@@ -218,6 +214,7 @@ export default function Dashboard() {
       {error && <Typography color="error">{t('common.error_loading', 'Error loading data')}: {String(error.message || error)}</Typography>}
       
       {data && (
+        <>
         <Grid container spacing={3}>
           {/* Existing Stats */}
           <Grid item xs={12} sm={6} md={4} lg={2}>
@@ -241,6 +238,7 @@ export default function Dashboard() {
           
           {/* Lesson Statistics Widget removed as requested */}
         </Grid>
+        </>
       )}
     </Box>
   );

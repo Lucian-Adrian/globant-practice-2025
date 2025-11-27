@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Comprehensive translations for ScheduledClassPatterns, ScheduledClasses, and other React-Admin components in EN, RO, RU.
+- Missing translation keys for filters, common UI elements, and student fields.
 - ScheduledClassPattern model for recurring scheduled classes with recurrence fields (days, times, start_date, num_lessons)
 - Recurrence logic in generate_scheduled_classes method to create individual ScheduledClass instances
 - Frontend ScheduledClassPattern resource with create/edit/list components
@@ -303,4 +305,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.1.3]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/Lucian-Adrian/globant-practice-2025/releases/tag/v0.1.0```
+[0.1.0]: https://github.com/Lucian-Adrian/globant-practice-2025/releases/tag/v0.1.0

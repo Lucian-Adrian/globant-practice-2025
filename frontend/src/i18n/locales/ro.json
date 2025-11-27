@@ -16,6 +16,7 @@
     "goToLogin": "Mergi la Login",
     "with": "cu",
     "viewAll": "Vezi tot",
+    "viewDetails": "Vezi Detalii",
     "showLess": "Arată mai puțin",
     "noItems": "Fără elemente"
   },
@@ -61,7 +62,11 @@
     "unavailable": "Indisponibil",
     "scheduled": "Programat",
     "completed": "Finalizat",
-    "canceled": "Anulat"
+    "canceled": "Anulat",
+    "active": "Activ",
+    "inactive": "Inactiv",
+    "graduated": "Absolvit",
+    "pending": "În așteptare"
   },
   "resources": {
     "students": {
@@ -76,7 +81,10 @@
         "phone_number": "Număr telefon",
         "date_of_birth": "Data nașterii",
         "password": "Parolă",
-        "confirm_password": "Confirmare parolă"
+        "confirm_password": "Confirmare parolă",
+        "id": "ID",
+        "status": "Status",
+        "enrollment_date": "Data înscrierii"
       }
     },
     "instructors": {
@@ -131,6 +139,9 @@
     },
     "scheduledclasses": {
       "name": "Clase Programate",
+      "empty": "Nicio clasă programată încă",
+      "helper": "Creați o clasă programată pentru a începe planificarea lecțiilor.",
+      "create": "Creează Clasă Programată",
       "fields": {
         "name": "Nume",
         "course": "Curs",
@@ -162,12 +173,17 @@
         "start_date": "Data Început Model",
         "num_lessons": "Număr de Lecții",
         "default_duration_minutes": "Durată Implicită (min)",
-        "default_max_students": "Max Studenți Implicit"
+        "default_max_students": "Max Studenți Implicit",
+        "recurrences": "Repetări",
+        "students": "Studenți",
+        "recurrence_days": "Zile de repetare",
+        "times": "Ore"
       },
       "bulk": {
         "generate": "Generează Clase",
         "regenerate": "Regenerează Clase",
         "generate_success": "Clase generate cu succes pentru {{count}} model(e). Creat {{classes}} clasă(clase).",
+        "generate_partial_success": "Clase generate pentru {{success_count}} model(e). Eșuat pentru {{fail_count}} model(e). Creat {{classes}} clasă(clase).",
         "regenerate_success": "Clase regenerate cu succes pentru {{count}} model(e). Șterse {{deleted}} clasă(clase), create {{generated}} clasă(clase) nouă.",
         "generate_error": "Eșuat generarea claselor: {{error}}",
         "regenerate_error": "Eșuat regenerarea claselor: {{error}}",
@@ -176,8 +192,24 @@
         "regenerate_confirm_title": "Regenerează Clase",
         "regenerate_confirm_content": "Sigur doriți să regenerați clase pentru {{count}} model(e)? Acest lucru va șterge clasele existente și va crea altele noi."
       },
+      "generate": {
+        "button": "Generează Clase",
+        "success": "Clase generate cu succes",
+        "error": "Eroare la generarea claselor",
+        "confirm_title": "Generează Clase",
+        "confirm_content": "Generați clase programate pentru acest model?"
+      },
       "viewClasses": "Vezi Clase"
     }
+  },
+  "days": {
+    "MONDAY": "Luni",
+    "TUESDAY": "Marți",
+    "WEDNESDAY": "Miercuri",
+    "THURSDAY": "Joi",
+    "FRIDAY": "Vineri",
+    "SATURDAY": "Sâmbătă",
+    "SUNDAY": "Duminică"
   },
   "lessons": {
     "header": {
@@ -365,6 +397,36 @@
           "CANCELED": "Anulat"
         }
       },
+      "details": {
+        "close": "Închide",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "scheduledLessons": "Lecții programate",
+        "bookLesson": "Programează o lecție",
+        "activityHistory": "Istoricul activității",
+        "activityNone": "Nicio activitate recentă",
+        "noScheduled": "Nu există lecții teoretice programate",
+        "na": "N/A",
+        "days": {
+          "monday": "Luni",
+          "tuesday": "Marți",
+          "wednesday": "Miercuri",
+          "thursday": "Joi",
+          "friday": "Vineri",
+          "saturday": "Sâmbătă",
+          "sunday": "Duminică"
+        },
+        "dayTime": "{{day}} - {{time}}",
+        "status": {
+          "scheduled": "Programat",
+          "completed": "Finalizat",
+          "canceled": "Anulat",
+          "SCHEDULED": "Programat",
+          "COMPLETED": "Finalizat",
+          "CANCELED": "Anulat"
+        }
+      },
       "motivational": { "title": "Ești aproape!", "body": "Cu {{remaining}}% rămas, ești pe drumul cel bun către permis. Continuă!" }
     },
     "landing": {
@@ -423,6 +485,9 @@
     },
     "action": {
       "back": "Înapoi"
+    },
+    "custom": {
+      "import_csv": "Importă CSV"
     }
   },
   "validation": {
