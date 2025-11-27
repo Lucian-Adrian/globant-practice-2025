@@ -169,11 +169,11 @@ const DashboardStudent: React.FC = () => {
       .map((l:any) => {
         const isTheory = ((l.enrollment?.course?.type || '').toUpperCase() === 'THEORY');
         const typeLabel = isTheory
-          ? t('lessons.word.theory', { defaultValue: t('type.theory') })
-          : t('lessons.word.practice', { defaultValue: t('type.driving') });
+          ? t('lessons.word.theory')
+          : t('lessons.word.practice');
         const kindLabel = isTheory
-          ? t('lessons.label.theoryLesson', { defaultValue: 'Theory Lesson' })
-          : t('lessons.label.practiceLesson', { defaultValue: 'Practice Lesson' });
+          ? t('lessons.label.theoryLesson')
+          : t('lessons.label.practiceLesson');
         return {
           id: `lesson-${l.id}`,
           kind: 'lesson',
@@ -192,8 +192,8 @@ const DashboardStudent: React.FC = () => {
       .map((c:any) => ({
         id: `class-${c.id}`,
         kind: 'class',
-        kindLabel: t('lessons.label.theoryLesson', { defaultValue: 'Theory Lesson' }),
-        typeLabel: t('lessons.word.theory', { defaultValue: t('type.theory') }),
+        kindLabel: t('lessons.label.theoryLesson'),
+        typeLabel: t('lessons.word.theory'),
         instructor: c.instructor ? `${c.instructor.first_name} ${c.instructor.last_name}` : '—',
         date: new Date(c.scheduled_time).toLocaleDateString(),
         time: new Date(c.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
