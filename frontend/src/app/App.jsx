@@ -6,6 +6,7 @@ import dataProvider from '../api/dataProvider';
 import { authProvider } from '../auth/authProvider';
 import { fetchEnums, mapToChoices } from '../api/enumsClient';
 import { makeStudentList, makeStudentEdit, makeStudentCreate } from '../features/students';
+import { ResourceList, makeResourceEdit, makeResourceCreate } from '../features/resources';
 import { InstructorList, InstructorEdit, InstructorCreate } from '../features/instructors';
 import { InstructorAvailabilityList } from '../features/instructoravailabilities';
 import { CourseList, makeCourseEdit, makeCourseCreate } from '../features/courses';
@@ -35,7 +36,7 @@ export default function App() {
       </CustomRoutes>
       <Resource name="students" list={makeStudentList()} edit={makeStudentEdit(studentChoices)} create={makeStudentCreate()} />
       <Resource name="instructors" list={InstructorList} edit={InstructorEdit} create={InstructorCreate} />
-      
+      <Resource name="resources" list={ResourceList} edit={makeResourceEdit(vehicleChoices)} create={makeResourceCreate(vehicleChoices)} />
       <Resource name="instructor-availabilities" list={InstructorAvailabilityList} />
       <Resource name="classes" list={CourseList} edit={makeCourseEdit(vehicleChoices, courseTypeChoices)} create={makeCourseCreate(vehicleChoices, courseTypeChoices)} />
       <Resource name="payments" list={PaymentList} edit={makePaymentEdit(paymentChoices)} create={makePaymentCreate(paymentChoices)} />
