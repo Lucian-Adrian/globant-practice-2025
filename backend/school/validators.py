@@ -340,6 +340,7 @@ def validate_category_and_license(course, instructor, resource) -> None:
                 is_classroom = True
         except (ValueError, TypeError):
             # If max_capacity comparison fails, assume not a classroom (default to vehicle validation)
+            pass
 
         # If it's a classroom, we might skip category check OR ensure classrooms have a "universal" category or match.
         # For now, let's assume classrooms might be category-agnostic or the user data is just wrong.

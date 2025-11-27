@@ -7,7 +7,6 @@ import {
   NumberField,
   ReferenceField,
   BulkDeleteButton,
-  BulkUpdateButton,
   useDataProvider,
   useNotify,
   useRefresh,
