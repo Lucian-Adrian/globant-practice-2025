@@ -12,17 +12,9 @@ const SUPPORTED = [
 export const PortalLanguageSelect = ({ className = '' }) => {
   const { i18n } = useTranslation();
 
-  // Log when component re-renders with new language
-  React.useEffect(() => {
-    console.log('🎛️ Language selector updated:', { currentLanguage: i18n.language });
-  }, [i18n.language]);
-
   const handleChange = (e) => {
     const newLang = e.target.value;
-    console.log('Language change requested:', { from: i18n.language, to: newLang });
-    i18n.changeLanguage(newLang).then(() => {
-      console.log('Language changed successfully to:', i18n.language);
-    }).catch((error) => {
+    i18n.changeLanguage(newLang).catch((error) => {
       console.error('Language change failed:', error);
     });
   };

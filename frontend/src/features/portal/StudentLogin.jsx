@@ -28,19 +28,6 @@ const StudentLogin = () => {
   const { t, i18n } = useTranslation(['portal','common','validation']);
   const navigate = useNavigate();
 
-  // Log translations when language changes
-  React.useEffect(() => {
-    const loginTitle = t('portal.login.title', { defaultValue: 'Student Login' });
-    const signupTitle = t('portal.signup.title', { defaultValue: 'Student Signup' });
-    const loginSubtitle = t('portal.login.subtitle', { defaultValue: 'Welcome back' });
-    console.log('🔐 Login page translations updated:', {
-      language: i18n.language,
-      loginTitle,
-      signupTitle,
-      loginSubtitle
-    });
-  }, [i18n.language, t]);
-
   // Mode toggle
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
 

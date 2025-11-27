@@ -112,21 +112,8 @@ const NavBar: React.FC = () => {
 
 const LandingPublic: React.FC = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation('portal');
+  const { t } = useTranslation('portal');
   useI18nForceUpdate();
-
-  // Log translations when language changes
-  React.useEffect(() => {
-    const title = t('portal.landing.public.hero.title');
-    const subtitle = t('portal.landing.public.hero.subtitle');
-    const appName = t('appName', { defaultValue: 'DriveAdmin' });
-    console.log('🌐 Landing page translations updated:', {
-      language: i18n.language,
-      title,
-      subtitle,
-      appName
-    });
-  }, [i18n.language, t]);
 
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
