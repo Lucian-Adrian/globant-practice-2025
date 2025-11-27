@@ -212,6 +212,16 @@
     "SUNDAY": "Duminică"
   },
   "lessons": {
+    "word": {
+      "lesson": "Lecție",
+      "class": "Clasă",
+      "practice": "Practică",
+      "theory": "Teorie"
+    },
+    "label": {
+      "practiceLesson": "Lecție de practică",
+      "theoryLesson": "Lecție de teorie"
+    },
     "header": {
       "title": "Lecțiile tale",
       "subtitle": "Gestionează lecțiile de conducere și teorie și urmărește progresul."
@@ -315,6 +325,7 @@
     "welcome": "Bine ai revenit, {{name}}! 🚗",
     "subline": "Pregătit să accelerezi?",
     "nextLesson": "Următoarea lecție",
+    "nextSession": "Următoarea sesiune",
     "viewAll": "Vezi toate",
     "noUpcoming": "Nicio lecție viitoare.",
     "bookLesson": "Programează",
@@ -328,6 +339,7 @@
     "openPracticeHint": "Deschide pagina practică",
     "goToPractice": "Mergi la Practică",
     "upcomingLessons": "Lecții viitoare",
+    "upcomingSessions": "Lecții și clase viitoare",
     "notifications": "Notificări",
     "noNotifications": "Fără notificări",
     "viewAllNotifications": "Vezi toate notificările"

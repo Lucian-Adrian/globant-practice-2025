@@ -213,6 +213,16 @@
     "SUNDAY": "Sunday"
   },
   "lessons": {
+    "word": {
+      "lesson": "Lesson",
+      "class": "Class",
+      "practice": "Practice",
+      "theory": "Theory"
+    },
+    "label": {
+      "practiceLesson": "Practice Lesson",
+      "theoryLesson": "Theory Lesson"
+    },
     "header": {
       "title": "Your Lessons",
       "subtitle": "Manage your driving and theory lessons, track your progress, and never miss a session."
@@ -370,6 +380,7 @@
     "welcome": "Welcome back, {{name}}! 🚗",
     "subline": "Ready to accelerate your driving journey? Check your progress and upcoming lessons below.",
     "nextLesson": "Next upcoming lesson",
+    "nextSession": "Next upcoming session",
     "viewAll": "View all",
     "noUpcoming": "No upcoming lessons scheduled.",
     "bookLesson": "Book a lesson",
@@ -383,6 +394,7 @@
     "openPracticeHint": "Open the practice page for theory tests.",
     "goToPractice": "Go to Practice",
     "upcomingLessons": "Upcoming Lessons",
+    "upcomingSessions": "Upcoming Lessons & Classes",
     "notifications": "Notifications",
     "noNotifications": "No new notifications.",
     "viewAllNotifications": "View All Notifications"
