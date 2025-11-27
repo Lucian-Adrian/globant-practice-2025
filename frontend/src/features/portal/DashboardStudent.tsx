@@ -133,6 +133,7 @@ const DashboardStudent: React.FC = () => {
   }, [navigate]);
 
   const lessons = useMemo(() => (data?.lessons ?? []), [data]);
+  const classes = useMemo(() => (data?.scheduled_classes ?? []), [data]);
   const courses = useMemo(() => (data?.courses ?? []), [data]);
   const payments = useMemo(() => (data?.payments ?? []), [data]);
   const enrollments = useMemo(() => (data?.enrollments ?? []), [data]);
@@ -156,24 +157,56 @@ const DashboardStudent: React.FC = () => {
     return lessons.filter((l:any) => l?.enrollment?.course?.id === activeCourse.id);
   }, [lessons, activeCourse]);
 
-  const allUpcomingLessons = useMemo(() => {
-    // Show ALL upcoming lessons across all enrollments/courses
-    const scheduled = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'SCHEDULED');
-    return scheduled
-      .slice()
-      .sort((a:any,b:any) => new Date(a.scheduled_time).getTime() - new Date(b.scheduled_time).getTime())
-      .map((l:any) => ({
-        id: l.id,
-        type: (l.enrollment?.course?.type || '').toUpperCase() === 'THEORY' ? 'Theory' : 'Driving',
-        instructor: l.instructor ? `${l.instructor.first_name} ${l.instructor.last_name}` : '—',
-        date: new Date(l.scheduled_time).toLocaleDateString(),
-        time: new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        vehicle: l.resource?.license_plate || (l.enrollment?.course?.name || '—')
+  const allUpcomingSessions = useMemo(() => {
+    const now = Date.now();
+    const isFuture = (iso: string) => {
+      const ts = Date.parse(iso);
+      return Number.isFinite(ts) && ts > now;
+    };
+
+    const scheduledLessons = lessons
+      .filter((l:any) => (l.status || '').toUpperCase() === 'SCHEDULED' && l?.scheduled_time && isFuture(l.scheduled_time))
+      .map((l:any) => {
+        const isTheory = ((l.enrollment?.course?.type || '').toUpperCase() === 'THEORY');
+        const typeLabel = isTheory
+          ? t('lessons.word.theory', { defaultValue: t('type.theory') })
+          : t('lessons.word.practice', { defaultValue: t('type.driving') });
+        const kindLabel = isTheory
+          ? t('lessons.label.theoryLesson', { defaultValue: 'Theory Lesson' })
+          : t('lessons.label.practiceLesson', { defaultValue: 'Practice Lesson' });
+        return {
+          id: `lesson-${l.id}`,
+          kind: 'lesson',
+          kindLabel,
+          typeLabel,
+          instructor: l.instructor ? `${l.instructor.first_name} ${l.instructor.last_name}` : '—',
+          date: new Date(l.scheduled_time).toLocaleDateString(),
+          time: new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          resource: l.resource?.license_plate || (l.enrollment?.course?.name || '—'),
+          scheduled_time: l.scheduled_time,
+        };
+      });
+
+    const scheduledClasses = classes
+      .filter((c:any) => (c.status || '').toUpperCase() === 'SCHEDULED' && c?.scheduled_time && isFuture(c.scheduled_time))
+      .map((c:any) => ({
+        id: `class-${c.id}`,
+        kind: 'class',
+        kindLabel: t('lessons.label.theoryLesson', { defaultValue: 'Theory Lesson' }),
+        typeLabel: t('lessons.word.theory', { defaultValue: t('type.theory') }),
+        instructor: c.instructor ? `${c.instructor.first_name} ${c.instructor.last_name}` : '—',
+        date: new Date(c.scheduled_time).toLocaleDateString(),
+        time: new Date(c.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        resource: c.resource?.name || (c.course?.name || '—'),
+        scheduled_time: c.scheduled_time,
       }));
-  }, [lessons]);
+
+    return [...scheduledLessons, ...scheduledClasses]
+      .sort((a:any,b:any) => new Date(a.scheduled_time).getTime() - new Date(b.scheduled_time).getTime());
+  }, [lessons, classes, t]);
 
   // Next upcoming lesson (first item after sorting)
-  const nextUpcomingLesson = allUpcomingLessons[0] || null;
+  const nextUpcomingSession = allUpcomingSessions[0] || null;
 
   // Build a map of unique courses the student is actually tied to via lessons/payments
   const studentCourseMap = useMemo(() => {
@@ -190,19 +223,21 @@ const DashboardStudent: React.FC = () => {
   const { requiredAll, completedAll, percentAll } = useMemo(() => {
     const courseList = Array.from(studentCourseMap.values());
     const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredAll: required, completedAll: completed, percentAll: pct } as any;
-  }, [studentCourseMap, lessons]) as { requiredAll: number, completedAll: number, percentAll: number };
+    const completedLessons = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED').length;
+    const completedClasses = classes.filter((c:any) => (c.status || '').toUpperCase() === 'COMPLETED').length;
+    const completedTotal = completedLessons + completedClasses;
+    const pct = required > 0 ? Math.round((completedTotal / required) * 100) : 0;
+    return { requiredAll: required, completedAll: completedTotal, percentAll: pct } as any;
+  }, [studentCourseMap, lessons, classes]) as { requiredAll: number, completedAll: number, percentAll: number };
 
-  // Practice-only aggregation
-  const { requiredPractice, completedPractice, percentPractice } = useMemo(() => {
-    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'PRACTICE');
-    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'PRACTICE').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredPractice: required, completedPractice: completed, percentPractice: pct } as any;
-  }, [studentCourseMap, lessons]) as { requiredPractice: number, completedPractice: number, percentPractice: number };
+  // Completed sessions (lessons + scheduled classes)
+  const completedLessonsCount = useMemo(() => (
+    lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED').length
+  ), [lessons]);
+  const completedClassesCount = useMemo(() => (
+    classes.filter((c:any) => (c.status || '').toUpperCase() === 'COMPLETED').length
+  ), [classes]);
+  const completedSessions = completedLessonsCount + completedClassesCount;
 
   // Theory-only aggregation (for Theory | Practice overview card)
   const { requiredTheory, completedTheory, percentTheory } = useMemo(() => {
@@ -251,12 +286,12 @@ const DashboardStudent: React.FC = () => {
               {/* Next upcoming lesson details replace the buttons */}
               <div className="tw-max-w-xl tw-mx-auto tw-w-full">
                 <div className="tw-bg-white/15 tw-rounded-xl tw-backdrop-blur-sm tw-border tw-border-white/20 tw-p-4 tw-text-left">
-                  <div className="tw-text-sm tw-opacity-80 tw-mb-1">{t('dashboard.nextLesson')}</div>
-                  {nextUpcomingLesson ? (
+                  <div className="tw-text-sm tw-opacity-80 tw-mb-1">{t('dashboard.nextSession', { defaultValue: t('dashboard.nextLesson') })}</div>
+                  {nextUpcomingSession ? (
                     <div className="tw-flex tw-items-center tw-justify-between tw-gap-4">
                       <div>
-                        <div className="tw-text-lg tw-font-semibold">{nextUpcomingLesson.type} {t('commonUI.with')} {nextUpcomingLesson.instructor}</div>
-                        <div className="tw-text-sm tw-opacity-90">{nextUpcomingLesson.date} at {nextUpcomingLesson.time}</div>
+                        <div className="tw-text-lg tw-font-semibold">{nextUpcomingSession.kindLabel} {t('commonUI.with')} {nextUpcomingSession.instructor}</div>
+                        <div className="tw-text-sm tw-opacity-90">{nextUpcomingSession.date} at {nextUpcomingSession.time}</div>
                       </div>
                       <a href="/lessons" className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-h-10 tw-px-4 tw-text-sm tw-font-medium tw-bg-secondary tw-text-secondary-foreground hover:tw-bg-secondary/90">{t('dashboard.viewAll')}</a>
                     </div>
@@ -291,11 +326,11 @@ const DashboardStudent: React.FC = () => {
             description={t('progress.courseCompletion.completedOf', { completed: completedAll, required: requiredAll || 0 })}
             trend={{ value: "", isPositive: true }}
           />
-          {/* 3. Lessons Completed (practice) */}
+          {/* 3. Lessons Completed (includes classes) */}
           <StatCard
             title={t('dashboard.lessonsCompleted')}
-            value={`${completedPractice}/${requiredPractice || 0}`}
-            description={t('dashboard.left', { count: Math.max((requiredPractice - completedPractice), 0) })}
+            value={`${completedSessions}/${requiredAll || 0}`}
+            description={t('dashboard.left', { count: Math.max((requiredAll - completedSessions), 0) })}
             trend={{ value: "", isPositive: true }}
           />
           {/* 4. Theory Practice card */}
@@ -315,38 +350,38 @@ const DashboardStudent: React.FC = () => {
               <CardHeader>
                 <CardTitle className="tw-flex tw-items-center tw-gap-2">
                   <span className="tw-w-5 tw-h-5 tw-rounded-sm tw-bg-primary"></span>
-                  {t('dashboard.upcomingLessons')}
+                  {t('dashboard.upcomingSessions', { defaultValue: t('dashboard.upcomingLessons') })}
                 </CardTitle>
               </CardHeader>
               <CardContent className="tw-space-y-4">
-                {allUpcomingLessons.length === 0 && (
+                {allUpcomingSessions.length === 0 && (
                   <div className="tw-text-sm tw-text-muted-foreground">{t('dashboard.noUpcoming')}</div>
                 )}
-                {(showAllUpcoming ? allUpcomingLessons : allUpcomingLessons.slice(0, 1)).map((lesson: any) => (
-                  <div key={lesson.id} className="tw-flex tw-items-center tw-justify-between tw-p-4 tw-bg-secondary/50 tw-rounded-lg tw-border tw-border-border/30 hover:tw-bg-secondary/70 tw-transition-colors tw-group">
+                {(showAllUpcoming ? allUpcomingSessions : allUpcomingSessions.slice(0, 1)).map((item: any) => (
+                  <div key={item.id} className="tw-flex tw-items-center tw-justify-between tw-p-4 tw-bg-secondary/50 tw-rounded-lg tw-border tw-border-border/30 hover:tw-bg-secondary/70 tw-transition-colors tw-group">
                     <div className="tw-flex tw-items-center tw-gap-4">
                       <div className="tw-w-12 tw-h-12 tw-bg-primary/10 tw-rounded-lg tw-flex tw-items-center tw-justify-center group-hover:tw-bg-primary/20 tw-transition-colors">
                         <span className="tw-w-6 tw-h-6 tw-rounded-sm tw-bg-primary"></span>
                       </div>
                       <div>
                         <div className="tw-flex tw-items-center tw-gap-2 tw-mb-1">
-                          <h3 className="tw-font-semibold">{lesson.type} Lesson</h3>
-                          <Badge variant="outline" className="tw-text-xs">{lesson.type}</Badge>
+                          <h3 className="tw-font-semibold">{item.kindLabel}</h3>
+                          <Badge variant="outline" className="tw-text-xs">{item.typeLabel}</Badge>
                         </div>
-                        <p className="tw-text-sm tw-text-muted-foreground">{t('commonUI.with')} {lesson.instructor}</p>
-                        <p className="tw-text-xs tw-text-muted-foreground tw-mt-1">{lesson.vehicle}</p>
+                        <p className="tw-text-sm tw-text-muted-foreground">{t('commonUI.with')} {item.instructor}</p>
+                        <p className="tw-text-xs tw-text-muted-foreground tw-mt-1">{item.resource}</p>
                       </div>
                     </div>
                     <div className="tw-text-right">
-                      <p className="tw-font-medium">{lesson.date}</p>
+                      <p className="tw-font-medium">{item.date}</p>
                       <p className="tw-text-sm tw-text-muted-foreground tw-flex tw-items-center tw-justify-end tw-gap-1">
                         <span className="tw-w-3 tw-h-3 tw-rounded-sm tw-bg-foreground/60"></span>
-                        {lesson.time}
+                        {item.time}
                       </p>
                     </div>
                   </div>
                 ))}
-                {allUpcomingLessons.length > 1 && (
+                {allUpcomingSessions.length > 1 && (
                   <div className="tw-flex tw-justify-center">
                     <Button variant="outline" size="sm" onClick={() => setShowAllUpcoming((v) => !v)}>
                       {showAllUpcoming ? t('commonUI.showLess') : t('dashboard.viewAll')}
