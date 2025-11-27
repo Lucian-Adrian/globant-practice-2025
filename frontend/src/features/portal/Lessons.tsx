@@ -298,12 +298,9 @@ const Lessons: React.FC = () => {
                   const isClass = !!item.__isClass;
                   const statusUp = (item.status || '').toUpperCase();
                   const isTheory = isClass ? true : (((item?.enrollment?.course?.type || '').toUpperCase() === 'THEORY'));
-                  const typeLabel = isTheory
-                    ? t('lessons.word.theory', { defaultValue: t('type.theory') })
-                    : t('lessons.word.practice', { defaultValue: t('type.driving') });
                   const titleLabel = isTheory
-                    ? t('lessons.label.theoryLesson', { defaultValue: 'Theory Lesson' })
-                    : t('lessons.label.practiceLesson', { defaultValue: 'Practice Lesson' });
+                    ? t('lessons.label.theoryLesson')
+                    : t('lessons.label.practiceLesson');
                   const instructorName = item?.instructor ? `${item.instructor.first_name} ${item.instructor.last_name}` : '—';
                   const dt = item?.scheduled_time ? new Date(item.scheduled_time) : null;
                   const dateStr = dt ? dt.toLocaleDateString() : '—';
@@ -367,6 +364,11 @@ const Lessons: React.FC = () => {
                     </Card>
                   );
                 })}
+              {filteredItems.length === 0 && (
+                <div className="tw-text-sm tw-text-muted-foreground tw-text-center tw-py-8">
+                  {t('commonUI.noItems')}
+                </div>
+              )}
             </div>
           )}
 
@@ -452,12 +454,12 @@ const CalendarGrid: React.FC<{ items: any[] }>= ({ items }) => {
                 {dayLessons.slice(0,3).map((l:any) => {
                   const isClass = !!l.__isClass;
                   const isTheory = isClass ? true : (((l?.enrollment?.course?.type||'').toUpperCase()==='THEORY'));
-                  const typeLabel = isTheory ? t('lessons.word.theory', { defaultValue: t('type.theory') }) : t('lessons.word.practice', { defaultValue: t('type.driving') });
+                  const typeLabel = isTheory ? t('lessons.word.theory') : t('lessons.word.practice');
                   const timeStr = new Date(l.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                   const statusUp = (l.status||'').toUpperCase();
                   const tone = statusUp==='COMPLETED' ? 'tw-bg-primary/15 tw-text-primary' : statusUp.includes('CANCEL') ? 'tw-bg-destructive/15 tw-text-destructive' : 'tw-bg-success/15 tw-text-success';
                   return (
-                    <div key={l.id} className={`tw-text-[11px] tw-rounded tw-px-2 tw-py-1 tw-truncate ${tone}`}>{timeStr} · {typeLabel}</div>
+                    <div key={`${l.__isClass ? 'class' : 'lesson'}-${l.id}`} className={`tw-text-[11px] tw-rounded tw-px-2 tw-py-1 tw-truncate ${tone}`}>{timeStr} · {typeLabel}</div>
                   );
                 })}
                 {dayLessons.length>3 && (
