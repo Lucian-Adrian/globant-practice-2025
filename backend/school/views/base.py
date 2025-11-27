@@ -52,7 +52,7 @@ class FullCrudViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Full CRUD for internal use (no auth layer yet—secure before prod)."""
+    """Full CRUD for internal use (no auth layer yet - secure before prod)."""
 
     pass
 
