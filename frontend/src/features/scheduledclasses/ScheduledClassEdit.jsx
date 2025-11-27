@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Edit, SimpleForm, TextInput, ReferenceInput, SelectInput, DateTimeInput, NumberInput, useTranslate, required, ReferenceArrayInput, SelectArrayInput, Button, useNotify } from 'react-admin';
-import { useWatch } from 'react-hook-form';
-import { useFormContext } from 'react-hook-form';
+import { useWatch, useFormContext } from 'react-hook-form';
 import { validateScheduledClass } from '../../shared/validation/lessonValidation';
 import { httpJson, API_PREFIX } from '../../api/httpClient';
 

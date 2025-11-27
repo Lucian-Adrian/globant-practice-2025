@@ -65,7 +65,6 @@ const StudentsInput = () => {
 
 export default function ScheduledClassPatternEdit(props) {
   const t = useTranslate();
-  const notify = useNotify();
 
   const EditActions = () => (
     <TopToolbar>

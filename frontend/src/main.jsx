@@ -13,8 +13,7 @@ import DashboardStudent from './features/portal/DashboardStudent.tsx';
 import StudentLogin from './features/portal/StudentLogin.jsx';
 import StudentDashboard from './features/portal/StudentDashboard.jsx';
 import TestJWT from './TestJWT.jsx';
-import { initI18n, default as i18n } from "./i18n/index.jsx";
-import { I18nextProvider } from 'react-i18next';
+import { initI18n } from "./i18n/index.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 

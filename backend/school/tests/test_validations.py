@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from datetime import date, time, timedelta
-from school.models import ScheduledClass, ScheduledClassPattern, Course, Instructor, Resource, Student, Enrollment
+from datetime import date, timedelta
+from school.models import ScheduledClass, ScheduledClassPattern, Course, Instructor, Resource
 from school.enums import CourseType, DayOfWeek
 
 class ValidationTestCase(TestCase):

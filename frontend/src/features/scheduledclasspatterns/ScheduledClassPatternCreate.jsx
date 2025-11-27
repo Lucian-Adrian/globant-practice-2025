@@ -64,7 +64,6 @@ const StudentsInput = () => {
 
 export default function ScheduledClassPatternCreate(props) {
   const t = useTranslate();
-  const notify = useNotify();
 
   return (
     <Create {...props} transform={(data) => {

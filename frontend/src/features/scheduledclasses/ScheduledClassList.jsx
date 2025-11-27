@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { List, Datagrid, TextField, FunctionField, NumberField, DateField, useTranslate, useListContext, ArrayField, SingleFieldList, ChipField } from 'react-admin';
+import { List, Datagrid, TextField, FunctionField, NumberField, DateField, useTranslate, useListContext, ArrayField, SingleFieldList } from 'react-admin';
 import { Chip } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import ScheduledClassListEmpty from './ScheduledClassListEmpty.jsx';
