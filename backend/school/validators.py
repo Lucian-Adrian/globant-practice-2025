@@ -7,8 +7,8 @@ should live in ``services.py``.
 from __future__ import annotations
 
 import re
+from datetime import date, datetime, timedelta
 from typing import List, NamedTuple, Optional
-from datetime import datetime, timedelta
 
 # --- Lesson validation helpers (Phase 2 refactor) ---
 from django.conf import settings
@@ -19,6 +19,103 @@ try:
     from zoneinfo import ZoneInfo  # Python 3.9+
 except Exception:  # pragma: no cover
     ZoneInfo = None  # type: ignore
+
+
+# --- Date and Age Validation ---
+MINIMUM_STUDENT_AGE = 15
+
+
+def validate_date_of_birth(dob: date, min_age: int = MINIMUM_STUDENT_AGE) -> None:
+    """
+    Validate a date of birth.
+    
+    Raises serializers.ValidationError if:
+    - Date is in the future
+    - Person is younger than min_age
+    """
+    if not dob:
+        return
+    
+    today = date.today()
+    
+    if dob > today:
+        raise serializers.ValidationError(
+            {"date_of_birth": [_("validation.futureDateOfBirth")]}
+        )
+    
+    # Calculate age
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    
+    if age < min_age:
+        raise serializers.ValidationError(
+            {"date_of_birth": [_("validation.minimumAge") % {"age": min_age}]}
+        )
+
+
+def calculate_age(dob: date) -> int:
+    """Calculate age in years from date of birth."""
+    today = date.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+
+# --- Uniqueness Validation Helpers ---
+def validate_unique_email(model_class, email: str, instance=None) -> str:
+    """
+    Validate email uniqueness for a model.
+    
+    Args:
+        model_class: The Django model class to check against
+        email: The email to validate
+        instance: Current instance (for update operations)
+    
+    Returns:
+        Lowercased email if valid
+        
+    Raises:
+        serializers.ValidationError if email already exists
+    """
+    if not email:
+        return email
+    
+    email = email.strip().lower()
+    qs = model_class.objects.filter(email__iexact=email)
+    
+    if instance:
+        qs = qs.exclude(pk=instance.pk)
+    
+    if qs.exists():
+        raise serializers.ValidationError(_("validation.emailAlreadyRegistered"))
+    
+    return email
+
+
+def validate_unique_phone(model_class, phone: str, instance=None) -> str:
+    """
+    Validate phone uniqueness for a model.
+    
+    Args:
+        model_class: The Django model class to check against  
+        phone: The phone number to validate (should be normalized)
+        instance: Current instance (for update operations)
+    
+    Returns:
+        The phone number if valid
+        
+    Raises:
+        serializers.ValidationError if phone already exists
+    """
+    if not phone:
+        return phone
+    
+    qs = model_class.objects.filter(phone_number=phone)
+    
+    if instance:
+        qs = qs.exclude(pk=instance.pk)
+    
+    if qs.exists():
+        raise serializers.ValidationError(_("validation.phoneAlreadyRegistered"))
+    
+    return phone
 
 class LessonContext(NamedTuple):
     enrollment: object
