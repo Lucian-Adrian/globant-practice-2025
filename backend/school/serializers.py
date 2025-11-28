@@ -30,6 +30,10 @@ from .validators import (
     validate_instructor_availability,
     validate_instructor_availability_for_pattern,
     validate_lesson_category_and_license,
+    validate_date_of_birth,
+    validate_unique_email,
+    validate_unique_phone,
+    MINIMUM_STUDENT_AGE,
 )
 
 try:
@@ -134,19 +138,7 @@ class StudentSerializer(serializers.ModelSerializer):
         # Cross-field / business validations
         dob = attrs.get("date_of_birth") or (self.instance.date_of_birth if self.instance else None)
         if dob:
-            from datetime import date
-
-            today = date.today()
-            if dob > today:
-                raise serializers.ValidationError(
-                    {"date_of_birth": ["Date of birth cannot be in the future"]}
-                )
-            # Minimum age 15 years
-            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-            if age < 15:
-                raise serializers.ValidationError(
-                    {"date_of_birth": ["Student must be at least 15 years old"]}
-                )
+            validate_date_of_birth(dob, MINIMUM_STUDENT_AGE)
         return super().validate(attrs)
 
     def create(self, validated_data):
