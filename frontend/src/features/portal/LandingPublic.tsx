@@ -1,9 +1,26 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
-import PortalLanguageSelect from './PortalLanguageSelect.jsx';
-import { useI18nForceUpdate } from '../../i18n/index.jsx';
+import PortalLanguageSelect from "./PortalLanguageSelect.jsx";
+import { useI18nForceUpdate } from "../../i18n/index.jsx";
+import { API_PREFIX, buildHeaders } from "../../api/httpClient.js";
+
+// Keep a tiny mock so the page works without backend
+const mockConfig = {
+  school_logo: "/assets/logo.png",
+  school_logo_url: "/assets/logo.png",        // <--- adăugat
+  school_name: "DriveAdmin",
+  landing_image: "/assets/landing.png",
+  landing_image_url: "/assets/landing.png",   // <--- adăugat
+  landing_text: {
+    en: "Learn to drive with confidence. Flexible schedules, professional instructors, modern vehicles.",
+    ro: "Învață să conduci cu încredere. Orar flexibil, instructori profesioniști, mașini moderne.",
+    ru: "Учитесь водить уверенно. Гибкий график, профессиональные инструкторы, современные авто.",
+  },
+  social_links: {},
+};
+type SchoolConfig = typeof mockConfig;
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -32,29 +49,66 @@ const Button: React.FC<ButtonProps> = ({
     ghost: "tw-bg-transparent tw-text-foreground hover:tw-bg-secondary",
   };
   return (
-    <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} {...props}>
+    <button
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );
 };
 
 // Shared constrained layout width (match NavBar's max-w-6xl so edges align)
-const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children, className = "" }) => (
-  <div className={`tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 ${className}`}>{children}</div>
+const Container: React.FC<
+  React.PropsWithChildren<{ className?: string }>
+> = ({ children, className = "" }) => (
+  <div
+    className={`tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 ${className}`}
+  >
+    {children}
+  </div>
 );
 
 // Inline icons (avoid external deps)
-const ChevronDown: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+const ChevronDown: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
 );
-const ArrowRight: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+const ArrowRight: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
 );
 
-const NavBar: React.FC = () => {
+const NavBar: React.FC<{ logoUrl: string; schoolName: string }> = ({
+  logoUrl,
+  schoolName,
+}) => {
   const navigate = useNavigate();
   const loggedIn = useIsLoggedIn();
-  const { t } = useTranslation('portal');
+  const { t } = useTranslation("portal");
   useI18nForceUpdate();
   return (
     <nav className="tw-fixed tw-top-4 tw-left-1/2 tw-transform -tw-translate-x-1/2 tw-z-50 tw-w-full tw-max-w-6xl tw-px-4">
@@ -62,45 +116,70 @@ const NavBar: React.FC = () => {
         <div className="tw-flex tw-items-center tw-justify-between">
           {/* Logo / Brand */}
           <div className="tw-flex tw-items-center tw-space-x-2">
-            <img src="/assets/logo.png" alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
-            <span className="tw-text-xl tw-font-bold tw-text-gray-900">{t('appName', { defaultValue: 'DriveAdmin' })}</span>
+            <img
+              src={logoUrl}
+              alt={t("portal.landing.public.img.alt.logo")}
+              className="tw-w-10 tw-h-10 tw-object-contain"
+            />
+            <span className="tw-text-xl tw-font-bold tw-text-gray-900">
+              {schoolName ||
+                t("appName", { defaultValue: "DriveAdmin" })}
+            </span>
           </div>
 
-            {/* Navigation Menu */}
+          {/* Navigation Menu */}
           {/* hide the md menu for guests */}
           {/* For md+ screens: show pages when logged in; show motto when guest */}
           {loggedIn ? (
             <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
               <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-                <span>{t('portal.landing.public.nav.features', { defaultValue: 'Features' })}</span>
+                <span>
+                  {t("portal.landing.public.nav.features", {
+                    defaultValue: "Features",
+                  })}
+                </span>
                 <ChevronDown className="tw-w-4 tw-h-4" />
               </div>
               <div className="tw-flex tw-items-center tw-space-x-1 tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
-                <span>{t('portal.landing.public.nav.cases', { defaultValue: 'Cases' })}</span>
+                <span>
+                  {t("portal.landing.public.nav.cases", {
+                    defaultValue: "Cases",
+                  })}
+                </span>
                 <ChevronDown className="tw-w-4 tw-h-4" />
               </div>
-              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">{t('portal.landing.public.nav.pricing', { defaultValue: 'Pricing' })}</span>
-              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">{t('portal.landing.public.nav.reviews', { defaultValue: 'Reviews' })}</span>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
+                {t("portal.landing.public.nav.pricing", {
+                  defaultValue: "Pricing",
+                })}
+              </span>
+              <span className="tw-text-gray-700 hover:tw-text-gray-900 tw-cursor-pointer">
+                {t("portal.landing.public.nav.reviews", {
+                  defaultValue: "Reviews",
+                })}
+              </span>
             </div>
           ) : (
             <div className="tw-hidden md:tw-flex tw-items-center tw-space-x-8">
-              <span className="tw-text-sm tw-text-muted-foreground">{t('portal.landing.public.hero.subtitle')}</span>
+              <span className="tw-text-sm tw-text-muted-foreground">
+                {t("portal.landing.public.hero.subtitle")}
+              </span>
             </div>
           )}
 
           {/* CTA Buttons (Get started + Log in) */}
           <div className="tw-flex tw-items-center tw-space-x-3">
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
               className="tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 tw-transition-colors"
             >
-              {t('portal.landing.public.hero.ctaSecondary')}
+              {t("portal.landing.public.hero.ctaSecondary")}
             </button>
             <Button
               className="tw-bg-primary hover:tw-bg-primary/90 tw-text-white tw-rounded-full tw-px-6 tw-py-2 tw-flex tw-items-center tw-space-x-2"
-              onClick={() => navigate('/signup')}
+              onClick={() => navigate("/signup")}
             >
-              <span>{t('portal.landing.public.hero.ctaPrimary')}</span>
+              <span>{t("portal.landing.public.hero.ctaPrimary")}</span>
               <ArrowRight className="tw-w-4 tw-h-4" />
             </Button>
           </div>
@@ -112,8 +191,96 @@ const NavBar: React.FC = () => {
 
 const LandingPublic: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation('portal');
+  const { t, i18n } = useTranslation("portal");
   useI18nForceUpdate();
+
+  const [config, setConfig] = React.useState<SchoolConfig | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // Try unauthenticated first (public endpoint AllowAny). Avoid expired token 401 noise.
+        const res = await fetch(`${API_PREFIX}/school/config/`);
+        if (!res.ok) {
+          // Retry once with auth headers in case backend unexpectedly requires it.
+          console.warn(
+            "[LandingPublic] public fetch failed status",
+            res.status,
+            "retrying with auth headers"
+          );
+          const resAuth = await fetch(`${API_PREFIX}/school/config/`, {
+            headers: buildHeaders(),
+          });
+          if (!resAuth.ok) throw new Error("Failed fetching config");
+          const dataAuth: any = await resAuth.json();
+          if (mounted) setConfig(dataAuth);
+        } else {
+          const data: any = await res.json();
+          if (mounted) setConfig(data);
+        }
+      } catch (e) {
+        console.warn("[LandingPublic] using mock config due to error:", e);
+        if (mounted) setConfig(mockConfig);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const lang = (i18n?.language || "en").split("-")[0];
+  const landingText =
+    config?.landing_text?.[lang] ??
+    config?.landing_text?.en ??
+    t("portal.landing.public.hero.subtitle");
+
+  const normalizeImg = (val: any, fallback: string) => {
+    if (!val) return fallback;
+    if (typeof val === "string") return val || fallback;
+    if (typeof val === "object") {
+      const candidate = val.url || val.src || val.path || "";
+      return candidate || fallback;
+    }
+    return fallback;
+  };
+
+  // Prefer *_url din backend; fallback pe câmpurile vechi și apoi pe mock
+  const rawHero =
+    (config as any)?.landing_image_url ??
+    (config as any)?.landing_image ??
+    mockConfig.landing_image_url;
+  const rawLogo =
+    (config as any)?.school_logo_url ??
+    (config as any)?.school_logo ??
+    mockConfig.school_logo_url;
+
+  let heroImg = normalizeImg(rawHero, mockConfig.landing_image);
+  let logoUrl = normalizeImg(rawLogo, mockConfig.school_logo);
+
+  // Replace internal docker hostname with localhost and fix bare /media paths
+  const fixHost = (u: string) => {
+    if (!u) return u;
+    // Backend is serving HTTPS on 8000; normalize any internal docker hostnames and HTTP -> HTTPS
+    let out = u
+      .replace("http://backend:8000", "https://localhost:8000")
+      .replace("https://backend:8000", "https://localhost:8000")
+      .replace("http://0.0.0.0:8000", "https://localhost:8000")
+      .replace("https://0.0.0.0:8000", "https://localhost:8000")
+      .replace("http://localhost:8080", "https://localhost:8000")
+      .replace("http://localhost:8000", "https://localhost:8000");
+    if (out.startsWith("/media/")) {
+      out = `https://localhost:8000${out}`;
+    }
+    return out;
+  };
+  heroImg = fixHost(heroImg);
+  logoUrl = fixHost(logoUrl);
+
+  const schoolName = config?.school_name || mockConfig.school_name;
 
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
@@ -121,25 +288,31 @@ const LandingPublic: React.FC = () => {
       <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50">
         <PortalLanguageSelect />
       </div>
-      <NavBar />
+      <NavBar logoUrl={logoUrl} schoolName={schoolName} />
       {/* Spacer for fixed rounded navbar (height ~ 56 + top margin) */}
       <div className="tw-h-28" />
       <Container className="tw-pb-10">
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-10">
           {/* Left: copy like LandingStudent */}
           <div className="tw-space-y-4">
-            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground tw-mt-6">{t('portal.landing.public.hero.kicker')}</div>
+            <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-muted-foreground tw-mt-6">
+              {t("portal.landing.public.hero.kicker")}
+            </div>
             {/* If guest, show a short motto; otherwise show the main heading */}
-            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">{t('portal.landing.public.hero.title')}</h1>
-            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">{t('portal.landing.public.hero.subtitle')}</p>
+            <h1 className="tw-text-3xl sm:tw-text-4xl lg:tw-text-5xl tw-font-bold tw-leading-tight">
+              {t("portal.landing.public.hero.title")}
+            </h1>
+            <p className="tw-text-base sm:tw-text-lg tw-text-muted-foreground">
+              {landingText}
+            </p>
             {/* Left side single CTA (wider) */}
             <div className="tw-pt-4">
               <Button
                 variant="primary"
                 className="tw-w-full sm:tw-w-auto tw-min-w-[220px] tw-px-12 tw-h-12 tw-text-base"
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate("/signup")}
               >
-                {t('portal.landing.public.hero.ctaPrimary')}
+                {t("portal.landing.public.hero.ctaPrimary")}
               </Button>
             </div>
           </div>
@@ -149,8 +322,8 @@ const LandingPublic: React.FC = () => {
             <div className="tw-w-full md:tw-w-11/12 lg:tw-w-4/5">
               {/* use natural image aspect ratio, no absolute cropping */}
               <img
-                src="/assets/landing.png"
-                alt={t('portal.landing.public.img.alt.hero')}
+                src={heroImg}
+                alt={t("portal.landing.public.img.alt.hero")}
                 className="tw-w-full tw-h-auto tw-block"
                 loading="lazy"
                 decoding="async"

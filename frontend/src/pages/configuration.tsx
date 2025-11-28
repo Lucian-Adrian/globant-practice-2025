@@ -8,11 +8,13 @@ import {
   SimpleFormIterator,
   SelectArrayInput,
   useNotify,
+  ImageInput,
+  ImageField,
 } from 'react-admin';
 import { Card, CardContent, CardHeader, Grid, Box } from '@mui/material';
 import { useTranslate } from 'react-admin';
 import QuickAddPanel from '../components/QuickAddPanel.tsx';
-import { API_PREFIX, buildHeaders } from '../api/httpClient.js';
+import { API_PREFIX, buildHeaders, rawFetch, httpJson } from '../api/httpClient.js';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
 
 interface Address {
@@ -87,14 +89,15 @@ const MOCK_CONFIG: SchoolConfig = {
   available_categories: ['B', 'C'],
 };
 
-async function uploadImageTo(endpoint: string, file: File): Promise<string> {
+async function uploadImageTo(endpoint: string, file: File, fieldName: 'logo' | 'image'): Promise<string> {
   const fd = new FormData();
-  fd.append('file', file);
-  const resp = await fetch(endpoint, { method: 'POST', body: fd });
+  fd.append(fieldName, file);
+  // Use rawFetch so 401 triggers a refresh and retries once
+  const resp = await rawFetch(endpoint, { method: 'POST', headers: buildHeaders(), body: fd });
   const body = await resp.json().catch(() => ({} as any));
   if (!resp.ok) throw new Error(body?.detail || body?.message || 'Upload failed');
-  // Expect API to return { url: '...' } or similar
-  return body.url || body.location || body.path || '';
+  // Backend returns specific keys; also support generic fallbacks
+  return body.school_logo || body.landing_image || body.url || body.location || body.path || '';
 }
 
 const Configuration: React.FC = () => {
@@ -111,14 +114,9 @@ const Configuration: React.FC = () => {
     let mounted = true;
     (async () => {
       try {
-        // Try real API first
-        const resp = await fetch(`${API_PREFIX}/v1/school/config/`, { headers: buildHeaders() });
-        if (resp.ok) {
-          const data = await resp.json();
-          if (mounted) setInitial(data);
-        } else {
-          if (mounted) setInitial(MOCK_CONFIG);
-        }
+        // Use httpJson so token refresh happens automatically on 401
+        const { json } = await httpJson(`${API_PREFIX}/school/config/`);
+        if (mounted) setInitial(json as any);
       } catch (_) {
         if (mounted) setInitial(MOCK_CONFIG);
       } finally {
@@ -128,40 +126,142 @@ const Configuration: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  const onSubmit = async (values: SchoolConfig) => {
+  // Loosen typing for react-admin form submit handler; we'll validate keys internally
+  const onSubmit = async (values: any) => {
     try {
-      const data: SchoolConfig = { ...values };
+      const data: SchoolConfig = { ...values } as SchoolConfig;
+  console.log('[ConfigSubmit] raw values:', values);
+  // Debug image inputs prior to processing
+  console.log('[ConfigSubmit] school_logo value before handling:', values.school_logo);
+  console.log('[ConfigSubmit] landing_image value before handling:', values.landing_image);
+      // Handle image inputs (ImageInput returns array of items)
+      const logoVal: any = (values as any).school_logo;
+      console.log('[ConfigSubmit] processed logoVal initial:', logoVal);
+      let logoUploadPerformed = false;
+      let logoCleared = false;
+      if (Array.isArray(logoVal) && logoVal.length) {
+        const item = logoVal[0];
+        console.log('[ConfigSubmit] logo item:', item);
+        if (item.rawFile instanceof File) {
+          console.log('[ConfigSubmit] uploading logo file:', item.rawFile.name, item.rawFile.type, item.rawFile.size);
+          data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, item.rawFile as File, 'logo');
+          console.log('[ConfigSubmit] logo uploaded URL:', data.school_logo);
+          logoUploadPerformed = true;
+        } else if (item.src) {
+          console.log('[ConfigSubmit] using existing logo src:', item.src);
+          data.school_logo = item.src;
+        }
+      } else if (typeof logoVal === 'string') {
+        console.log('[ConfigSubmit] logo is plain string:', logoVal);
+        data.school_logo = logoVal; // fallback plain string
+      } else if (logoVal instanceof File) {
+        console.log('[ConfigSubmit] logo is File (direct)');
+        data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, logoVal, 'logo');
+        console.log('[ConfigSubmit] logo uploaded URL (direct):', data.school_logo);
+        logoUploadPerformed = true;
+      } else if (logoVal && typeof logoVal === 'object') {
+        const src = logoVal.src || logoVal.url || logoVal.path || '';
+        console.log('[ConfigSubmit] logo object normalized src:', src);
+        data.school_logo = src;
+      } else if (!logoVal) {
+        console.log('[ConfigSubmit] logo cleared');
+        logoCleared = true;
+        data.school_logo = ''; // mark cleared
+      }
 
-  // Handle potential future image uploads (currently using plain URL text inputs)
-      if (data.school_logo) {
-        const s = data.school_logo as any;
-        if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/v1/school/config/upload_logo/`, s.rawFile as File);
-          data.school_logo = url;
-        } else if (typeof s === 'object' && typeof s.src === 'string') {
-          data.school_logo = s.src;
+      const landingVal: any = (values as any).landing_image;
+      console.log('[ConfigSubmit] processed landingVal initial:', landingVal);
+      let landingUploadPerformed = false;
+      let landingCleared = false;
+      if (Array.isArray(landingVal) && landingVal.length) {
+        const item = landingVal[0];
+        console.log('[ConfigSubmit] landing item:', item);
+        if (item.rawFile instanceof File) {
+          console.log('[ConfigSubmit] uploading landing file:', item.rawFile.name, item.rawFile.type, item.rawFile.size);
+          data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, item.rawFile as File, 'image');
+          console.log('[ConfigSubmit] landing uploaded URL:', data.landing_image);
+          landingUploadPerformed = true;
+        } else if (item.src) {
+          console.log('[ConfigSubmit] using existing landing src:', item.src);
+          data.landing_image = item.src;
         }
+      } else if (typeof landingVal === 'string') {
+        console.log('[ConfigSubmit] landing image is plain string:', landingVal);
+        data.landing_image = landingVal;
+      } else if (landingVal instanceof File) {
+        console.log('[ConfigSubmit] landing image is File (direct)');
+        data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, landingVal, 'image');
+        console.log('[ConfigSubmit] landing uploaded URL (direct):', data.landing_image);
+        landingUploadPerformed = true;
+      } else if (landingVal && typeof landingVal === 'object') {
+        const src = landingVal.src || landingVal.url || landingVal.path || '';
+        console.log('[ConfigSubmit] landing object normalized src:', src);
+        data.landing_image = src;
+      } else if (!landingVal) {
+        console.log('[ConfigSubmit] landing image cleared');
+        landingCleared = true;
+        data.landing_image = '';
       }
-      if (data.landing_image) {
-        const s = data.landing_image as any;
-        if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/v1/school/config/upload_landing_image/`, s.rawFile as File);
-          data.landing_image = url;
-        } else if (typeof s === 'object' && typeof s.src === 'string') {
-          data.landing_image = s.src;
-        }
+      // Build payload excluding image fields if unchanged (avoid serializer complaining about non-file strings)
+      const payload: any = { ...data };
+      const initialLogo = (initial as any)?.school_logo || '';
+      const initialLanding = (initial as any)?.landing_image || '';
+      const logoUnchanged = !logoUploadPerformed && !logoCleared && (data.school_logo === initialLogo || data.school_logo === '' || typeof logoVal === 'undefined');
+      const landingUnchanged = !landingUploadPerformed && !landingCleared && (data.landing_image === initialLanding || data.landing_image === '' || typeof landingVal === 'undefined');
+      if (logoUnchanged) {
+        console.log('[ConfigSubmit] omitting school_logo from PUT (unchanged)');
+        delete payload.school_logo;
+      } else if (logoCleared) {
+        payload.school_logo = null; // explicit clear
+      } else if (logoUploadPerformed) {
+        // Already stored by upload endpoint; omit to avoid second validation
+        delete payload.school_logo;
       }
+      if (landingUnchanged) {
+        console.log('[ConfigSubmit] omitting landing_image from PUT (unchanged)');
+        delete payload.landing_image;
+      } else if (landingCleared) {
+        payload.landing_image = null;
+      } else if (landingUploadPerformed) {
+        delete payload.landing_image;
+      }
+      console.log('[ConfigSubmit] final payload before PUT:', payload);
 
       // PUT full config
-      const resp = await fetch(`${API_PREFIX}/v1/school/config/`, {
+      // Use rawFetch for PUT to auto-refresh on 401
+      const putHeaders = buildHeaders();
+      putHeaders.set('Content-Type', 'application/json');
+      const resp = await rawFetch(`${API_PREFIX}/school/config/1/`, {
         method: 'PUT',
-        headers: new Headers({ 'Content-Type': 'application/json', ...Object.fromEntries(buildHeaders().entries()) }),
-        body: JSON.stringify(data),
+        headers: putHeaders,
+        body: JSON.stringify(payload),
       });
+  console.log('[ConfigSubmit] PUT response status:', resp.status);
       const body = await resp.json().catch(() => ({}));
+  console.log('[ConfigSubmit] PUT response body:', body);
       if (!resp.ok) throw new Error(body?.detail || body?.message || 'Save failed');
       notify('Configuration saved', { type: 'success' });
-      setInitial(body || data);
+      // Some backends omit image fields in PUT response; fetch full config to update previews
+      try {
+        const { json } = await httpJson(`${API_PREFIX}/school/config/`);
+        const full = json as any;
+        // Preserve just-uploaded URLs if GET lags
+        const next = {
+          ...(full || {}),
+          school_logo: (full?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
+          landing_image: (full?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
+        } as SchoolConfig;
+        setInitial(next);
+      } catch (_) {
+        // Fallback to local data merging so previews remain
+        const next = {
+          ...(initial || {}),
+          ...(body || {}),
+          school_logo: (body?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
+          landing_image: (body?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
+        } as SchoolConfig;
+        setInitial(next);
+      }
     } catch (e: any) {
       notify(e?.message || 'Save failed', { type: 'error' });
       throw e;
@@ -194,9 +294,74 @@ const Configuration: React.FC = () => {
                 <TextInput source="contact_phone1" label={translate('configuration.contact_phone1')} fullWidth />
                 <TextInput source="contact_phone2" label={translate('configuration.contact_phone2')} fullWidth />
 
-                {/* Images (simplified as plain text inputs for now) */}
-                <TextInput source="school_logo" label={translate('configuration.school_logo')} fullWidth />
-                <TextInput source="landing_image" label={translate('configuration.landing_image')} fullWidth />
+                {/* Images */}
+                <ImageInput
+                  source="school_logo"
+                  label={translate('configuration.school_logo')}
+                  accept="image/*"
+                  multiple={false}
+                  placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
+                  format={(val: any) => {
+                    if (!val) return [];
+                    if (typeof val === 'string') return val ? [{ src: val }] : [];
+                    // Support object from API like {path: 'image.jpg'} or {url: '...'}
+                    if (typeof val === 'object' && !Array.isArray(val)) {
+                      const src = val.src || val.url || val.path || '';
+                      return src ? [{ src }] : [];
+                    }
+                    if (Array.isArray(val)) return val;
+                    if (val.src) return [val];
+                    return [];
+                  }}
+                  parse={(val: any) => {
+                    if (!val) return [];
+                    if (Array.isArray(val)) return val;
+                    if (val instanceof File) {
+                      return [{ src: URL.createObjectURL(val), rawFile: val }];
+                    }
+                    if (typeof val === 'string') return val ? [{ src: val }] : [];
+                    if (typeof val === 'object' && (val.src || val.url || val.path)) {
+                      const src = val.src || val.url || val.path;
+                      return src ? [{ src, ...(val.rawFile ? { rawFile: val.rawFile } : {}) }] : [];
+                    }
+                    return [];
+                  }}
+                >
+                  <ImageField source="src" />
+                </ImageInput>
+                <ImageInput
+                  source="landing_image"
+                  label={translate('configuration.landing_image')}
+                  accept="image/*"
+                  multiple={false}
+                  placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
+                  format={(val: any) => {
+                    if (!val) return [];
+                    if (typeof val === 'string') return val ? [{ src: val }] : [];
+                    if (typeof val === 'object' && !Array.isArray(val)) {
+                      const src = val.src || val.url || val.path || '';
+                      return src ? [{ src }] : [];
+                    }
+                    if (Array.isArray(val)) return val;
+                    if (val.src) return [val];
+                    return [];
+                  }}
+                  parse={(val: any) => {
+                    if (!val) return [];
+                    if (Array.isArray(val)) return val;
+                    if (val instanceof File) {
+                      return [{ src: URL.createObjectURL(val), rawFile: val }];
+                    }
+                    if (typeof val === 'string') return val ? [{ src: val }] : [];
+                    if (typeof val === 'object' && (val.src || val.url || val.path)) {
+                      const src = val.src || val.url || val.path;
+                      return src ? [{ src, ...(val.rawFile ? { rawFile: val.rawFile } : {}) }] : [];
+                    }
+                    return [];
+                  }}
+                >
+                  <ImageField source="src" />
+                </ImageInput>
 
                 {/* Addresses */}
         <ArrayInput source="addresses" label={translate('configuration.addresses')}>

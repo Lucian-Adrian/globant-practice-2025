@@ -612,4 +612,42 @@
       "viewClasses": "Vezi Clase"
     }
   }
+  ,
+  "configuration": {
+    "image": {
+      "placeholder": "Încarcă imagine"
+    },
+    "school_logo": "Sigla Școală (URL)",
+    "landing_image": "Imagine Landing (URL)",
+    "title": "Configurare Școală",
+    "addresses": "Adrese",
+    "address": {
+      "line1": "Linia 1",
+      "line2": "Linia 2",
+      "city": "Oraș",
+      "state": "Județ",
+      "postal_code": "Cod poștal",
+      "country": "Țară"
+    },
+    "landing_text": {
+      "en": "Text Landing (EN)",
+      "ro": "Text Landing (RO)",
+      "ru": "Text Landing (RU)"
+    },
+    "social_links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "twitter": "Twitter",
+      "youtube": "YouTube"
+    },
+    "rules": {
+      "min_theory_hours_before_practice": "Ore teorie minime înainte de practică"
+    },
+    "available_categories": "Categorii disponibile",
+    "school_name": "Nume Școală",
+    "business_hours": "Program",
+    "email": "Email",
+    "contact_phone1": "Telefon Contact 1",
+    "contact_phone2": "Telefon Contact 2"
+  }
 }

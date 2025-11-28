@@ -65,6 +65,8 @@ const buildLanguageData = () => {
       ra: admin.ra || {},
       common: {
         ...(admin.common || {}),
+        // Keep configuration keys under the 'configuration' subtree
+        configuration: admin.configuration || {},
         resources: admin.resources || {},
       },
       validation: admin.validation || {},
