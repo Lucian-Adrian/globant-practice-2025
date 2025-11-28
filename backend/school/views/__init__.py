@@ -4,8 +4,7 @@ This package contains ViewSets organized by domain:
 - base: Base classes and utilities (FullCrudViewSet, permissions, etc.)
 - student_views: StudentViewSet
 - instructor_views: InstructorViewSet, InstructorAvailabilityViewSet
-- lesson_views: LessonViewSet
-- payment_views: PaymentViewSet
+- lesson_views: LessonViewSet, PaymentViewSet
 - course_views: CourseViewSet, EnrollmentViewSet
 - resource_views: ResourceViewSet, VehicleViewSet
 - scheduled_views: ScheduledClassPatternViewSet, ScheduledClassViewSet
@@ -26,7 +25,7 @@ from .instructor_views import (
 )
 from .student_views import StudentViewSet
 from .lesson_views import LessonViewSet
-from .payment_views import PaymentViewSet
+from .lesson_views import PaymentViewSet
 from .course_views import (
     CourseViewSet,
     EnrollmentViewSet,
@@ -38,6 +37,19 @@ from .resource_views import (
 from .scheduled_views import (
     ScheduledClassPatternViewSet,
     ScheduledClassViewSet,
+)
+
+from .address_views import AddressViewSet
+from .school_config_views import SchoolConfigViewSet
+
+from ..legacy_views import (
+    UtilityViewSet,
+    check_username,
+    enums_meta,
+    me,
+    student_dashboard,
+    student_login,
+    student_me,
 )
 
 __all__ = [
@@ -65,4 +77,14 @@ __all__ = [
     # Scheduled
     "ScheduledClassPatternViewSet",
     "ScheduledClassViewSet",
+    # Remaining in views.py
+    "AddressViewSet",
+    "SchoolConfigViewSet",
+    "UtilityViewSet",
+    "check_username",
+    "enums_meta",
+    "me",
+    "student_dashboard",
+    "student_login",
+    "student_me",
 ]
