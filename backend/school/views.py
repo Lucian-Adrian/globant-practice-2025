@@ -49,7 +49,7 @@ from .serializers import (
     VehicleSerializer,
 )
 from .pagination import StandardResultsSetPagination
-from .validators import normalize_phone
+from .validators import normalize_phone, validate_upload_file
 
 # Import refactored ViewSets from views package
 from .views import (
@@ -517,6 +517,11 @@ class SchoolConfigViewSet(
         """
         Upload school logo image.
         Expects multipart/form-data with 'logo' file field.
+
+        Validates:
+        - File size (max 5MB)
+        - File format (jpg, png, gif, webp)
+        - Image integrity
         """
         if "logo" not in request.FILES:
             return response.Response(
@@ -524,8 +529,19 @@ class SchoolConfigViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        logo_file = request.FILES["logo"]
+
+        # Validate file before saving
+        try:
+            validate_upload_file(logo_file, max_mb=5, file_type='image')
+        except ValueError as e:
+            return response.Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         config = self.get_object()
-        config.school_logo = request.FILES["logo"]
+        config.school_logo = logo_file
         config.save()
 
         serializer = self.get_serializer(config)
@@ -542,6 +558,11 @@ class SchoolConfigViewSet(
         """
         Upload landing page image.
         Expects multipart/form-data with 'image' file field.
+
+        Validates:
+        - File size (max 5MB)
+        - File format (jpg, png, gif, webp)
+        - Image integrity
         """
         if "image" not in request.FILES:
             return response.Response(
@@ -549,8 +570,19 @@ class SchoolConfigViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        image_file = request.FILES["image"]
+
+        # Validate file before saving
+        try:
+            validate_upload_file(image_file, max_mb=5, file_type='image')
+        except ValueError as e:
+            return response.Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         config = self.get_object()
-        config.landing_image = request.FILES["image"]
+        config.landing_image = image_file
         config.save()
 
         serializer = self.get_serializer(config)
@@ -560,5 +592,4 @@ class SchoolConfigViewSet(
                 "landing_image": serializer.data.get("landing_image"),
             },
             status=status.HTTP_200_OK,
-
-
+        )
