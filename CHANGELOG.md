@@ -7,140 +7,170 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-11-28
+
 ### Added
-- Comprehensive translations for ScheduledClassPatterns, ScheduledClasses, and other React-Admin components in EN, RO, RU.
-- Missing translation keys for filters, common UI elements, and student fields.
-- ScheduledClassPattern model for recurring scheduled classes with recurrence fields (days, times, start_date, num_lessons)
-- Recurrence logic in generate_scheduled_classes method to create individual ScheduledClass instances
-- Frontend ScheduledClassPattern resource with create/edit/list components
-- Updated ScheduledClass model to reference pattern for data normalization, removing redundant fields
-- API endpoints for pattern CRUD and class generation action
-- Reusable `EmailInput` component with automatic lowercase & shared validation
-- Strict server-side validation for Student & Instructor (name, phone, email) with model-level validators
-- Unique constraint enforced for `Instructor.phone_number`
-- Shared frontend usage of `NameInput`, `PhoneInput`, `EmailInput` across student/instructor create/edit forms
-([#60](https://github.com/Lucian-Adrian/globant-practice-2025/pull/60))
-- Manual instructor and vehicle pickers in booking interface.
-- 30-minute time slots derived from instructor availability.
-- Shared validateLesson() utility for consistent validation across components.
-- license_plate display in resource selectors.
-- Standard lesson duration set to 90 minutes.
 
-([#59](https://github.com/Lucian-Adrian/globant-practice-2025/pull/59))
-- CSV import/export endpoints for Resource model.
-- Vehicle/classroom identifiers, normalization, and internationalization.
-- Backend validation rule: only vehicle-type resources can be assigned to lessons.
+#### Student Portal Enhancements
+([#102](https://github.com/Lucian-Adrian/globant-practice-2025/pull/102))
+- Student portal scheduled classes view with calendar and list tabs
+- Scheduled class enrollment and class details display
+- Integration with student dashboard for upcoming classes
 
-([#58](https://github.com/Lucian-Adrian/globant-practice-2025/pull/58))
-- Optional column support in CSV imports for all models.
-- Intelligent validation system distinguishing between required and optional fields.
-- Automatic model default application when optional fields are omitted.
+([#94](https://github.com/Lucian-Adrian/globant-practice-2025/pull/94))
+- Enrollment details modal for student progress tracking
+- Visual progress indicators for lesson completion
+- Integration with enrollment API endpoints
 
-([#57](https://github.com/Lucian-Adrian/globant-practice-2025/pull/57))
-- Collapsible filters panel in Admin interface with toggle button.
-- Persistent filter visibility state using localStorage (aside_collapsed key).
-- React context provider to share collapsed state across Admin pages.
-- Localized toggle button text for all supported languages (EN/RO/RU).
+([#92](https://github.com/Lucian-Adrian/globant-practice-2025/pull/92))
+- Enrollment-based progress tracking system
+- Migration from lesson-count to enrollment-based progress
+- Student dashboard progress visualization
 
-([#50](https://github.com/Lucian-Adrian/globant-practice-2025/pull/50))
-- Missing Admin translation keys: ra.action.show_filters, ra.action.hide_filters.
-- Fallback resolution logic for automatic translation display when namespace fails to load.
-- Lazy-loading of i18n bundles for improved performance.
+#### Admin Interface Features
+([#101](https://github.com/Lucian-Adrian/globant-practice-2025/pull/101))
+- Scheduled Class Patterns with auto-enrollment and notifications
+- Pattern-based recurring class generation
+- Email and SMS notification support for scheduled classes
 
-([#61](https://github.com/Lucian-Adrian/globant-practice-2025/pull/61))
-- Payment form functionality in student portal.
-- Integration with enrollment and payment API endpoints.
+([#97](https://github.com/Lucian-Adrian/globant-practice-2025/pull/97))
+- Quick Add Component for rapid data entry
+- Streamlined admin workflow for common operations
 
-([#38](https://github.com/Lucian-Adrian/globant-practice-2025/pull/38))
-- Student portal pages for lesson booking and account management.
-- Navigation structure for authenticated student users.
+([#98](https://github.com/Lucian-Adrian/globant-practice-2025/pull/98))
+- School configuration page form
+- Customizable school settings interface
 
-([#52](https://github.com/Lucian-Adrian/globant-practice-2025/pull/52))
-- Student API endpoint to retrieve lessons for authenticated students.
-- Lesson filtering and pagination for student dashboard.
-- Integration with student progress tracking.
+([#96](https://github.com/Lucian-Adrian/globant-practice-2025/pull/96))
+- Complete React Admin translation system
+- Comprehensive i18n support for EN/RO/RU locales
+- Admin panel fully internationalized
 
-([#54](https://github.com/Lucian-Adrian/globant-practice-2025/pull/54))
-- Comprehensive CONTRIBUTING.md file with development workflow guidelines.
-- Branch naming conventions and pull request templates.
-- Code review and merge process documentation.
+([#81](https://github.com/Lucian-Adrian/globant-practice-2025/pull/81))
+- Scheduled Classes admin module
+- CRUD operations for scheduled theory classes
+- Student enrollment management for classes
 
-([#53](https://github.com/Lucian-Adrian/globant-practice-2025/pull/53))
-- CHANGELOG.md with proper formatting and version history.
-- Semantic versioning guidelines for future releases.
-- PR link formatting standardization.
+#### Backend API Features
+([#90](https://github.com/Lucian-Adrian/globant-practice-2025/pull/90)), ([#91](https://github.com/Lucian-Adrian/globant-practice-2025/pull/91)), ([#95](https://github.com/Lucian-Adrian/globant-practice-2025/pull/95))
+- SchoolConfig model for school-wide settings
+- Address model with media file support
+- SchoolConfig API endpoints with logo and landing image upload
+- Serializers and viewsets for configuration management
 
-([#55](https://github.com/Lucian-Adrian/globant-practice-2025/pull/55))
-- Updated CHANGELOG.md with correct version links and formatting.
-- Fixed PR reference inconsistencies.
-- Improved changelog structure and readability.
+([#82](https://github.com/Lucian-Adrian/globant-practice-2025/pull/82)), ([#84](https://github.com/Lucian-Adrian/globant-practice-2025/pull/84)), ([#85](https://github.com/Lucian-Adrian/globant-practice-2025/pull/85))
+- Recurring scheduled classes feature
+- Pattern-based class generation with configurable recurrence
+- Multi-student selection for scheduled class patterns
 
-([#56](https://github.com/Lucian-Adrian/globant-practice-2025/pull/56))
-- Enhanced CONTRIBUTING.md with dev branch workflow.
-- Updated documentation links and repository structure.
-- Added team collaboration guidelines.
+#### TypeScript & Type Safety
+([#111](https://github.com/Lucian-Adrian/globant-practice-2025/pull/111))
+- TypeScript interfaces for all domain models (Student, Instructor, Course, Enrollment, Lesson, Payment, Resource, ScheduledClass)
+- Portal-specific type definitions for dashboard responses
+- Improved type safety in portal components
+
+([#113](https://github.com/Lucian-Adrian/globant-practice-2025/pull/113))
+- Centralized error message constants for frontend and backend consistency
+- i18n-compatible validation error keys
 
 ### Changed
-([#60](https://github.com/Lucian-Adrian/globant-practice-2025/pull/60))
-- Booking and calendar components refactored for clearer state management and validation UX.
-- Conflict handling aligned with backend validation rules.
-- Frontend/backend lesson duration synchronized to 90 minutes.
 
-([#59](https://github.com/Lucian-Adrian/globant-practice-2025/pull/59))
-- Lesson create/edit forms now filter only vehicle-type resources.
-- Backend and portal unified to use Resource model everywhere (resource_id, /api/resources/*).
-- Vehicle naming replaced with resource terminology throughout codebase.
+#### Code Architecture Refactoring
+([#103](https://github.com/Lucian-Adrian/globant-practice-2025/pull/103))
+- Removed debug console.log statements from portal components
+- Cleaned up unused imports across codebase
 
-([#58](https://github.com/Lucian-Adrian/globant-practice-2025/pull/58))
-- CSV import system uses upsert logic (update-or-create) to prevent duplicates.
-- Import responses now include detailed metrics: created count, updated count, and error list.
-- CourseSerializer, EnrollmentSerializer, and PaymentSerializer enhanced with flexible validation.
+([#104](https://github.com/Lucian-Adrian/globant-practice-2025/pull/104)), ([#106](https://github.com/Lucian-Adrian/globant-practice-2025/pull/106)), ([#107](https://github.com/Lucian-Adrian/globant-practice-2025/pull/107)), ([#108](https://github.com/Lucian-Adrian/globant-practice-2025/pull/108))
+- Split monolithic `views.py` into modular ViewSet packages:
+  - `views/base.py`: FullCrudViewSet, permissions, utilities
+  - `views/student_views.py`: StudentViewSet
+  - `views/instructor_views.py`: InstructorViewSet, InstructorAvailabilityViewSet
+  - `views/lesson_views.py`: LessonViewSet
+  - `views/payment_views.py`: PaymentViewSet
+  - `views/course_views.py`: CourseViewSet, EnrollmentViewSet
+  - `views/resource_views.py`: ResourceViewSet, VehicleViewSet
+  - `views/scheduled_views.py`: ScheduledClassPatternViewSet, ScheduledClassViewSet
 
-([#57](https://github.com/Lucian-Adrian/globant-practice-2025/pull/57))
-- List pages (PaymentList, ResourceList, LessonList) dynamically render based on collapsed state.
-- Layout switches between full and collapsed side panels using aside prop.
-- Component re-renders optimized for smoother UI transitions.
+([#105](https://github.com/Lucian-Adrian/globant-practice-2025/pull/105))
+- Extracted reusable form components:
+  - `CheckAvailabilityButton` for instructor availability checks
+  - `CheckSingleTimeAvailabilityButton` for single time slot validation
+  - `CourseStudentsInput` for course-filtered student selection
 
-([#50](https://github.com/Lucian-Adrian/globant-practice-2025/pull/50))
-- All Admin components updated to use translate() with defaultValue to prevent raw key display.
-- i18n configuration refactored to ensure shared namespaces between Admin and Portal.
-- Translation key naming conventions unified across student-related components.
+([#109](https://github.com/Lucian-Adrian/globant-practice-2025/pull/109))
+- Extracted i18n messages to separate JSON files
+- Reduced `i18n/index.jsx` from 1136 to 258 lines (~77% reduction)
+- Created `locales/en-admin.json`, `locales/ro-admin.json`, `locales/ru-admin.json`
+
+([#110](https://github.com/Lucian-Adrian/globant-practice-2025/pull/110))
+- Split `lessonValidation.js` into focused modules:
+  - `timeUtils.js`: Date/time utilities with BUSINESS_TZ constant
+  - `httpUtils.js`: API fetch helpers
+  - `availabilityValidation.js`: Instructor availability checks
+  - `conflictValidation.js`: Schedule conflict detection
+  - `capacityValidation.js`: Capacity and enrollment validation
+
+([#112](https://github.com/Lucian-Adrian/globant-practice-2025/pull/112))
+- Extracted serializer validation to dedicated helper functions
+- Added `MINIMUM_STUDENT_AGE` constant
+- Created `validate_date_of_birth()`, `validate_unique_email()`, `validate_unique_phone()` helpers
+
+#### UI/UX Improvements
+([#86](https://github.com/Lucian-Adrian/globant-practice-2025/pull/86))
+- Replaced TextInput with TimeInput for time fields
+- Added time format validation
+
+([#87](https://github.com/Lucian-Adrian/globant-practice-2025/pull/87))
+- Fixed multiple student selection in scheduled class pattern forms
+- Improved student selection UX
 
 ### Fixed
-- Prevent acceptance of malformed phone numbers and non-alphabetic names in admin & API layers
+
+#### Validation & Data Integrity
 ([#64](https://github.com/Lucian-Adrian/globant-practice-2025/pull/64))
-- Dropdowns in edit forms now pre-fill with current values instead of being empty
+- Dropdowns in edit forms now pre-fill with current values
+- Fixed dropdown prefill issues in admin edit forms
 
-([#62](https://github.com/Lucian-Adrian/globant-practice-2025/pull/62))
-- React Admin lessons list DOM warnings by using rowStyle instead of inline styles.
-- Admin enums bootstrap effect now guards against post-unmount updates.
-- Memory leak warnings during navigation suppressed.
+([#65](https://github.com/Lucian-Adrian/globant-practice-2025/pull/65))
+- Admin form validation improvements
+- Enhanced client-side validation feedback
 
-([#60](https://github.com/Lucian-Adrian/globant-practice-2025/pull/60))
-- Availability rendering glitches in instructor calendar.
-- Race conditions during availability data fetch.
-- Frontend/backend duration mismatch causing validation errors.
+([#67](https://github.com/Lucian-Adrian/globant-practice-2025/pull/67)), ([#73](https://github.com/Lucian-Adrian/globant-practice-2025/pull/73))
+- Fixed duplicate `django_validate_license_categories` function definition
+- Removed duplicate `validate_license_categories` method definitions
 
-([#59](https://github.com/Lucian-Adrian/globant-practice-2025/pull/59))
-- Vehicle vs resource naming inconsistencies across frontend and backend.
-- Conflict and availability checks that referenced deprecated vehicle fields.
-- Validation error mappings updated for resource-based architecture.
+([#89](https://github.com/Lucian-Adrian/globant-practice-2025/pull/89))
+- Lesson and scheduled class validation fixes
+- Improved conflict detection and availability checks
 
-([#57](https://github.com/Lucian-Adrian/globant-practice-2025/pull/57))
-- Sidebar flicker issues during page reload.
-- Inconsistent filter visibility between page navigations.
-- Spacing and alignment glitches after panel collapse.
+#### Code Quality
+([#68](https://github.com/Lucian-Adrian/globant-practice-2025/pull/68))
+- Fixed typo in lessonValidation comment
 
-([#50](https://github.com/Lucian-Adrian/globant-practice-2025/pull/50))
-- Raw i18n keys visible in sidebar and toolbar.
-- Missing translations for EN/RO/RU in Admin views (Courses, Lessons, Payments).
-- Incorrect fallback behavior when async translation bundles loaded late.
+([#69](https://github.com/Lucian-Adrian/globant-practice-2025/pull/69)), ([#70](https://github.com/Lucian-Adrian/globant-practice-2025/pull/70)), ([#72](https://github.com/Lucian-Adrian/globant-practice-2025/pull/72))
+- Removed unused TextInput imports from instructor forms
+- Removed unused imports from instructor form components
+
+([#71](https://github.com/Lucian-Adrian/globant-practice-2025/pull/71))
+- Removed unused query parameters from `available_resources` endpoint
+
+([#74](https://github.com/Lucian-Adrian/globant-practice-2025/pull/74)), ([#75](https://github.com/Lucian-Adrian/globant-practice-2025/pull/75))
+- Added explanatory comments to exception handlers
+- Improved code documentation
+
+([#76](https://github.com/Lucian-Adrian/globant-practice-2025/pull/76)), ([#77](https://github.com/Lucian-Adrian/globant-practice-2025/pull/77))
+- Addressed code review feedback
+- Resolved all review comments from dev pull request
+
+([#79](https://github.com/Lucian-Adrian/globant-practice-2025/pull/79))
+- Reverted dev branch to stable state
+- Repository cleanup and stabilization
 
 ### Internal
-- Repository cleanup: migrated all branches from demo to new dev branch.
-- Deleted 15+ obsolete feature branches (f, filters, admin_translations, import_export, etc.).
-- Established dev branch as single source of truth for team collaboration.
-- Merged 15+ pull requests to consolidate team members' work into unified codebase.
+- Merged 50 pull requests consolidating team work
+- Established modular code architecture for better maintainability
+- Created comprehensive TypeScript type system for portal components
+- Implemented consistent error handling across frontend and backend
 
 ## [0.1.3] - 2025-10-31
 
@@ -301,7 +331,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Development environment setup documentation in README.md.
 - Basic API endpoint structure.
 
-[unreleased]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.3...HEAD
+[unreleased]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Lucian-Adrian/globant-practice-2025/compare/v0.1.0...v0.1.1
