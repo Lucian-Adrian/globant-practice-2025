@@ -45,7 +45,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/payments" element={<Payments />} />
         <Route path="/login" element={<StudentLogin />} />
         <Route path="/TestJWT" element={<TestJWT />} />
-        <Route path="/landing" element={<LandingStudent />} />
         <Route path="/dashboard" element={<DashboardStudent />} />
         <Route path="/" element={<LandingPublic />} />
         <Route path="/dash" element={<StudentDashboard />} />
