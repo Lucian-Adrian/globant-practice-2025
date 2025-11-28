@@ -1,4 +1,60 @@
 {
+  "scheduledclasspatternlist": {
+    "id": "ИД",
+    "name": "Название",
+    "startDate": "Дата начала",
+    "numLessons": "Количество занятий"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Дата начала шаблона",
+    "numberOfLessons": "Количество занятий",
+    "defaultDurationMin": "Длительность по умолчанию (мин)",
+    "defaultMaxStudents": "Макс. студентов по умолчанию"
+  },
+  "admin": {
+    "resources": {
+      "scheduledclasspatterns": {
+        "viewClasses": "Просмотр занятий",
+        "fields": {
+          "id": "ИД",
+          "name": "Название",
+          "course": "Курс",
+          "instructor": "Инструктор",
+          "resource": "Ресурс",
+          "recurrence_days": "Дни повторения",
+          "times": "Время",
+          "start_date": "Дата начала",
+          "num_lessons": "Количество занятий",
+          "default_duration_minutes": "Длительность по умолчанию (мин)",
+          "default_max_students": "Макс. студентов по умолчанию",
+          "students": "Студенты",
+          "day": "День",
+          "time": "Время",
+          "recurrences": "Повторения"
+        },
+        "generate": {
+          "button": "Создать занятия",
+          "confirm_title": "Создать занятия",
+          "confirm_content": "Создать запланированные занятия для этого шаблона?",
+          "success": "Занятия созданы успешно",
+          "error": "Ошибка при создании занятий"
+        },
+        "bulk": {
+          "generate": "Создать занятия",
+          "regenerate": "Пересоздать занятия",
+          "generate_success": "Созданы занятия для %{count} шаблонов (%{classes} занятий)",
+          "generate_partial_success": "Созданы занятия: %{success_count} успешно, %{fail_count} неудачно (%{classes} занятий)",
+          "generate_error": "Ошибка при создании занятий: %{error}",
+          "regenerate_success": "Пересозданы занятия для %{count} шаблонов (удалено %{deleted}, создано %{generated})",
+          "regenerate_error": "Ошибка при пересоздании занятий: %{error}",
+          "generate_confirm_title": "Создать занятия",
+          "generate_confirm_content": "Вы уверены, что хотите создать занятия для %{count} шаблонов? Это может занять некоторое время.",
+          "regenerate_confirm_title": "Пересоздать занятия",
+          "regenerate_confirm_content": "Вы уверены, что хотите пересоздать занятия для %{count} шаблонов? Это удалит существующие занятия и создаст новые."
+        }
+      }
+    }
+  },
   "ra": {
     "nav": { "home": "Главная" },
     "action": {
@@ -24,7 +80,9 @@
       "open": "Открыть",
       "close": "Закрыть",
       "back": "Назад",
-      "undo": "Отменить"
+      "undo": "Отменить",
+      "confirm": "Подтвердить",
+      "cancel": "Отмена"
     },
     "navigation": {
       "next": "Следующий",
