@@ -1,4 +1,60 @@
 {
+  "scheduledclasspatternlist": {
+    "id": "ID",
+    "name": "Name",
+    "startDate": "Start Date",
+    "numLessons": "Number of Lessons"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Pattern Start Date",
+    "numberOfLessons": "Number of Lessons",
+    "defaultDurationMin": "Default Duration (min)",
+    "defaultMaxStudents": "Default Max Students"
+  },
+  "admin": {
+    "resources": {
+      "scheduledclasspatterns": {
+        "viewClasses": "View Classes",
+        "fields": {
+          "id": "ID",
+          "name": "Name",
+          "course": "Course",
+          "instructor": "Instructor",
+          "resource": "Resource",
+          "recurrence_days": "Recurrence Days",
+          "times": "Times",
+          "start_date": "Start Date",
+          "num_lessons": "Number of Lessons",
+          "default_duration_minutes": "Default Duration (min)",
+          "default_max_students": "Default Max Students",
+          "students": "Students",
+          "day": "Day",
+          "time": "Time",
+          "recurrences": "Recurrences"
+        },
+        "generate": {
+          "button": "Generate Classes",
+          "confirm_title": "Generate Classes",
+          "confirm_content": "Generate scheduled classes for this pattern?",
+          "success": "Classes generated successfully",
+          "error": "Error generating classes"
+        },
+        "bulk": {
+          "generate": "Generate Classes",
+          "regenerate": "Regenerate Classes",
+          "generate_success": "Generated classes for %{count} patterns (%{classes} classes)",
+          "generate_partial_success": "Generated classes: %{success_count} success, %{fail_count} failed (%{classes} classes)",
+          "generate_error": "Error generating classes: %{error}",
+          "regenerate_success": "Regenerated classes for %{count} patterns (deleted %{deleted}, generated %{generated})",
+          "regenerate_error": "Error regenerating classes: %{error}",
+          "generate_confirm_title": "Generate Classes",
+          "generate_confirm_content": "Are you sure you want to generate classes for %{count} pattern(s)? This may take some time.",
+          "regenerate_confirm_title": "Regenerate Classes",
+          "regenerate_confirm_content": "Are you sure you want to regenerate classes for %{count} pattern(s)? This will delete existing classes and create new ones."
+        }
+      }
+    }
+  },
   "ra": {
     "nav": { "home": "Home" },
     "action": {
@@ -24,7 +80,9 @@
       "open": "Open",
       "close": "Close",
       "back": "Back",
-      "undo": "Undo"
+      "undo": "Undo",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     },
     "navigation": {
       "next": "Next",
