@@ -6,8 +6,40 @@ import PortalLanguageSelect from "./PortalLanguageSelect.jsx";
 import { useI18nForceUpdate } from "../../i18n/index.jsx";
 import { API_PREFIX, buildHeaders } from "../../api/httpClient.js";
 
+// Public backend base (env override allowed). Default matches dev docker compose exposed port (HTTP).
+const PUBLIC_BACKEND_BASE = (import.meta as any)?.env?.VITE_BACKEND_PUBLIC_BASE || 'http://localhost:8000';
+
+// Normalize media URLs coming from backend (may contain internal hostname like backend:8000 or bare /media path)
+function fixHost(u: string): string {
+  if (!u) return '';
+  let out = u.trim();
+  // If it's a blob/object URL leave it untouched
+  if (out.startsWith('blob:')) return out;
+  // Replace internal docker hostnames with PUBLIC_BACKEND_BASE keeping HTTP (avoid forcing HTTPS causing SSL errors)
+  out = out
+    .replace('http://backend:8000', PUBLIC_BACKEND_BASE)
+    .replace('https://backend:8000', PUBLIC_BACKEND_BASE) // if backend reported https but we only serve http locally
+    .replace('http://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
+    .replace('https://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
+    .replace('http://localhost:8000', PUBLIC_BACKEND_BASE) // unify scheme/host
+    .replace('https://localhost:8000', PUBLIC_BACKEND_BASE);
+  // Prefix bare media path
+  if (out.startsWith('/media/')) out = `${PUBLIC_BACKEND_BASE}${out}`;
+  return out;
+}
+
+interface LandingTextMap { [key: string]: string; en: string; ro: string; ru: string; }
+interface SchoolConfigPortal {
+  school_logo: string;
+  school_logo_url: string;
+  school_name: string;
+  landing_image: string;
+  landing_image_url: string;
+  landing_text: LandingTextMap;
+  social_links: Record<string, string>;
+}
 // Keep a tiny mock so the page works without backend
-const mockConfig = {
+const mockConfig: SchoolConfigPortal = {
   school_logo: "/assets/logo.png",
   school_logo_url: "/assets/logo.png",        // <--- adăugat
   school_name: "DriveAdmin",
@@ -20,7 +52,7 @@ const mockConfig = {
   },
   social_links: {},
 };
-type SchoolConfig = typeof mockConfig;
+type SchoolConfig = SchoolConfigPortal;
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -201,19 +233,10 @@ const LandingPublic: React.FC = () => {
     let mounted = true;
     (async () => {
       try {
-        // Try unauthenticated first (public endpoint AllowAny). Avoid expired token 401 noise.
         const res = await fetch(`${API_PREFIX}/school/config/`);
         if (!res.ok) {
-          // Retry once with auth headers in case backend unexpectedly requires it.
-          console.warn(
-            "[LandingPublic] public fetch failed status",
-            res.status,
-            "retrying with auth headers"
-          );
-          const resAuth = await fetch(`${API_PREFIX}/school/config/`, {
-            headers: buildHeaders(),
-          });
-          if (!resAuth.ok) throw new Error("Failed fetching config");
+          const resAuth = await fetch(`${API_PREFIX}/school/config/`, { headers: buildHeaders() });
+          if (!resAuth.ok) throw new Error('Failed fetching config');
           const dataAuth: any = await resAuth.json();
           if (mounted) setConfig(dataAuth);
         } else {
@@ -221,20 +244,17 @@ const LandingPublic: React.FC = () => {
           if (mounted) setConfig(data);
         }
       } catch (e) {
-        console.warn("[LandingPublic] using mock config due to error:", e);
         if (mounted) setConfig(mockConfig);
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const lang = (i18n?.language || "en").split("-")[0];
   const landingText =
-    config?.landing_text?.[lang] ??
+    (config?.landing_text as any)?.[lang] ??
     config?.landing_text?.en ??
     t("portal.landing.public.hero.subtitle");
 
@@ -249,36 +269,13 @@ const LandingPublic: React.FC = () => {
   };
 
   // Prefer *_url din backend; fallback pe câmpurile vechi și apoi pe mock
-  const rawHero =
-    (config as any)?.landing_image_url ??
-    (config as any)?.landing_image ??
-    mockConfig.landing_image_url;
-  const rawLogo =
-    (config as any)?.school_logo_url ??
-    (config as any)?.school_logo ??
-    mockConfig.school_logo_url;
+  const rawHero = (config as any)?.landing_image_url ?? (config as any)?.landing_image ?? mockConfig.landing_image_url;
+  const rawLogo = (config as any)?.school_logo_url ?? (config as any)?.school_logo ?? mockConfig.school_logo_url;
 
-  let heroImg = normalizeImg(rawHero, mockConfig.landing_image);
-  let logoUrl = normalizeImg(rawLogo, mockConfig.school_logo);
+  let heroImg = fixHost(normalizeImg(rawHero, mockConfig.landing_image));
+  let logoUrl = fixHost(normalizeImg(rawLogo, mockConfig.school_logo));
 
-  // Replace internal docker hostname with localhost and fix bare /media paths
-  const fixHost = (u: string) => {
-    if (!u) return u;
-    // Backend is serving HTTPS on 8000; normalize any internal docker hostnames and HTTP -> HTTPS
-    let out = u
-      .replace("http://backend:8000", "https://localhost:8000")
-      .replace("https://backend:8000", "https://localhost:8000")
-      .replace("http://0.0.0.0:8000", "https://localhost:8000")
-      .replace("https://0.0.0.0:8000", "https://localhost:8000")
-      .replace("http://localhost:8080", "https://localhost:8000")
-      .replace("http://localhost:8000", "https://localhost:8000");
-    if (out.startsWith("/media/")) {
-      out = `https://localhost:8000${out}`;
-    }
-    return out;
-  };
-  heroImg = fixHost(heroImg);
-  logoUrl = fixHost(logoUrl);
+  // (Diagnostics removed)
 
   const schoolName = config?.school_name || mockConfig.school_name;
 

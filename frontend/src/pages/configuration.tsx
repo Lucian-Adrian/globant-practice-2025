@@ -17,6 +17,23 @@ import QuickAddPanel from '../components/QuickAddPanel.tsx';
 import { API_PREFIX, buildHeaders, rawFetch, httpJson } from '../api/httpClient.js';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
 
+// Public backend base (override with Vite env if provided)
+const PUBLIC_BACKEND_BASE = (import.meta as any)?.env?.VITE_BACKEND_PUBLIC_BASE || 'http://localhost:8000';
+
+function fixHost(u: string): string {
+  if (!u) return '';
+  let out = u;
+  // Replace internal docker hostnames with public base
+  out = out
+    .replace('http://backend:8000', PUBLIC_BACKEND_BASE)
+    .replace('https://backend:8000', PUBLIC_BACKEND_BASE)
+    .replace('http://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
+    .replace('https://0.0.0.0:8000', PUBLIC_BACKEND_BASE);
+  // Prefix bare media path
+  if (out.startsWith('/media/')) out = `${PUBLIC_BACKEND_BASE}${out}`;
+  return out;
+}
+
 interface Address {
   line1: string;
   line2: string;
@@ -97,7 +114,8 @@ async function uploadImageTo(endpoint: string, file: File, fieldName: 'logo' | '
   const body = await resp.json().catch(() => ({} as any));
   if (!resp.ok) throw new Error(body?.detail || body?.message || 'Upload failed');
   // Backend returns specific keys; also support generic fallbacks
-  return body.school_logo || body.landing_image || body.url || body.location || body.path || '';
+  const raw = body.school_logo || body.landing_image || body.url || body.location || body.path || '';
+  return fixHost(raw);
 }
 
 const Configuration: React.FC = () => {
@@ -116,7 +134,12 @@ const Configuration: React.FC = () => {
       try {
         // Use httpJson so token refresh happens automatically on 401
         const { json } = await httpJson(`${API_PREFIX}/school/config/`);
-        if (mounted) setInitial(json as any);
+        if (mounted) {
+          const normalized = { ...(json as any) };
+          normalized.school_logo = fixHost((normalized as any).school_logo || (normalized as any).school_logo_url || '');
+          normalized.landing_image = fixHost((normalized as any).landing_image || (normalized as any).landing_image_url || '');
+          setInitial(normalized as any);
+        }
       } catch (_) {
         if (mounted) setInitial(MOCK_CONFIG);
       } finally {
@@ -130,75 +153,51 @@ const Configuration: React.FC = () => {
   const onSubmit = async (values: any) => {
     try {
       const data: SchoolConfig = { ...values } as SchoolConfig;
-  console.log('[ConfigSubmit] raw values:', values);
-  // Debug image inputs prior to processing
-  console.log('[ConfigSubmit] school_logo value before handling:', values.school_logo);
-  console.log('[ConfigSubmit] landing_image value before handling:', values.landing_image);
       // Handle image inputs (ImageInput returns array of items)
       const logoVal: any = (values as any).school_logo;
-      console.log('[ConfigSubmit] processed logoVal initial:', logoVal);
       let logoUploadPerformed = false;
       let logoCleared = false;
       if (Array.isArray(logoVal) && logoVal.length) {
         const item = logoVal[0];
-        console.log('[ConfigSubmit] logo item:', item);
         if (item.rawFile instanceof File) {
-          console.log('[ConfigSubmit] uploading logo file:', item.rawFile.name, item.rawFile.type, item.rawFile.size);
           data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, item.rawFile as File, 'logo');
-          console.log('[ConfigSubmit] logo uploaded URL:', data.school_logo);
           logoUploadPerformed = true;
         } else if (item.src) {
-          console.log('[ConfigSubmit] using existing logo src:', item.src);
-          data.school_logo = item.src;
+          data.school_logo = fixHost(item.src);
         }
       } else if (typeof logoVal === 'string') {
-        console.log('[ConfigSubmit] logo is plain string:', logoVal);
-        data.school_logo = logoVal; // fallback plain string
+        data.school_logo = fixHost(logoVal); // fallback plain string
       } else if (logoVal instanceof File) {
-        console.log('[ConfigSubmit] logo is File (direct)');
         data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, logoVal, 'logo');
-        console.log('[ConfigSubmit] logo uploaded URL (direct):', data.school_logo);
         logoUploadPerformed = true;
       } else if (logoVal && typeof logoVal === 'object') {
         const src = logoVal.src || logoVal.url || logoVal.path || '';
-        console.log('[ConfigSubmit] logo object normalized src:', src);
-        data.school_logo = src;
+        data.school_logo = fixHost(src);
       } else if (!logoVal) {
-        console.log('[ConfigSubmit] logo cleared');
         logoCleared = true;
         data.school_logo = ''; // mark cleared
       }
 
       const landingVal: any = (values as any).landing_image;
-      console.log('[ConfigSubmit] processed landingVal initial:', landingVal);
       let landingUploadPerformed = false;
       let landingCleared = false;
       if (Array.isArray(landingVal) && landingVal.length) {
         const item = landingVal[0];
-        console.log('[ConfigSubmit] landing item:', item);
         if (item.rawFile instanceof File) {
-          console.log('[ConfigSubmit] uploading landing file:', item.rawFile.name, item.rawFile.type, item.rawFile.size);
           data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, item.rawFile as File, 'image');
-          console.log('[ConfigSubmit] landing uploaded URL:', data.landing_image);
           landingUploadPerformed = true;
         } else if (item.src) {
-          console.log('[ConfigSubmit] using existing landing src:', item.src);
-          data.landing_image = item.src;
+          data.landing_image = fixHost(item.src);
         }
       } else if (typeof landingVal === 'string') {
-        console.log('[ConfigSubmit] landing image is plain string:', landingVal);
-        data.landing_image = landingVal;
+        data.landing_image = fixHost(landingVal);
       } else if (landingVal instanceof File) {
-        console.log('[ConfigSubmit] landing image is File (direct)');
         data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, landingVal, 'image');
-        console.log('[ConfigSubmit] landing uploaded URL (direct):', data.landing_image);
         landingUploadPerformed = true;
       } else if (landingVal && typeof landingVal === 'object') {
         const src = landingVal.src || landingVal.url || landingVal.path || '';
-        console.log('[ConfigSubmit] landing object normalized src:', src);
-        data.landing_image = src;
+        data.landing_image = fixHost(src);
       } else if (!landingVal) {
-        console.log('[ConfigSubmit] landing image cleared');
         landingCleared = true;
         data.landing_image = '';
       }
@@ -209,7 +208,6 @@ const Configuration: React.FC = () => {
       const logoUnchanged = !logoUploadPerformed && !logoCleared && (data.school_logo === initialLogo || data.school_logo === '' || typeof logoVal === 'undefined');
       const landingUnchanged = !landingUploadPerformed && !landingCleared && (data.landing_image === initialLanding || data.landing_image === '' || typeof landingVal === 'undefined');
       if (logoUnchanged) {
-        console.log('[ConfigSubmit] omitting school_logo from PUT (unchanged)');
         delete payload.school_logo;
       } else if (logoCleared) {
         payload.school_logo = null; // explicit clear
@@ -218,14 +216,12 @@ const Configuration: React.FC = () => {
         delete payload.school_logo;
       }
       if (landingUnchanged) {
-        console.log('[ConfigSubmit] omitting landing_image from PUT (unchanged)');
         delete payload.landing_image;
       } else if (landingCleared) {
         payload.landing_image = null;
       } else if (landingUploadPerformed) {
         delete payload.landing_image;
       }
-      console.log('[ConfigSubmit] final payload before PUT:', payload);
 
       // PUT full config
       // Use rawFetch for PUT to auto-refresh on 401
@@ -236,15 +232,18 @@ const Configuration: React.FC = () => {
         headers: putHeaders,
         body: JSON.stringify(payload),
       });
-  console.log('[ConfigSubmit] PUT response status:', resp.status);
       const body = await resp.json().catch(() => ({}));
-  console.log('[ConfigSubmit] PUT response body:', body);
       if (!resp.ok) throw new Error(body?.detail || body?.message || 'Save failed');
       notify('Configuration saved', { type: 'success' });
       // Some backends omit image fields in PUT response; fetch full config to update previews
       try {
         const { json } = await httpJson(`${API_PREFIX}/school/config/`);
-        const full = json as any;
+        const fullRaw = json as any;
+        const full = {
+          ...fullRaw,
+          school_logo: fixHost(fullRaw.school_logo || fullRaw.school_logo_url || data.school_logo || (initial as any)?.school_logo || ''),
+          landing_image: fixHost(fullRaw.landing_image || fullRaw.landing_image_url || data.landing_image || (initial as any)?.landing_image || ''),
+        } as any;
         // Preserve just-uploaded URLs if GET lags
         const next = {
           ...(full || {}),
@@ -257,8 +256,8 @@ const Configuration: React.FC = () => {
         const next = {
           ...(initial || {}),
           ...(body || {}),
-          school_logo: (body?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
-          landing_image: (body?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
+          school_logo: fixHost(body?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
+          landing_image: fixHost(body?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
         } as SchoolConfig;
         setInitial(next);
       }
