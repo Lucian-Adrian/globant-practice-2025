@@ -239,14 +239,7 @@ const DashboardStudent: React.FC = () => {
   ), [classes]);
   const completedSessions = completedLessonsCount + completedClassesCount;
 
-  // Theory-only aggregation (for Theory | Practice overview card)
-  const { requiredTheory, completedTheory, percentTheory } = useMemo(() => {
-    const courseList = Array.from(studentCourseMap.values()).filter((c:any) => (c?.type || '').toUpperCase() === 'THEORY');
-    const required = courseList.reduce((sum:number, c:any) => sum + (Number(c?.required_lessons) || 0), 0);
-    const completed = lessons.filter((l:any) => (l.status || '').toUpperCase() === 'COMPLETED' && (l?.enrollment?.course?.type || '').toUpperCase() === 'THEORY').length;
-    const pct = required > 0 ? Math.round((completed / required) * 100) : 0;
-    return { requiredTheory: required, completedTheory: completed, percentTheory: pct } as any;
-  }, [studentCourseMap, lessons]) as { requiredTheory: number, completedTheory: number, percentTheory: number };
+  // Theory-only aggregation removed: not used anywhere in the UI.
 
   // Upcoming list now shows all by default across all courses
 
