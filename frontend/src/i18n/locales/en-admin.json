@@ -1,0 +1,557 @@
+{
+  "ra": {
+    "nav": { "home": "Home" },
+    "action": {
+      "edit": "Edit",
+      "save": "Save",
+      "delete": "Delete",
+      "refresh": "Refresh",
+      "show": "Show",
+      "list": "List",
+      "create": "Create",
+      "add": "Add",
+      "remove": "Remove",
+      "clear_array_input": "Clear list",
+      "bulk_actions": "Bulk actions",
+      "export": "Export",
+      "search": "Search",
+      "select_all": "Select all",
+      "clear_input_value": "Clear",
+      "remove_filter": "Remove filter",
+      "add_filter": "ADD FILTER",
+      "open_menu": "Open menu",
+      "close_menu": "Close menu",
+      "open": "Open",
+      "close": "Close",
+      "back": "Back",
+      "undo": "Undo"
+    },
+    "navigation": {
+      "next": "Next",
+      "prev": "Prev",
+      "page_range_info": "Page {{offsetBegin}}-{{offsetEnd}} of {{total}}",
+      "page_rows_per_page": "Rows per page:",
+      "no_results": "No results"
+    },
+    "sort": {
+      "sort_by": "Sort by {{field}} {{order}}",
+      "ASC": "ascending",
+      "DESC": "descending"
+    },
+    "auth": {
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "sign_in": "Sign in",
+      "sign_out": "Sign out",
+      "logout": "Sign out",
+      "user_menu": "User"
+    },
+    "page": {
+      "login": "Login",
+      "list": "List",
+      "dashboard": "Dashboard",
+      "create": "Create",
+      "edit": "Edit",
+      "show": "Show",
+      "error": "Error"
+    },
+    "message": {
+      "error": "Error",
+      "invalid_form": "Invalid form"
+    },
+    "validation": {
+      "required": "Required"
+    },
+    "custom": {
+      "import_csv": "Import CSV",
+      "export_csv": "Export CSV"
+    },
+    "notification": {
+      "updated": "Element updated",
+      "created": "Element created",
+      "deleted": "Element deleted"
+    }
+  },
+  "common": {
+    "welcome": "Welcome to School Portal",
+    "connect": "Connect",
+    "signupTitle": "Student Signup",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "dob": "Date of Birth",
+    "status": "Status",
+    "selectStatus": "Select Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "signUp": "Sign Up",
+    "submitting": "Submitting...",
+    "signupSuccess": "Registration successful",
+    "signupFailed": "Registration failed",
+    "networkError": "Network error. Please try again.",
+    "debugLabel": "Debug info",
+    "languages": { "en": "English", "ro": "Romanian", "ru": "Russian" },
+    "helpers": { "license_categories": "Comma separated e.g. B,BE,C" },
+    "car": { "manual": "Manual", "automatic": "Automatic", "both": "Both" },
+    "filters": {
+      "last_activity": "Last activity",
+      "today": "Today",
+      "this_week": "This week",
+      "last_week": "Last week",
+      "this_month": "This month",
+      "last_month": "Last month",
+      "earlier": "Earlier",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "graduated": "Graduated",
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "refunded": "Refunded",
+      "canceled": "Canceled",
+      "scheduled": "Scheduled",
+      "payment_method": "Payment method",
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Transfer",
+      "processing": "Processing",
+      "verification": "Verification",
+      "failed": "Failed",
+      "type": "Type",
+      "theory": "Theory",
+      "practice": "Practice",
+      "availability": "Availability",
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "category": "Category"
+    },
+    "filters_extra_local": { "imminent": "Imminent", "planned": "Planned" },
+    "unknown": "Unknown",
+    "hide_filters": "Hide Filters",
+    "show_filters": "Show Filters",
+    "instructors": {
+      "free_instructors": "Free instructors",
+      "gearbox": { "label": "Gearbox", "manual": "Manual", "automatic": "Automatic", "both": "Both" }
+    },
+    "filters_extra": { "new": "New", "experienced": "Experienced", "senior": "Senior" },
+    "vehicles": { "filters": { "ok": "OK", "due": "Due", "overdue": "Overdue" } },
+    "students": {
+      "board": {
+        "title": "Students Board",
+        "search": { "placeholder": "Search by name or email…" },
+        "column": { "pending": "Pending", "active": "Active", "graduated": "Graduated", "inactive": "Inactive" },
+        "actions": { "load_more": "Load more" },
+        "empty": "No items",
+        "loading": "Loading…"
+      }
+    },
+    "loading": "Loading…",
+    "error_loading": "Error loading data",
+    "dashboard": {
+      "top_stats": {
+        "active_enrollments": "Active enrollments",
+        "payments_total": "Payments total"
+      },
+      "lesson_stats": {
+        "title": "Lesson statistics",
+        "today_created": "Registered today",
+        "completed_this_week": "Completed this week",
+        "attendance_rate": "Attendance rate",
+        "top_instructors": "Top instructors",
+        "weekly_trend": "Weekly trend"
+      },
+      "quick_add": {
+        "title": "Quick Add",
+        "add_instructor": "Add New Instructor",
+        "add_vehicle": "Add New Vehicle",
+        "add_classroom": "Add New Classroom",
+        "add_course": "Add New Course",
+        "close": "Close"
+      },
+      "configuration": {
+        "saved": "Configuration saved"
+      }
+    },
+    "configuration": {
+      "title": "School Configuration",
+      "school_name": "School Name",
+      "business_hours": "Business Hours",
+      "email": "Email",
+      "contact_phone1": "Contact Phone 1",
+      "contact_phone2": "Contact Phone 2",
+      "school_logo": "School Logo (URL)",
+      "landing_image": "Landing Image (URL)",
+      "addresses": "Addresses",
+      "address": {
+        "line1": "Line 1",
+        "line2": "Line 2",
+        "city": "City",
+        "state": "State",
+        "postal_code": "Postal Code",
+        "country": "Country"
+      },
+      "landing_text": { "en": "Landing Text (EN)", "ro": "Landing Text (RO)", "ru": "Landing Text (RU)" },
+      "social_links": { "facebook": "Facebook", "instagram": "Instagram", "twitter": "Twitter", "youtube": "YouTube" },
+      "rules": { "min_theory_hours_before_practice": "Min theory hours before practice" },
+      "available_categories": "Available Categories"
+    },
+    "days": {
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday",
+      "SATURDAY": "Saturday",
+      "SUNDAY": "Sunday",
+      "MONDAY_short": "Mon",
+      "TUESDAY_short": "Tue",
+      "WEDNESDAY_short": "Wed",
+      "THURSDAY_short": "Thu",
+      "FRIDAY_short": "Fri",
+      "SATURDAY_short": "Sat",
+      "SUNDAY_short": "Sun"
+    },
+    "instructorAvailabilities": {
+      "select_instructor": "-- Select instructor --",
+      "save": "Save availabilities",
+      "failed_load_instructors": "Failed to load instructors",
+      "failed_load_availabilities": "Failed to load availabilities",
+      "select_instructor_first": "Select an instructor first",
+      "availabilities_saved": "Availabilities saved",
+      "available": "Available - click to remove",
+      "not_available": "Not available - click to add",
+      "failed_saving_availabilities": "Failed saving availabilities",
+      "time_label": "Time"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidPhone": "Invalid phone number",
+    "invalidEmail": "Invalid email address",
+    "invalidDob": "You cannot select a future date",
+    "tooYoung": "You must be at least {{years}} years old",
+    "requiredField": "This field is required",
+    "instructorConflict": "Instructor has a conflicting lesson at this time",
+    "studentConflict": "Student has a conflicting lesson at this time",
+    "vehicleConflict": "Vehicle is already booked at this time",
+    "resourceConflict": "Resource is already booked at this time",
+    "outsideAvailability": "Selected time is outside instructor availability",
+    "categoryMismatch": "Vehicle category does not match course category",
+    "instructorLicenseMismatch": "Instructor is not licensed for this category",
+    "vehicleUnavailable": "Vehicle is unavailable",
+    "vehicleResourceRequired": "Only vehicle-type resources (max_capacity = 2) can be assigned to lessons.",
+    "practiceEnrollmentRequired": "Lessons can only be created for practice enrollments.",
+    "theoryOnly": "Scheduled classes can only be created for THEORY courses.",
+    "classroomResourceRequired": "Only classroom-type resources (max_capacity > 2) can be assigned to scheduled classes.",
+    "capacityExceeded": "Max students must be positive and cannot exceed the room capacity.",
+    "capacityBelowEnrolled": "Max students cannot be lower than current enrollment.",
+    "studentNotEnrolledToCourse": "All selected students must be enrolled in the chosen course.",
+    "studentNotEnrolledToCourseNames": "The following students are not enrolled in the chosen course: {{names}}.",
+    "capacityBelowSelected": "Max students cannot be lower than number of selected students.",
+    "selectedStudentsExceedCapacity": "Selected students exceed room capacity.",
+    "atLeastOneRecurrence": "At least one recurrence is required"
+  },
+  "resources": {
+    "students": {
+      "name": "Students",
+      "empty": "No students yet",
+      "invite": "Create the first student",
+      "import_helper": "You can import a CSV to add multiple students at once.",
+      "import_format_hint": "Required columns: first_name,last_name,email,phone_number,date_of_birth,status (others ignored).",
+      "fields": {
+        "id": "ID",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "email": "Email",
+        "phone_number": "Phone",
+        "date_of_birth": "Date of birth",
+        "enrollment_date": "Enrollment date",
+        "status": "Status",
+        "password": "Password",
+        "confirm_password": "Confirm password"
+      }
+    },
+    "instructors": {
+      "name": "Instructors",
+      "empty": "No instructors yet",
+      "invite": "Create the first instructor",
+      "import_helper": "You can import a CSV to add multiple instructors at once.",
+      "import_format_hint": "Required columns: first_name,last_name,email,phone_number,hire_date,license_categories (others ignored).",
+      "fields": {
+        "id": "ID",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "email": "Email",
+        "phone_number": "Phone",
+        "hire_date": "Hire date",
+        "license_categories": "License categories",
+        "license_categories_hint": "Comma separated e.g., B,BE,C",
+        "experience": "Experience"
+      }
+    },
+    "vehicles": {
+      "name": "Vehicles",
+      "empty": "No vehicles yet",
+      "invite": "Create the first vehicle",
+      "import_helper": "You can import a CSV to add multiple vehicles at once.",
+      "import_format_hint": "Required columns: make,model,license_plate,year,category (others ignored).",
+      "fields": {
+        "id": "ID",
+        "make": "Make",
+        "model": "Model",
+        "license_plate": "License plate",
+        "year": "Year",
+        "category": "Category",
+        "is_available": "Available",
+        "last_service": "Last service",
+        "maintenance_status": "Maintenance status"
+      }
+    },
+    "resources": {
+      "name": "Resources",
+      "empty": "No resources yet",
+      "invite": "Create the first resource",
+      "import_helper": "You can import a CSV to add multiple resources at once.",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "max_capacity": "Max Capacity",
+        "category": "Category",
+        "resource_type": "Type",
+        "is_available": "Available",
+        "make": "Make",
+        "model": "Model",
+        "year": "Year",
+        "license_plate": "License Plate",
+        "vehicle": "Vehicle",
+        "classroom": "Classroom"
+      }
+    },
+    "courses": {
+      "name": "Courses",
+      "empty": "No courses yet",
+      "invite": "Create the first course",
+      "import_helper": "You can import a CSV to add multiple courses at once.",
+      "import_format_hint": "Required columns: name,category,type,description,price,required_lessons (others ignored).",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "category": "Category",
+        "type": "Type",
+        "description": "Description",
+        "price": "Price",
+        "required_lessons": "Required lessons"
+      }
+    },
+    "payments": {
+      "name": "Payments",
+      "empty": "No payments yet",
+      "invite": "Create the first payment",
+      "import_helper": "You can import a CSV to add multiple payments at once.",
+      "import_format_hint": "Required columns: enrollment_id,amount,payment_method,description (others ignored).",
+      "fields": {
+        "id": "ID",
+        "enrollment": "Enrollment",
+        "amount": "Amount",
+        "payment_date": "Payment date",
+        "payment_method": "Payment method",
+        "status": "Status",
+        "description": "Description"
+      }
+    },
+    "enrollments": {
+      "name": "Enrollments",
+      "empty": "No enrollments yet",
+      "invite": "Create the first enrollment",
+      "import_helper": "You can import a CSV to add multiple enrollments at once.",
+      "import_format_hint": "Required columns: student_id,course_id,type,status (others ignored).",
+      "fields": {
+        "id": "ID",
+        "student": "Student",
+        "course": "Course",
+        "enrollment_date": "Enrollment date",
+        "type": "Type",
+        "status": "Status",
+        "label": "Label"
+      }
+    },
+    "lessons": {
+      "name": "Lessons",
+      "empty": "No lessons yet",
+      "invite": "Schedule the first lesson",
+      "import_helper": "You can import a CSV to add multiple lessons at once.",
+      "import_format_hint": "Required columns: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (others ignored).",
+      "fields": {
+        "id": "ID",
+        "enrollment": "Enrollment",
+        "instructor": "Instructor",
+        "vehicle": "Vehicle",
+        "resource": "Resource",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "status": "Status",
+        "notes": "Notes"
+      }
+    },
+    "instructor-availabilities": {
+      "name": "Instructor Availabilities",
+      "empty": "No availabilities yet",
+      "invite": "Create availabilities",
+      "fields": {
+        "id": "ID",
+        "instructor_id": "Instructor",
+        "day": "Day",
+        "hours": "Hours"
+      }
+    },
+    "classes": {
+      "name": "Courses",
+      "empty": "No courses yet",
+      "invite": "Create the first course",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "category": "Category",
+        "type": "Type",
+        "description": "Description",
+        "price": "Price",
+        "required_lessons": "Required lessons"
+      }
+    },
+    "scheduledclasses": {
+      "name": "Scheduled Classes",
+      "empty": "No scheduled classes yet",
+      "invite": "Create the first scheduled class",
+      "import_helper": "You can import a CSV to add multiple scheduled classes at once.",
+      "import_format_hint": "Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "max_students": "Max students",
+        "students": "Students",
+        "current_enrollment": "Current enrollment",
+        "available_spots": "Available spots",
+        "pattern": "Pattern"
+      },
+      "helper": "Create a scheduled class to start planning lessons.",
+      "create": "Create Scheduled Class"
+    },
+    "scheduled-classes": {
+      "name": "Scheduled Classes",
+      "empty": "No scheduled classes yet",
+      "invite": "Create the first scheduled class",
+      "import_helper": "You can import a CSV to add multiple scheduled classes at once.",
+      "import_format_hint": "Required columns: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (others ignored).",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "scheduled_time": "Scheduled time",
+        "duration_minutes": "Duration (min)",
+        "max_students": "Max students",
+        "students": "Students",
+        "current_enrollment": "Current enrollment",
+        "available_spots": "Available spots",
+        "pattern": "Pattern"
+      },
+      "helper": "Create a scheduled class to start planning lessons.",
+      "create": "Create Scheduled Class"
+    },
+    "scheduledclasspatterns": {
+      "name": "Scheduled Class Patterns",
+      "empty": "No patterns yet",
+      "invite": "Create the first pattern",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "recurrence_days": "Recurrence Days",
+        "times": "Times",
+        "start_date": "Start Date",
+        "num_lessons": "Number of Lessons",
+        "default_duration_minutes": "Default Duration (min)",
+        "default_max_students": "Default Max Students",
+        "students": "Students",
+        "day": "Day",
+        "time": "Time",
+        "recurrences": "Recurrences"
+      },
+      "generate": {
+        "button": "Generate Classes",
+        "confirm_title": "Generate Classes",
+        "confirm_content": "Generate scheduled classes for this pattern?",
+        "success": "Classes generated successfully",
+        "error": "Error generating classes"
+      },
+      "bulk": {
+        "generate": "Generate Classes",
+        "regenerate": "Regenerate Classes",
+        "generate_success": "Generated classes for %{count} patterns (%{classes} classes)",
+        "generate_partial_success": "Generated classes: %{success_count} success, %{fail_count} failed (%{classes} classes)",
+        "generate_error": "Error generating classes: %{error}",
+        "regenerate_success": "Regenerated classes for %{count} patterns (deleted %{deleted}, generated %{generated})",
+        "regenerate_error": "Error regenerating classes: %{error}",
+        "generate_confirm_title": "Generate Classes",
+        "generate_confirm_content": "Are you sure you want to generate classes for %{count} pattern(s)? This may take some time.",
+        "regenerate_confirm_title": "Regenerate Classes",
+        "regenerate_confirm_content": "Are you sure you want to regenerate classes for %{count} pattern(s)? This will delete existing classes and create new ones."
+      },
+      "viewClasses": "View Classes"
+    },
+    "scheduled-class-patterns": {
+      "name": "Scheduled Class Patterns",
+      "empty": "No patterns yet",
+      "invite": "Create the first pattern",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "course": "Course",
+        "instructor": "Instructor",
+        "resource": "Resource",
+        "recurrence_days": "Recurrence Days",
+        "times": "Times",
+        "start_date": "Start Date",
+        "num_lessons": "Number of Lessons",
+        "default_duration_minutes": "Default Duration (min)",
+        "default_max_students": "Default Max Students",
+        "students": "Students",
+        "day": "Day",
+        "time": "Time",
+        "recurrences": "Recurrences"
+      },
+      "generate": {
+        "button": "Generate Classes",
+        "confirm_title": "Generate Classes",
+        "confirm_content": "Generate scheduled classes for this pattern?",
+        "success": "Classes generated successfully",
+        "error": "Error generating classes"
+      },
+      "bulk": {
+        "generate": "Generate Classes",
+        "regenerate": "Regenerate Classes",
+        "generate_success": "Generated classes for %{count} patterns (%{classes} classes)",
+        "generate_partial_success": "Generated classes: %{success_count} success, %{fail_count} failed (%{classes} classes)",
+        "generate_error": "Error generating classes: %{error}",
+        "regenerate_success": "Regenerated classes for %{count} patterns (deleted %{deleted}, generated %{generated})",
+        "regenerate_error": "Error regenerating classes: %{error}",
+        "generate_confirm_title": "Generate Classes",
+        "generate_confirm_content": "Are you sure you want to generate classes for %{count} pattern(s)? This may take some time.",
+        "regenerate_confirm_title": "Regenerate Classes",
+        "regenerate_confirm_content": "Are you sure you want to regenerate classes for %{count} pattern(s)? This will delete existing classes and create new ones."
+      },
+      "viewClasses": "View Classes"
+    }
+  }
+}
