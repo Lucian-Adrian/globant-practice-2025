@@ -1,0 +1,557 @@
+{
+  "ra": {
+    "nav": { "home": "Acasă" },
+    "action": {
+      "edit": "Editează",
+      "save": "Salvează",
+      "delete": "Șterge",
+      "refresh": "Reîmprospătează",
+      "show": "Vezi",
+      "list": "Listă",
+      "create": "Creează",
+      "add": "Adaugă",
+      "remove": "Elimină",
+      "clear_array_input": "Curăță lista",
+      "bulk_actions": "Acțiuni în masă",
+      "export": "Exportă",
+      "search": "Caută",
+      "select_all": "Selectează tot",
+      "clear_input_value": "Curăță",
+      "remove_filter": "Elimină filtrul",
+      "add_filter": "ADAUGĂ FILTRU",
+      "open_menu": "Deschide meniul",
+      "close_menu": "Închide meniul",
+      "open": "Deschide",
+      "close": "Închide",
+      "back": "Înapoi",
+      "undo": "Anulează"
+    },
+    "navigation": {
+      "next": "Următor",
+      "prev": "Anterior",
+      "page_range_info": "Pagina {{offsetBegin}}-{{offsetEnd}} din {{total}}",
+      "page_rows_per_page": "Rânduri pe pagină:",
+      "no_results": "Fără rezultate"
+    },
+    "sort": {
+      "sort_by": "Sortează după {{field}} {{order}}",
+      "ASC": "crescător",
+      "DESC": "descrescător"
+    },
+    "auth": {
+      "email": "Email",
+      "username": "Utilizator",
+      "password": "Parolă",
+      "sign_in": "Autentificare",
+      "sign_out": "Deconectare",
+      "logout": "Deconectare",
+      "user_menu": "Utilizator"
+    },
+    "page": {
+      "login": "Autentificare",
+      "list": "Listă",
+      "dashboard": "Tablou de bord",
+      "create": "Creează",
+      "edit": "Editează",
+      "show": "Vezi",
+      "error": "Eroare"
+    },
+    "message": {
+      "error": "Eroare",
+      "invalid_form": "Formular invalid"
+    },
+    "validation": {
+      "required": "Obligatoriu"
+    },
+    "custom": {
+      "import_csv": "Importă CSV",
+      "export_csv": "Exportă CSV"
+    },
+    "notification": {
+      "updated": "Element actualizat",
+      "created": "Element creat",
+      "deleted": "Element șters"
+    }
+  },
+  "common": {
+    "welcome": "Bine ați venit la Portalul Școlii",
+    "connect": "Conectează-te",
+    "signupTitle": "Înregistrare Student",
+    "firstName": "Prenume",
+    "lastName": "Nume",
+    "email": "Email",
+    "phone": "Telefon",
+    "dob": "Data nașterii",
+    "status": "Statut",
+    "selectStatus": "Selectați statutul",
+    "active": "Activ",
+    "inactive": "Inactiv",
+    "signUp": "Înregistrează-te",
+    "submitting": "Se trimite...",
+    "signupSuccess": "Înregistrare reușită",
+    "signupFailed": "Înregistrare eșuată",
+    "networkError": "Eroare de rețea. Reîncercați.",
+    "debugLabel": "Informații debug",
+    "languages": { "en": "Engleză", "ro": "Română", "ru": "Rusă" },
+    "helpers": { "license_categories": "Separate prin virgula ex. B,BE,C" },
+    "car": { "manual": "Manual", "automatic": "Automat", "both": "Ambele" },
+    "filters": {
+      "last_activity": "Ultima activitate",
+      "today": "Astăzi",
+      "this_week": "Săptămâna aceasta",
+      "last_week": "Săptămâna trecută",
+      "this_month": "Luna aceasta",
+      "last_month": "Luna trecută",
+      "earlier": "Anterior",
+      "status": "Statut",
+      "active": "Activ",
+      "inactive": "Inactiv",
+      "graduated": "Absolvit",
+      "pending": "În așteptare",
+      "in_progress": "În derulare",
+      "completed": "Finalizat",
+      "refunded": "Rambursat",
+      "canceled": "Anulat",
+      "scheduled": "Programat",
+      "payment_method": "Metodă plată",
+      "cash": "Numerar",
+      "card": "Card",
+      "transfer": "Transfer",
+      "processing": "În procesare",
+      "verification": "Verificare",
+      "failed": "Eșuat",
+      "type": "Tip",
+      "theory": "Teorie",
+      "practice": "Practică",
+      "availability": "Disponibilitate",
+      "available": "Disponibil",
+      "unavailable": "Indisponibil",
+      "category": "Categorie"
+    },
+    "filters_extra_local": { "imminent": "Imediat", "planned": "Planificat" },
+    "unknown": "Necunoscut",
+    "hide_filters": "Ascunde filtrele",
+    "show_filters": "Arată filtrele",
+    "instructors": {
+      "free_instructors": "Instructori disponibili",
+      "gearbox": { "label": "Cutie de viteze", "manual": "Manual", "automatic": "Automat", "both": "Ambele" }
+    },
+    "filters_extra": { "new": "Nou", "experienced": "Cu experiență", "senior": "Senior" },
+    "vehicles": { "filters": { "ok": "OK", "due": "Scadent", "overdue": "Depășit" } },
+    "students": {
+      "board": {
+        "title": "Tablă Studenți",
+        "search": { "placeholder": "Căutați după nume sau email…" },
+        "column": { "pending": "În așteptare", "active": "Activ", "graduated": "Absolvit", "inactive": "Inactiv" },
+        "actions": { "load_more": "Încarcă mai mult" },
+        "empty": "Fără elemente",
+        "loading": "Se încarcă…"
+      }
+    },
+    "loading": "Se încarcă…",
+    "error_loading": "Eroare la încărcarea datelor",
+    "dashboard": {
+      "top_stats": {
+        "active_enrollments": "Înscrieri active",
+        "payments_total": "Total plăți"
+      },
+      "lesson_stats": {
+        "title": "Statistici Lecții",
+        "today_created": "Înregistrate astăzi",
+        "completed_this_week": "Completate săpt. aceasta",
+        "attendance_rate": "Rata de prezență",
+        "top_instructors": "Top Instructori",
+        "weekly_trend": "Evoluție săptămânală"
+      },
+      "quick_add": {
+        "title": "Adăugare Rapidă",
+        "add_instructor": "Adaugă Instructor Nou",
+        "add_vehicle": "Adaugă Vehicul Nou",
+        "add_classroom": "Adaugă Resursă Nouă",
+        "add_course": "Adaugă Curs Nou",
+        "close": "Închide"
+      },
+      "configuration": {
+        "saved": "Configurare salvată"
+      }
+    },
+    "configuration": {
+      "title": "Configurare Școală",
+      "school_name": "Numele Școlii",
+      "business_hours": "Program",
+      "email": "Email",
+      "contact_phone1": "Telefon Contact 1",
+      "contact_phone2": "Telefon Contact 2",
+      "school_logo": "Logo Școală (URL)",
+      "landing_image": "Imagine Landing (URL)",
+      "addresses": "Adrese",
+      "address": {
+        "line1": "Linia 1",
+        "line2": "Linia 2",
+        "city": "Oraș",
+        "state": "Județ",
+        "postal_code": "Cod Poștal",
+        "country": "Țară"
+      },
+      "landing_text": { "en": "Text Landing (EN)", "ro": "Text Landing (RO)", "ru": "Text Landing (RU)" },
+      "social_links": { "facebook": "Facebook", "instagram": "Instagram", "twitter": "Twitter", "youtube": "YouTube" },
+      "rules": { "min_theory_hours_before_practice": "Ore teorie min. înainte de practică" },
+      "available_categories": "Categorii Disponibile"
+    },
+    "days": {
+      "MONDAY": "Luni",
+      "TUESDAY": "Marți",
+      "WEDNESDAY": "Miercuri",
+      "THURSDAY": "Joi",
+      "FRIDAY": "Vineri",
+      "SATURDAY": "Sâmbătă",
+      "SUNDAY": "Duminică",
+      "MONDAY_short": "Lun",
+      "TUESDAY_short": "Mar",
+      "WEDNESDAY_short": "Mie",
+      "THURSDAY_short": "Joi",
+      "FRIDAY_short": "Vin",
+      "SATURDAY_short": "Sâm",
+      "SUNDAY_short": "Dum"
+    },
+    "instructorAvailabilities": {
+      "select_instructor": "-- Selectați instructorul --",
+      "save": "Salvează disponibilități",
+      "failed_load_instructors": "Încărcare instructori eșuată",
+      "failed_load_availabilities": "Încărcare disponibilități eșuată",
+      "select_instructor_first": "Selectați mai întâi un instructor",
+      "availabilities_saved": "Disponibilitățile au fost salvate",
+      "available": "Disponibil - click pentru a elimina",
+      "not_available": "Indisponibil - click pentru a adăuga",
+      "failed_saving_availabilities": "Eșec la salvarea disponibilităților",
+      "time_label": "Timp"
+    }
+  },
+  "validation": {
+    "required": "Acest câmp este obligatoriu",
+    "invalidPhone": "Număr de telefon invalid",
+    "invalidEmail": "Adresă de email invalidă",
+    "invalidDob": "Nu puteți selecta o dată din viitor",
+    "tooYoung": "Trebuie să aveți cel puțin {{years}} ani",
+    "requiredField": "Acest câmp este obligatoriu",
+    "instructorConflict": "Instructorul are deja o lecție în acest interval",
+    "studentConflict": "Studentul are deja o lecție în acest interval",
+    "vehicleConflict": "Vehiculul este deja rezervat în acest interval",
+    "resourceConflict": "Resursa este deja rezervată în acest interval",
+    "outsideAvailability": "Ora selectată este în afara disponibilității instructorului",
+    "categoryMismatch": "Categoria vehiculului nu corespunde categoriei cursului",
+    "instructorLicenseMismatch": "Instructorul nu este licențiat pentru această categorie",
+    "vehicleUnavailable": "Vehiculul selectat este indisponibil",
+    "vehicleResourceRequired": "Doar resurse de tip vehicul (max_capacity = 2) pot fi alocate lecțiilor.",
+    "practiceEnrollmentRequired": "Lecțiile pot fi create doar pentru înscrieri la practică.",
+    "theoryOnly": "Clasele programate pot fi create doar pentru cursuri de TEORIE.",
+    "classroomResourceRequired": "Doar resurse de tip sală (max_capacity > 2) pot fi alocate claselor programate.",
+    "capacityExceeded": "Numărul maxim de studenți trebuie să fie pozitiv și să nu depășească capacitatea sălii.",
+    "capacityBelowEnrolled": "Numărul maxim de studenți nu poate fi mai mic decât numărul înscrișilor curent.",
+    "studentNotEnrolledToCourse": "Toți studenții selectați trebuie să fie înscriși la cursul ales.",
+    "studentNotEnrolledToCourseNames": "Următorii studenți nu sunt înscriși la cursul ales: {{names}}.",
+    "capacityBelowSelected": "Numărul maxim nu poate fi mai mic decât numărul de studenți selectați.",
+    "selectedStudentsExceedCapacity": "Numărul de studenți selectați depășește capacitatea sălii.",
+    "atLeastOneRecurrence": "Este necesară cel puțin o recurență"
+  },
+  "resources": {
+    "students": {
+      "name": "Studenți",
+      "empty": "Niciun student încă",
+      "invite": "Creați primul student",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai mulți studenți odată.",
+      "import_format_hint": "Coloane obligatorii: first_name,last_name,email,phone_number,date_of_birth,status (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "first_name": "Prenume",
+        "last_name": "Nume",
+        "email": "Email",
+        "phone_number": "Telefon",
+        "date_of_birth": "Data nașterii",
+        "enrollment_date": "Data înscrierii",
+        "status": "Statut",
+        "password": "Parolă",
+        "confirm_password": "Confirmă parola"
+      }
+    },
+    "instructors": {
+      "name": "Instructori",
+      "empty": "Niciun instructor încă",
+      "invite": "Creați primul instructor",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai mulți instructori odată.",
+      "import_format_hint": "Coloane obligatorii: first_name,last_name,email,phone_number,hire_date,license_categories (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "first_name": "Prenume",
+        "last_name": "Nume",
+        "email": "Email",
+        "phone_number": "Telefon",
+        "hire_date": "Data angajării",
+        "license_categories": "Categorii licență",
+        "license_categories_hint": "Separate prin virgulă ex.: B,BE,C",
+        "experience": "Experiență"
+      }
+    },
+    "vehicles": {
+      "name": "Vehicule",
+      "empty": "Niciun vehicul încă",
+      "invite": "Creați primul vehicul",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe vehicule odată.",
+      "import_format_hint": "Coloane obligatorii: make,model,license_plate,year,category (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "make": "Marcă",
+        "model": "Model",
+        "license_plate": "Număr înmatriculare",
+        "year": "An",
+        "category": "Categorie",
+        "is_available": "Disponibil",
+        "last_service": "Ultimul service",
+        "maintenance_status": "Stare mentenanță"
+      }
+    },
+    "resources": {
+      "name": "Resurse",
+      "empty": "Nicio resursă încă",
+      "invite": "Creați prima resursă",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe resurse.",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "max_capacity": "Capacitate maximă",
+        "category": "Categorie",
+        "resource_type": "Tip",
+        "is_available": "Disponibil",
+        "make": "Marcă",
+        "model": "Model",
+        "year": "An",
+        "license_plate": "Număr de înmatriculare",
+        "vehicle": "Vehicul",
+        "classroom": "Sală de curs"
+      }
+    },
+    "courses": {
+      "name": "Cursuri",
+      "empty": "Niciun curs încă",
+      "invite": "Creați primul curs",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe cursuri odată.",
+      "import_format_hint": "Coloane obligatorii: name,category,type,description,price,required_lessons (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "category": "Categorie",
+        "type": "Tip",
+        "description": "Descriere",
+        "price": "Preț",
+        "required_lessons": "Lecții necesare"
+      }
+    },
+    "payments": {
+      "name": "Plăți",
+      "empty": "Nicio plată încă",
+      "invite": "Creați prima plată",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe plăți odată.",
+      "import_format_hint": "Coloane obligatorii: enrollment_id,amount,payment_method,description (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "enrollment": "Înscriere",
+        "amount": "Sumă",
+        "payment_date": "Data plății",
+        "payment_method": "Metodă plată",
+        "status": "Statut",
+        "description": "Descriere"
+      }
+    },
+    "enrollments": {
+      "name": "Înscrieri",
+      "empty": "Nicio înscriere încă",
+      "invite": "Creați prima înscriere",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe înscrieri odată.",
+      "import_format_hint": "Coloane obligatorii: student_id,course_id,type,status (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "student": "Student",
+        "course": "Curs",
+        "enrollment_date": "Data înscrierii",
+        "type": "Tip",
+        "status": "Statut",
+        "label": "Etichetă"
+      }
+    },
+    "lessons": {
+      "name": "Lecții",
+      "empty": "Nicio lecție încă",
+      "invite": "Programați prima lecție",
+      "import_helper": "Puteți importa un fișier CSV pentru a adăuga mai multe lecții odată.",
+      "import_format_hint": "Coloane obligatorii: enrollment_id,instructor_id,resource_id,scheduled_time,duration_minutes,status (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "enrollment": "Înscriere",
+        "instructor": "Instructor",
+        "vehicle": "Vehicul",
+        "resource": "Resursă",
+        "scheduled_time": "Ora programării",
+        "duration_minutes": "Durată (min)",
+        "status": "Statut",
+        "notes": "Note"
+      }
+    },
+    "instructor-availabilities": {
+      "name": "Disponibilități instructor",
+      "empty": "Nicio disponibilitate",
+      "invite": "Adaugă disponibilități",
+      "fields": {
+        "id": "ID",
+        "instructor_id": "Instructor",
+        "day": "Zi",
+        "hours": "Ore"
+      }
+    },
+    "classes": {
+      "name": "Clase",
+      "empty": "Nicio clasă încă",
+      "invite": "Creați prima clasă",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "category": "Categorie",
+        "type": "Tip",
+        "description": "Descriere",
+        "price": "Preț",
+        "required_lessons": "Lecții necesare"
+      }
+    },
+    "scheduledclasses": {
+      "name": "Clase programate",
+      "empty": "Nicio clasă programată încă",
+      "invite": "Creați prima clasă programată",
+      "import_helper": "Puteți importa un CSV pentru a adăuga mai multe clase programate odată.",
+      "import_format_hint": "Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "scheduled_time": "Ora programării",
+        "duration_minutes": "Durată (min)",
+        "max_students": "Număr maxim de studenți",
+        "students": "Studenți",
+        "current_enrollment": "Înscriși curent",
+        "available_spots": "Locuri disponibile",
+        "pattern": "Model"
+      },
+      "helper": "Creați o clasă programată pentru a începe planificarea lecțiilor.",
+      "create": "Creați clasă programată"
+    },
+    "scheduled-classes": {
+      "name": "Clase programate",
+      "empty": "Nicio clasă programată încă",
+      "invite": "Creați prima clasă programată",
+      "import_helper": "Puteți importa un CSV pentru a adăuga mai multe clase programate odată.",
+      "import_format_hint": "Coloane obligatorii: name,course_id,instructor_id,resource_id,scheduled_time,duration_minutes,max_students (altele sunt ignorate).",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "scheduled_time": "Ora programării",
+        "duration_minutes": "Durată (min)",
+        "max_students": "Număr maxim de studenți",
+        "students": "Studenți",
+        "current_enrollment": "Înscriși curent",
+        "available_spots": "Locuri disponibile",
+        "pattern": "Model"
+      },
+      "helper": "Creați o clasă programată pentru a începe planificarea lecțiilor.",
+      "create": "Creați clasă programată"
+    },
+    "scheduledclasspatterns": {
+      "name": "Modele de clase programate",
+      "empty": "Niciun model încă",
+      "invite": "Creați primul model",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "recurrence_days": "Zile de recurență",
+        "times": "Ore",
+        "start_date": "Data de început",
+        "num_lessons": "Număr de lecții",
+        "default_duration_minutes": "Durată implicită (min)",
+        "default_max_students": "Studenți maximi impliciți",
+        "students": "Studenți",
+        "day": "Zi",
+        "time": "Oră",
+        "recurrences": "Recurențe"
+      },
+      "generate": {
+        "button": "Generează Clase",
+        "confirm_title": "Generează Clase",
+        "confirm_content": "Generați clase programate pentru acest model?",
+        "success": "Clase generate cu succes",
+        "error": "Eroare la generarea claselor"
+      },
+      "bulk": {
+        "generate": "Generează Clase",
+        "regenerate": "Regenerează Clase",
+        "generate_success": "Clase generate pentru %{count} modele (%{classes} clase)",
+        "generate_partial_success": "Clase generate: %{success_count} succes, %{fail_count} eșuate (%{classes} clase)",
+        "generate_error": "Eroare la generarea claselor: %{error}",
+        "regenerate_success": "Clase regenerate pentru %{count} modele (șterse %{deleted}, generate %{generated})",
+        "regenerate_error": "Eroare la regenerarea claselor: %{error}",
+        "generate_confirm_title": "Generează Clase",
+        "generate_confirm_content": "Sunteți sigur că doriți să generați clase pentru %{count} modele? Acest lucru poate dura.",
+        "regenerate_confirm_title": "Regenerează Clase",
+        "regenerate_confirm_content": "Sunteți sigur că doriți să regenerați clase pentru %{count} modele? Aceasta va șterge clasele existente și va crea altele noi."
+      },
+      "viewClasses": "Vezi Clase"
+    },
+    "scheduled-class-patterns": {
+      "name": "Modele de clase programate",
+      "empty": "Niciun model încă",
+      "invite": "Creați primul model",
+      "fields": {
+        "id": "ID",
+        "name": "Nume",
+        "course": "Curs",
+        "instructor": "Instructor",
+        "resource": "Resursă",
+        "recurrence_days": "Zile de recurență",
+        "times": "Ore",
+        "start_date": "Data de început",
+        "num_lessons": "Număr de lecții",
+        "default_duration_minutes": "Durată implicită (min)",
+        "default_max_students": "Studenți maximi impliciți",
+        "students": "Studenți",
+        "day": "Zi",
+        "time": "Oră",
+        "recurrences": "Recurențe"
+      },
+      "generate": {
+        "button": "Generează Clase",
+        "confirm_title": "Generează Clase",
+        "confirm_content": "Generați clase programate pentru acest model?",
+        "success": "Clase generate cu succes",
+        "error": "Eroare la generarea claselor"
+      },
+      "bulk": {
+        "generate": "Generează Clase",
+        "regenerate": "Regenerează Clase",
+        "generate_success": "Clase generate pentru %{count} modele (%{classes} clase)",
+        "generate_partial_success": "Clase generate: %{success_count} succes, %{fail_count} eșuate (%{classes} clase)",
+        "generate_error": "Eroare la generarea claselor: %{error}",
+        "regenerate_success": "Clase regenerate pentru %{count} modele (șterse %{deleted}, generate %{generated})",
+        "regenerate_error": "Eroare la regenerarea claselor: %{error}",
+        "generate_confirm_title": "Generează Clase",
+        "generate_confirm_content": "Sunteți sigur că doriți să generați clase pentru %{count} modele? Acest lucru poate dura.",
+        "regenerate_confirm_title": "Regenerează Clase",
+        "regenerate_confirm_content": "Sunteți sigur că doriți să regenerați clase pentru %{count} modele? Aceasta va șterge clasele existente și va crea altele noi."
+      },
+      "viewClasses": "Vezi Clase"
+    }
+  }
+}
