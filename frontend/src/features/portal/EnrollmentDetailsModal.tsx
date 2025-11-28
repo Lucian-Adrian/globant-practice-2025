@@ -2,18 +2,14 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-
-type Enrollment = any; // TODO: Replace with real types if available
-type Lesson = any;
-type ScheduledClass = any;
-type ScheduledClassPattern = any;
+import type { Enrollment, Lesson, ScheduledClass, ScheduledClassPattern } from "../../types";
 
 interface EnrollmentDetailsModalProps {
   open: boolean;
   enrollment: Enrollment | null;
   lessons: Lesson[];
   scheduledClasses: ScheduledClass[];
-  patterns: ScheduledClassPattern[]; // 👈 NEW
+  patterns: ScheduledClassPattern[];
   onClose: () => void;
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PortalNavBar from "./PortalNavBar";
 import { studentRawFetch } from "../../api/httpClient";
+import type { Lesson } from "../../types";
 
 // Minimal inline icons to avoid external deps
 const iconProps = "tw-w-4 tw-h-4";
@@ -127,7 +128,7 @@ const Lessons: React.FC = () => {
   const [tab, setTab] = useState<"list" | "calendar">("list");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lessons, setLessons] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
 
   // Keep filter in sync if URL query changes while on page
@@ -473,3 +474,4 @@ const CalendarGrid: React.FC<{ items: any[] }>= ({ items }) => {
     </div>
   );
 };
+
