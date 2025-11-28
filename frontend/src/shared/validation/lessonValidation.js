@@ -1,48 +1,18 @@
+/**
+ * Lesson and Scheduled Class validation
+ * 
+ * This module provides comprehensive validation for lessons and scheduled classes,
+ * including conflict detection, availability checks, and capacity validation.
+ */
+
 import { API_PREFIX } from '../../api/httpClient';
+import { addMinutes, overlap, DAY_ENUM, formatInBusinessTZParts, minutesOf } from './timeUtils';
 
-const addMinutes = (date, mins) => new Date(new Date(date).getTime() + mins * 60000);
-const overlap = (startA, endA, startB, endB) => startA < endB && startB < endA; // adjacency allowed
-const DAY_ENUM = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-// Business-local timezone for availability checks (must match backend settings BUSINESS_TZ)
-const BUSINESS_TZ = 'Europe/Chisinau';
-
-function formatInBusinessTZParts(date) {
-	try {
-		const fmt = new Intl.DateTimeFormat('en-GB', {
-			timeZone: BUSINESS_TZ,
-			weekday: 'short',
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit',
-			hour12: false,
-		});
-		const parts = fmt.formatToParts(date);
-		const byType = Object.fromEntries(parts.map((p) => [p.type, p.value]));
-		const weekdayShort = (byType.weekday || '').slice(0, 3).toLowerCase();
-		const map = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
-		const dayIndex = map[weekdayShort] ?? 0;
-		const hh = String(byType.hour || '00').padStart(2, '0');
-		const mm = String(byType.minute || '00').padStart(2, '0');
-		return { dayIndex, hhmm: `${hh}:${mm}` };
-	} catch {
-		// Fallback to local if Intl fails
-		const d = new Date(date);
-		const dayIndex = (d.getDay() + 6) % 7;
-		const hh = String(d.getHours()).padStart(2, '0');
-		const mm = String(d.getMinutes()).padStart(2, '0');
-		return { dayIndex, hhmm: `${hh}:${mm}` };
-	}
-}
-
-function minutesOf(hhmm) {
-	const [h, m] = String(hhmm)
-		.split(':')
-		.map((x) => parseInt(x, 10));
-	return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
-}
-
+/**
+ * Fetch JSON from API with standardized response handling
+ * @param {string} url - API URL to fetch
+ * @returns {Promise<{ok: boolean, data: any, raw: any}>} Response object
+ */
 async function getJson(url) {
 	const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
 	let body = {};
