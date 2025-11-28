@@ -3,8 +3,10 @@ from django.core.validators import EmailValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from phonenumber_field.modelfields import PhoneNumberField
 from solo.models import SingletonModel
 
+from .model_validators import validate_school_logo, validate_landing_image
 from .enums import (
     CourseType,
     DayOfWeek,
@@ -546,12 +548,31 @@ class Address(models.Model):
 class SchoolConfig(SingletonModel):
     """Singleton model for school-wide configuration settings."""
     school_name = models.CharField(max_length=200, default="Driving School")
-    school_logo = models.ImageField(upload_to="logos/", null=True, blank=True)
+    school_logo = models.ImageField(
+        upload_to="logos/",
+        null=True,
+        blank=True,
+        validators=[validate_school_logo],
+        help_text="School logo image (max 5MB, formats: jpg, png, gif, webp)"
+    )
     business_hours = models.CharField(max_length=200, default="Mon-Fri: 9AM-6PM")
     email = models.EmailField(default="contact@school.com")
-    contact_phone1 = models.CharField(max_length=20, default="+37360000000")
-    contact_phone2 = models.CharField(max_length=20, null=True, blank=True)
-    landing_image = models.ImageField(upload_to="landing/", null=True, blank=True)
+    contact_phone1 = PhoneNumberField(
+        default="+37360000000",
+        help_text="Primary contact phone number in international format"
+    )
+    contact_phone2 = PhoneNumberField(
+        null=True,
+        blank=True,
+        help_text="Secondary contact phone number (optional)"
+    )
+    landing_image = models.ImageField(
+        upload_to="landing/",
+        null=True,
+        blank=True,
+        validators=[validate_landing_image],
+        help_text="Landing page hero image (max 5MB, formats: jpg, png, gif, webp)"
+    )
     landing_text = models.JSONField(
         default=dict,
         help_text="Translation dictionary for landing page text, e.g., {'en': 'Welcome', 'ro': 'Bun venit'}"

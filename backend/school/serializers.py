@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 
 from .models import (
@@ -791,6 +792,9 @@ class SchoolConfigSerializer(serializers.ModelSerializer):
         required=False,
         allow_empty=True
     )
+    # Phone number fields with proper serialization
+    contact_phone1 = PhoneNumberField()
+    contact_phone2 = PhoneNumberField(required=False, allow_blank=True)
 
     class Meta:
         model = SchoolConfig

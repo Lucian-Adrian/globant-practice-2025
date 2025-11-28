@@ -736,6 +736,10 @@ def normalize_phone(raw: str) -> str:
     - If no leading '+', assume Moldova +373 and strip local leading zeros.
     - Perform a minimal digit length check (>= 8 national digits total).
     NOTE: Further strict format enforcement happens in ``validate_phone``.
+
+    NOTE: For SchoolConfig phone fields, django-phonenumber-field is now used
+    which provides more robust international validation automatically.
+    This function remains for Student/Instructor models and manual validation.
     """
     if not raw:
         return raw
@@ -849,3 +853,62 @@ try:  # optional import; keeps this module reusable outside Django context
 
 except Exception:  # pragma: no cover - Django might not be installed in certain contexts
     pass
+
+
+def validate_file_size(file, max_mb=5):
+    """Validate uploaded file size.
+
+    Args:
+        file: Django UploadedFile instance
+        max_mb: Maximum file size in megabytes (default: 5MB)
+
+    Raises:
+        ValueError: If file exceeds maximum size
+    """
+    if file.size > max_mb * 1024 * 1024:
+        raise ValueError(f"File size must not exceed {max_mb}MB (current: {file.size / (1024 * 1024):.2f}MB)")
+
+
+def validate_image_file(file):
+    """Validate uploaded file is a valid image.
+
+    Args:
+        file: Django UploadedFile instance
+
+    Raises:
+        ValueError: If file is not a valid image format
+    """
+    import os
+    from PIL import Image
+
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+    ext = os.path.splitext(file.name)[1].lower()
+    if ext not in allowed_extensions:
+        raise ValueError(f"Invalid file extension '{ext}'. Allowed: {', '.join(allowed_extensions)}")
+
+    if file.content_type and not file.content_type.startswith('image/'):
+        raise ValueError(f"Invalid content type '{file.content_type}'. Must be an image.")
+
+    try:
+        image = Image.open(file)
+        image.verify()
+    except Exception as e:
+        raise ValueError(f"Invalid or corrupted image file: {str(e)}")
+
+    file.seek(0)
+
+
+def validate_upload_file(file, max_mb=5, file_type='image'):
+    """Combined validation for uploaded files.
+
+    Args:
+        file: Django UploadedFile instance
+        max_mb: Maximum file size in megabytes
+        file_type: Type of file ('image')
+
+    Raises:
+        ValueError: If validation fails
+    """
+    validate_file_size(file, max_mb=max_mb)
+    if file_type == 'image':
+        validate_image_file(file)
