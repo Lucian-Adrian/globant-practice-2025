@@ -1,4 +1,60 @@
 {
+  "scheduledclasspatternlist": {
+    "id": "ID",
+    "name": "Nume",
+    "startDate": "Data de început",
+    "numLessons": "Număr de lecții"
+  },
+  "scheduledclasspatterncreate": {
+    "patternStartDate": "Data de început model",
+    "numberOfLessons": "Număr de lecții",
+    "defaultDurationMin": "Durată implicită (min)",
+    "defaultMaxStudents": "Studenți maximi impliciți"
+  },
+  "admin": {
+    "resources": {
+      "scheduledclasspatterns": {
+        "viewClasses": "Vezi Clase",
+        "fields": {
+          "id": "ID",
+          "name": "Nume",
+          "course": "Curs",
+          "instructor": "Instructor",
+          "resource": "Resursă",
+          "recurrence_days": "Zile de recurență",
+          "times": "Ore",
+          "start_date": "Data de început",
+          "num_lessons": "Număr de lecții",
+          "default_duration_minutes": "Durată implicită (min)",
+          "default_max_students": "Studenți maximi impliciți",
+          "students": "Studenți",
+          "day": "Zi",
+          "time": "Oră",
+          "recurrences": "Recurențe"
+        },
+        "generate": {
+          "button": "Generează Clase",
+          "confirm_title": "Generează Clase",
+          "confirm_content": "Generați clase programate pentru acest model?",
+          "success": "Clase generate cu succes",
+          "error": "Eroare la generarea claselor"
+        },
+        "bulk": {
+          "generate": "Generează Clase",
+          "regenerate": "Regenerează Clase",
+          "generate_success": "Clase generate pentru %{count} modele (%{classes} clase)",
+          "generate_partial_success": "Clase generate: %{success_count} succes, %{fail_count} eșuate (%{classes} clase)",
+          "generate_error": "Eroare la generarea claselor: %{error}",
+          "regenerate_success": "Clase regenerate pentru %{count} modele (șterse %{deleted}, generate %{generated})",
+          "regenerate_error": "Eroare la regenerarea claselor: %{error}",
+          "generate_confirm_title": "Generează Clase",
+          "generate_confirm_content": "Sunteți sigur că doriți să generați clase pentru %{count} modele? Acest lucru poate dura.",
+          "regenerate_confirm_title": "Regenerează Clase",
+          "regenerate_confirm_content": "Sunteți sigur că doriți să regenerați clase pentru %{count} modele? Aceasta va șterge clasele existente și va crea altele noi."
+        }
+      }
+    }
+  },
   "ra": {
     "nav": { "home": "Acasă" },
     "action": {
@@ -24,7 +80,9 @@
       "open": "Deschide",
       "close": "Închide",
       "back": "Înapoi",
-      "undo": "Anulează"
+      "undo": "Anulează",
+      "confirm": "Confirmă",
+      "cancel": "Anulează"
     },
     "navigation": {
       "next": "Următor",
