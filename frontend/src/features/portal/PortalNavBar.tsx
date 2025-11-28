@@ -55,6 +55,7 @@ const PortalNavBar: React.FC = () => {
   };
 
   const [logoUrl, setLogoUrl] = React.useState<string>('/assets/logo.png');
+  const [schoolName, setSchoolName] = React.useState<string>('');
   React.useEffect(() => {
     let mounted = true;
     (async () => {
@@ -66,6 +67,9 @@ const PortalNavBar: React.FC = () => {
         const raw = data?.school_logo_url ?? data?.school_logo ?? '';
         const normalized = fixHost(raw || '');
         if (mounted && normalized) setLogoUrl(normalized);
+        if (mounted && typeof data?.school_name === 'string' && data.school_name.trim()) {
+          setSchoolName(data.school_name.trim());
+        }
       } catch {}
     })();
     return () => { mounted = false; };
@@ -81,7 +85,7 @@ const PortalNavBar: React.FC = () => {
                 <img src={logoUrl} alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
               </div>
               <div>
-                <h1 className="tw-text-xl tw-font-bold">{t('appName', { ns: 'portal' })}</h1>
+                <h1 className="tw-text-xl tw-font-bold">{schoolName || t('appName', { ns: 'portal' })}</h1>
                 <p className="tw-text-sm tw-text-muted-foreground">{t('studentPortal', { ns: 'portal' })}</p>
               </div>
             </div>
