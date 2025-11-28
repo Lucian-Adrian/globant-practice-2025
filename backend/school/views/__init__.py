@@ -7,6 +7,8 @@ This package contains ViewSets organized by domain:
 - lesson_views: LessonViewSet
 - payment_views: PaymentViewSet
 - course_views: CourseViewSet, EnrollmentViewSet
+- resource_views: ResourceViewSet, VehicleViewSet
+- scheduled_views: ScheduledClassPatternViewSet, ScheduledClassViewSet
 
 Import from here for backwards compatibility with existing code.
 """
@@ -29,6 +31,14 @@ from .course_views import (
     CourseViewSet,
     EnrollmentViewSet,
 )
+from .resource_views import (
+    ResourceViewSet,
+    VehicleViewSet,
+)
+from .scheduled_views import (
+    ScheduledClassPatternViewSet,
+    ScheduledClassViewSet,
+)
 
 __all__ = [
     # Base classes
@@ -49,4 +59,10 @@ __all__ = [
     # Course
     "CourseViewSet",
     "EnrollmentViewSet",
+    # Resource
+    "ResourceViewSet",
+    "VehicleViewSet",
+    # Scheduled
+    "ScheduledClassPatternViewSet",
+    "ScheduledClassViewSet",
 ]
