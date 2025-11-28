@@ -3,6 +3,7 @@ from django.core.validators import EmailValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from phonenumber_field.modelfields import PhoneNumberField
 from solo.models import SingletonModel
 
 from .model_validators import validate_school_logo, validate_landing_image
@@ -534,8 +535,15 @@ class SchoolConfig(SingletonModel):
     )
     business_hours = models.CharField(max_length=200, default="Mon-Fri: 9AM-6PM")
     email = models.EmailField(default="contact@school.com")
-    contact_phone1 = models.CharField(max_length=20, default="+37360000000")
-    contact_phone2 = models.CharField(max_length=20, null=True, blank=True)
+    contact_phone1 = PhoneNumberField(
+        default="+37360000000",
+        help_text="Primary contact phone number in international format"
+    )
+    contact_phone2 = PhoneNumberField(
+        null=True,
+        blank=True,
+        help_text="Secondary contact phone number (optional)"
+    )
     landing_image = models.ImageField(
         upload_to="landing/",
         null=True,

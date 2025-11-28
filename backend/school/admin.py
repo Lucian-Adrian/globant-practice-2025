@@ -111,3 +111,9 @@ class SchoolConfigAdmin(SingletonModelAdmin):
         }),
     )
     filter_horizontal = ("addresses",)
+
+    def get_readonly_fields(self, request, obj=None):
+        """Make phone fields display formatted in admin."""
+        if obj:
+            return []
+        return []

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "corsheaders",
+    "phonenumber_field",
     "solo",
     "school",
 ]
@@ -243,3 +244,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@drivingschool.com"
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+
+# Phone number field settings
+PHONENUMBER_DEFAULT_REGION = "MD"  # Moldova as default region
+PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"  # E.164 format
