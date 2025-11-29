@@ -207,10 +207,14 @@ LOGGING = {
 
 # Ensure .webp served with correct MIME type on platforms missing default mapping
 import mimetypes  # noqa: E402
+import logging
+
 try:
     mimetypes.add_type("image/webp", ".webp", True)
-except Exception:
-    pass
+except Exception as e:
+    logging.getLogger("django").warning(
+        "Failed to register .webp MIME type: %s", e
+    )
 
 # drf-spectacular OpenAPI schema settings
 SPECTACULAR_SETTINGS = {
