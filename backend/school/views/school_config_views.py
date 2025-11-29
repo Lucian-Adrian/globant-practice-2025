@@ -1,5 +1,5 @@
 from rest_framework import decorators, mixins, response, status, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 from ..models import SchoolConfig
 from ..serializers import SchoolConfigSerializer
@@ -11,64 +11,55 @@ class SchoolConfigViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    ViewSet pentru modelul singleton SchoolConfig.
-
-    - GET  /api/school/config/                  -> list()  (returnează instanța unică)
-    - PUT  /api/school/config/                  -> update() pe instanța unică
+    ViewSet for SchoolConfig singleton model.
+    - GET  /api/school/config/                  -> list()  (returns singleton instance)
+    - PUT/PATCH /api/school/config/             -> update singleton instance
     - POST /api/school/config/upload_logo/      -> upload_logo()
     - POST /api/school/config/upload_landing_image/ -> upload_landing_image()
     """
 
     queryset = SchoolConfig.objects.all()
     serializer_class = SchoolConfigSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        """
+        Permissions:
+        - list / retrieve (GET) -> public (AllowAny)
+        - update / upload_* (write) -> only authenticated admin
+        """
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+
+        return [IsAuthenticated(), IsAdminUser()]
 
     def get_object(self):
-        """
-        Always returns the singleton instance (pk=1). Creates it if it doesn't exist.
-        """
+        """Always return the singleton instance, create if doesn't exist."""
         obj, created = SchoolConfig.objects.get_or_create(pk=1)
         return obj
 
     def list(self, request, *args, **kwargs):
-        """
-        Override list() to return a single object instead of a list.
-        """
+        """Override list to return singleton object instead of list."""
         instance = self.get_object()
-        serializer = self.get_serializer(instance, context={"request": request})
+        serializer = self.get_serializer(instance)
         return response.Response(serializer.data)
 
-    @decorators.action(
-        detail=False,          # <--- IMPORTANT: fără pk în URL
-        methods=["post"],
-        url_path="upload_logo",
-    )
+    @decorators.action(detail=False, methods=["post"], url_path="upload_logo")
     def upload_logo(self, request):
         """
         Upload school logo image.
-
-        Acceptă un fișier imagine în multipart/form-data sub una din cheile:
-        - 'logo'
-        - 'file'
-        - 'school_logo'
+        Expects multipart/form-data with 'logo' file field.
         """
-        file_obj = (
-            request.FILES.get("logo")
-            or request.FILES.get("file")
-            or request.FILES.get("school_logo")
-        )
-
-        if not file_obj:
+        if "logo" not in request.FILES:
             return response.Response(
                 {"error": "No logo file provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         config = self.get_object()
-        config.school_logo = file_obj
+        config.school_logo = request.FILES["logo"]
         config.save()
 
-        serializer = self.get_serializer(config, context={"request": request})
+        serializer = self.get_serializer(config)
         return response.Response(
             {
                 "message": "Logo uploaded successfully",
@@ -77,32 +68,23 @@ class SchoolConfigViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @decorators.action(
-        detail=False,          # <--- la fel, fără pk
-        methods=["post"],
-        url_path="upload_landing_image",
-    )
+    @decorators.action(detail=False, methods=["post"], url_path="upload_landing_image")
     def upload_landing_image(self, request):
         """
         Upload landing page image.
-
-        Accepts an image file in multipart/form-data under one of the keys:
-        - 'image'
-        - 'file'
+        Expects multipart/form-data with 'image' file field.
         """
-        file_obj = request.FILES.get("image") or request.FILES.get("file")
-
-        if not file_obj:
+        if "image" not in request.FILES:
             return response.Response(
                 {"error": "No image file provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         config = self.get_object()
-        config.landing_image = file_obj
+        config.landing_image = request.FILES["image"]
         config.save()
 
-        serializer = self.get_serializer(config, context={"request": request})
+        serializer = self.get_serializer(config)
         return response.Response(
             {
                 "message": "Landing image uploaded successfully",
