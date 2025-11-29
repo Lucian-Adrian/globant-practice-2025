@@ -1,6 +1,7 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
@@ -417,6 +418,29 @@ class LessonSerializer(serializers.ModelSerializer):
             "notes",
         ]
 
+    def to_internal_value(self, data):
+        """Convert scheduled_time from business timezone interpretation to UTC."""
+        data = super().to_internal_value(data)
+        if 'scheduled_time' in data and data['scheduled_time']:
+            # The frontend sends times as UTC ISO strings, but users expect them to be in business timezone
+            # So we need to interpret the received UTC time as business timezone time
+            biz_tz_name = getattr(settings, "BUSINESS_TZ", "Europe/Chisinau")
+            if ZoneInfo and biz_tz_name:
+                try:
+                    biz_tz = ZoneInfo(biz_tz_name)
+                    received_dt = data['scheduled_time']  # This is UTC time, e.g. 10:00 UTC
+                    # Extract the time components and create a datetime in business timezone
+                    # If received is 10:00 UTC, and user meant 10:00 business time,
+                    # create 10:00 in business timezone, then convert to UTC
+                    local_dt = biz_tz.localize(datetime.combine(
+                        received_dt.date(),
+                        received_dt.time().replace(tzinfo=None)  # Remove tzinfo to get naive time
+                    ))
+                    data['scheduled_time'] = local_dt.astimezone(timezone.utc)
+                except Exception:
+                    pass  # Keep as-is if timezone conversion fails
+        return data
+
     def validate(self, attrs):
         """Apply server-side booking rules using helpers.
 
@@ -692,6 +716,29 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
 
     def get_available_spots(self, obj):
         return obj.available_spots()
+
+    def to_internal_value(self, data):
+        """Convert scheduled_time from business timezone interpretation to UTC."""
+        data = super().to_internal_value(data)
+        if 'scheduled_time' in data and data['scheduled_time']:
+            # The frontend sends times as UTC ISO strings, but users expect them to be in business timezone
+            # So we need to interpret the received UTC time as business timezone time
+            biz_tz_name = getattr(settings, "BUSINESS_TZ", "Europe/Chisinau")
+            if ZoneInfo and biz_tz_name:
+                try:
+                    biz_tz = ZoneInfo(biz_tz_name)
+                    received_dt = data['scheduled_time']  # This is UTC time, e.g. 10:00 UTC
+                    # Extract the time components and create a datetime in business timezone
+                    # If received is 10:00 UTC, and user meant 10:00 business time,
+                    # create 10:00 in business timezone, then convert to UTC
+                    local_dt = biz_tz.localize(datetime.combine(
+                        received_dt.date(),
+                        received_dt.time().replace(tzinfo=None)  # Remove tzinfo to get naive time
+                    ))
+                    data['scheduled_time'] = local_dt.astimezone(timezone.utc)
+                except Exception:
+                    pass  # Keep as-is if timezone conversion fails
+        return data
 
     def validate(self, attrs):
         """Apply ScheduledClass business rules (Phase 3)."""

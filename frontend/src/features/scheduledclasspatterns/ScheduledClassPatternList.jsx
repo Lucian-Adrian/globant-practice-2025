@@ -63,22 +63,22 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
     {
       onSuccess: ({ totalGenerated, failureCount }) => {
         if (failureCount > 0) {
-            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_partial_success', { 
+            notify(t('resources.scheduled-class-patterns.bulk.generate_partial_success', { 
                 success_count: selectedIds.length - failureCount,
                 fail_count: failureCount,
                 classes: totalGenerated 
             }), { type: 'warning' });
         } else {
-            notify(t('admin.resources.scheduledclasspatterns.bulk.generate_success', { 
+            notify(t('resources.scheduled-class-patterns.bulk.generate_success', { 
                 count: selectedIds.length, 
                 classes: totalGenerated 
             }), { type: 'success' });
         }
         refresh();
-        unselectAll('scheduledclasspatterns');
+        unselectAll('scheduled-class-patterns');
       },
       onError: (error) => {
-        notify(t('admin.resources.scheduledclasspatterns.bulk.generate_error', { error: error.message }), { type: 'error' });
+        notify(t('resources.scheduled-class-patterns.bulk.generate_error', { error: error.message }), { type: 'error' });
       },
     }
   );
@@ -96,15 +96,15 @@ const BulkGenerateClassesButton = ({ selectedIds }) => {
   return (
     <>
       <Button
-        label={t('admin.resources.scheduledclasspatterns.bulk.generate', 'Generate Classes')}
+        label={t('resources.scheduled-class-patterns.bulk.generate', 'Generate Classes')}
         onClick={handleClick}
         disabled={isLoading || safeSelectedIds.length === 0}
         startIcon={isLoading ? <CircularProgress size={16} /> : <PlayArrowIcon />}
       />
       <Confirm
         isOpen={open}
-        title={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_title', 'Generate Classes')}
-        content={t('admin.resources.scheduledclasspatterns.bulk.generate_confirm_content', {
+        title={t('resources.scheduled-class-patterns.bulk.generate_confirm_title', 'Generate Classes')}
+        content={t('resources.scheduled-class-patterns.bulk.generate_confirm_content', {
           count: safeSelectedIds.length,
           defaultValue: 'Are you sure you want to generate classes for {{count}} pattern(s)? This may take some time.'
         })}
@@ -124,13 +124,13 @@ const ViewClassesButton = ({ record }) => {
 
   const handleClick = () => {
     // Navigate to scheduled classes list filtered by this pattern
-    navigate(`/admin/scheduledclasses?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
+    navigate(`/admin/scheduled-classes?filter=${encodeURIComponent(JSON.stringify({ pattern_id: record.id }))}`);
   };
 
   return (
     <Button
       onClick={handleClick}
-      label={t('admin.resources.scheduledclasspatterns.viewClasses', 'View Classes')}
+      label={t('resources.scheduled-class-patterns.viewClasses', 'View Classes')}
       startIcon={<VisibilityIcon />}
       size="small"
     />
@@ -156,16 +156,16 @@ export default function ScheduledClassPatternList(props) {
             </>
           }
         >
-          <TextField source="id" label={t('scheduledclasspatternlist.id', 'ID')} />
-          <TextField source="name" label={t('scheduledclasspatternlist.name', 'Name')} />
-          <ReferenceField source="course_id" reference="classes" link="show">
+          <TextField source="id" label={t('resources.scheduled-class-patterns.fields.id', 'ID')} />
+          <TextField source="name" label={t('resources.scheduled-class-patterns.fields.name', 'Name')} />
+          <ReferenceField source="course_id" reference="classes" link="show" label={t('resources.scheduled-class-patterns.fields.course', 'Course')}>
             <TextField source="name" />
           </ReferenceField>
-          <ReferenceField source="instructor_id" reference="instructors" link="show">
+          <ReferenceField source="instructor_id" reference="instructors" link="show" label={t('resources.scheduled-class-patterns.fields.instructor', 'Instructor')}>
             <TextField source="first_name" />
           </ReferenceField>
-          <DateField source="start_date" label={t('scheduledclasspatternlist.startDate', 'Start Date')} />
-          <NumberField source="num_lessons" label={t('scheduledclasspatternlist.numLessons', 'Number of Lessons')} />
+          <DateField source="start_date" label={t('resources.scheduled-class-patterns.fields.start_date', 'Start Date')} />
+          <NumberField source="num_lessons" label={t('resources.scheduled-class-patterns.fields.num_lessons', 'Number of Lessons')} />
           <ViewClassesButton />
         </Datagrid>
       </List>

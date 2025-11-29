@@ -6,6 +6,11 @@ from django.db.models.functions import Lower
 from phonenumber_field.modelfields import PhoneNumberField
 from solo.models import SingletonModel
 
+try:
+    from zoneinfo import ZoneInfo  # Python 3.9+
+except ImportError:
+    ZoneInfo = None
+
 from .model_validators import validate_school_logo, validate_landing_image
 from .enums import (
     CourseType,
@@ -369,7 +374,18 @@ class ScheduledClassPattern(models.Model):
                     if count >= self.num_lessons:
                         break
                     naive_dt = datetime.combine(current_date, time_obj)
-                    scheduled_time = timezone.make_aware(naive_dt)
+                    # Interpret time as business timezone time, then convert to UTC for storage
+                    biz_tz_name = getattr(settings, "BUSINESS_TZ", "Europe/Chisinau")
+                    if ZoneInfo and biz_tz_name:
+                        try:
+                            biz_tz = ZoneInfo(biz_tz_name)
+                            local_dt = biz_tz.localize(naive_dt)
+                            scheduled_time = local_dt.astimezone(timezone.utc)
+                        except Exception:
+                            # Fallback to UTC if timezone issues
+                            scheduled_time = timezone.make_aware(naive_dt)
+                    else:
+                        scheduled_time = timezone.make_aware(naive_dt)
                     # Create ScheduledClass with default values from pattern
                     scheduled_class = ScheduledClass(
                         pattern=self,

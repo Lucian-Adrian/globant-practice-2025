@@ -43,7 +43,7 @@ const FilteredDatagrid = (props) => {
 
   return (
     <Datagrid {...props} data={filteredData} rowClick="edit">
-      <NumberField source="id" label={t('scheduledclasspatternlist.id', 'ID')} />
+      <NumberField source="id" label={t('resources.scheduledclasses.fields.id', 'ID')} />
       <TextField source="name" label={t('resources.scheduledclasses.fields.name', 'Name')} />
       <TextField source="course.name" label={t('resources.scheduledclasses.fields.course', 'Course')} />
       <TextField source="pattern.name" label={t('resources.scheduledclasses.fields.pattern', 'Pattern')} />

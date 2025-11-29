@@ -127,7 +127,7 @@ export function initI18n(lang = storedLang || 'en') {
       load: 'languageOnly',
       nonExplicitSupportedLngs: true,
       cleanCode: true,
-      ns: ['ra', 'common', 'validation', 'admin', 'portal'],
+      ns: ['ra', 'common', 'validation', 'admin', 'resources', 'portal'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
       react: {
@@ -221,13 +221,20 @@ export const raI18nProvider = {
 
     // Handle resources.* keys
     if (key.startsWith('resources.')) {
+      // First try in resources namespace directly (without the "resources." prefix)
+      const withoutPrefix = key.slice(10); // remove "resources."
+      const rResources = tryKey(withoutPrefix, 'resources');
+      if (rResources) return rResources;
+      // Then try in admin namespace with full key (admin.resources.xxx)
       const rAdmin = tryKey(key, 'admin');
       if (rAdmin) return rAdmin;
+      // Then try in common namespace with full key (common.resources.xxx)
       const rCommon = tryKey(key, 'common');
       if (rCommon) return rCommon;
-      const withoutPrefix = key.replace(/^resources\./, '');
+      // Try admin with key without prefix
       const rAdmin2 = tryKey(withoutPrefix, 'admin');
       if (rAdmin2) return rAdmin2;
+      // Try common with key without prefix  
       const rCommon2 = tryKey(withoutPrefix, 'common');
       if (rCommon2) return rCommon2;
     }
