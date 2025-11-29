@@ -168,7 +168,8 @@ STATICFILES_DIRS = []
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media files (user-uploaded content)
-MEDIA_URL = "media/"
+# Use leading slash so URLs resolve as /media/... and static() serves proper content types
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
@@ -230,6 +231,17 @@ LOGGING = {
     },
 }
 
+# Ensure .webp served with correct MIME type on platforms missing default mapping
+import mimetypes  # noqa: E402
+import logging
+
+try:
+    mimetypes.add_type("image/webp", ".webp", True)
+except Exception as e:
+    logging.getLogger("django").warning(
+        "Failed to register .webp MIME type: %s", e
+    )
+    
 # drf-spectacular OpenAPI schema settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "Driving School API",

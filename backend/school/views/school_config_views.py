@@ -1,8 +1,6 @@
-from django.http import HttpResponse
 from rest_framework import decorators, mixins, response, status, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
-from .base import FullCrudViewSet
 from ..models import SchoolConfig
 from ..serializers import SchoolConfigSerializer
 
@@ -14,13 +12,25 @@ class SchoolConfigViewSet(
 ):
     """
     ViewSet for SchoolConfig singleton model.
-    Supports GET and PUT operations only.
-    Always returns/updates the singleton instance (pk=1).
+    - GET  /api/school/config/                  -> list()  (returns singleton instance)
+    - PUT/PATCH /api/school/config/             -> update singleton instance
+    - POST /api/school/config/upload_logo/      -> upload_logo()
+    - POST /api/school/config/upload_landing_image/ -> upload_landing_image()
     """
 
     queryset = SchoolConfig.objects.all()
     serializer_class = SchoolConfigSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        """
+        Permissions:
+        - list / retrieve (GET) -> public (AllowAny)
+        - update / upload_* (write) -> only authenticated admin
+        """
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+
+        return [IsAuthenticated(), IsAdminUser()]
 
     def get_object(self):
         """Always return the singleton instance, create if doesn't exist."""

@@ -63,7 +63,12 @@ const buildLanguageData = () => {
 
     languageData[lng] = {
       ra: admin.ra || {},
-      common: admin.common || {},
+      common: {
+        ...(admin.common || {}),
+        // Keep configuration keys under the 'configuration' subtree
+        configuration: admin.configuration || {},
+        resources: admin.resources || {},
+      },
       validation: admin.validation || {},
       admin: {
         resources: admin.resources || {},

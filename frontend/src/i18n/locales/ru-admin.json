@@ -624,5 +624,42 @@
       },
       "viewClasses": "Просмотр занятий"
     }
+  },
+  "configuration": {
+    "image": {
+      "placeholder": "Загрузить изображение"
+    },
+    "school_logo": "Логотип школы (URL)",
+    "landing_image": "Картинка лэндинга (URL)",
+    "title": "Настройки школы",
+    "addresses": "Адреса",
+    "address": {
+      "line1": "Строка 1",
+      "line2": "Строка 2",
+      "city": "Город",
+      "state": "Штат/Область",
+      "postal_code": "Почтовый индекс",
+      "country": "Страна"
+    },
+    "landing_text": {
+      "en": "Текст лэндинга (EN)",
+      "ro": "Текст лэндинга (RO)",
+      "ru": "Текст лэндинга (RU)"
+    },
+    "social_links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "twitter": "Twitter",
+      "youtube": "YouTube"
+    },
+    "rules": {
+      "min_theory_hours_before_practice": "Мин. часы теории перед практикой"
+    },
+    "available_categories": "Доступные категории",
+    "school_name": "Название школы",
+    "business_hours": "Часы работы",
+    "email": "Email",
+    "contact_phone1": "Контактный телефон 1",
+    "contact_phone2": "Контактный телефон 2"
   }
 }

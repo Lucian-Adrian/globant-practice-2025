@@ -6,6 +6,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SportsMotorsportsIcon from '@mui/icons-material/SportsMotorsports';
 import PaymentIcon from '@mui/icons-material/Payment';
+import { useSchoolConfig } from '../../shared/hooks/useSchoolConfig';
 
 function getStudentInitials(): string {
   try {
@@ -37,6 +38,10 @@ const PortalNavBar: React.FC = () => {
     window.location.href = '/login';
   };
 
+  const { config } = useSchoolConfig();
+  const logoUrl = config.school_logo;
+  const schoolName = config.school_name;
+
   return (
     <>
       <nav className="tw-hidden md:tw-flex tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-50 tw-bg-background/80 tw-backdrop-blur-md tw-border-b tw-border-border">
@@ -44,10 +49,10 @@ const PortalNavBar: React.FC = () => {
           <div className="tw-flex tw-items-center tw-justify-between">
             <div className="tw-flex tw-items-center tw-gap-3">
               <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
-                <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
+                <img src={logoUrl} alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
               </div>
               <div>
-                <h1 className="tw-text-xl tw-font-bold">{t('appName', { ns: 'portal' })}</h1>
+                <h1 className="tw-text-xl tw-font-bold">{schoolName || t('appName', { ns: 'portal' })}</h1>
                 <p className="tw-text-sm tw-text-muted-foreground">{t('studentPortal', { ns: 'portal' })}</p>
               </div>
             </div>

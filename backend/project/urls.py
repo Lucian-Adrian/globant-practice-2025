@@ -37,6 +37,5 @@ urlpatterns = [
     path("api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files for local/dev. Keep this unconditional in dev container to avoid CORB when DEBUG toggles.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

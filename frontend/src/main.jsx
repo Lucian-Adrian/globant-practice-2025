@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import App from './app/App.jsx';
 import SignupForm from './features/portal/SignupForm.jsx';
 import LandingPublic from './features/portal/LandingPublic.tsx';
-import LandingStudent from './features/portal/LandingStudent.tsx';
 import Lessons from './features/portal/Lessons.tsx';
 import BookLesson from './features/portal/BookLesson.tsx';
 import Progress from './features/portal/Progress.tsx';
@@ -45,7 +44,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/payments" element={<Payments />} />
         <Route path="/login" element={<StudentLogin />} />
         <Route path="/TestJWT" element={<TestJWT />} />
-        <Route path="/landing" element={<LandingStudent />} />
         <Route path="/dashboard" element={<DashboardStudent />} />
         <Route path="/" element={<LandingPublic />} />
         <Route path="/dash" element={<StudentDashboard />} />

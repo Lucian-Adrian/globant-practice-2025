@@ -8,12 +8,17 @@ import {
   SimpleFormIterator,
   SelectArrayInput,
   useNotify,
+  ImageInput,
+  ImageField,
 } from 'react-admin';
 import { Card, CardContent, CardHeader, Grid, Box } from '@mui/material';
 import { useTranslate } from 'react-admin';
 import QuickAddPanel from '../components/QuickAddPanel.tsx';
-import { API_PREFIX, buildHeaders } from '../api/httpClient.js';
+import { API_PREFIX, buildHeaders, rawFetch, httpJson } from '../api/httpClient.js';
+import { fixHost, formatImageValue, parseImageValue } from '../shared/utils/mediaUrl';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
+
+// Using shared fixHost from utils (DRY)
 
 interface Address {
   line1: string;
@@ -87,14 +92,35 @@ const MOCK_CONFIG: SchoolConfig = {
   available_categories: ['B', 'C'],
 };
 
-async function uploadImageTo(endpoint: string, file: File): Promise<string> {
+async function uploadImageTo(endpoint: string, file: File, fieldName: 'logo' | 'image'): Promise<string> {
   const fd = new FormData();
-  fd.append('file', file);
-  const resp = await fetch(endpoint, { method: 'POST', body: fd });
+  fd.append(fieldName, file);
+  // Use rawFetch so 401 triggers a refresh and retries once
+  const resp = await rawFetch(endpoint, { method: 'POST', headers: buildHeaders(), body: fd });
   const body = await resp.json().catch(() => ({} as any));
   if (!resp.ok) throw new Error(body?.detail || body?.message || 'Upload failed');
-  // Expect API to return { url: '...' } or similar
-  return body.url || body.location || body.path || '';
+  // Backend returns specific keys; also support generic fallbacks
+  const raw = body.school_logo || body.landing_image || body.url || body.location || body.path || '';
+  return fixHost(raw);
+}
+
+// Helper to consistently interpret ImageInput values
+function parseImageSelection(val: any): { src?: string; file?: File; empty: boolean } {
+  if (!val) return { empty: true };
+  if (Array.isArray(val)) {
+    const item = val[0];
+    if (!item) return { empty: true };
+    if (item.rawFile instanceof File) return { file: item.rawFile as File, empty: false };
+    const src = item.src || item.url || item.path || '';
+    return src ? { src, empty: false } : { empty: true };
+  }
+  if (val instanceof File) return { file: val, empty: false };
+  if (typeof val === 'string') return val ? { src: val, empty: false } : { empty: true };
+  if (typeof val === 'object') {
+    const src = val.src || val.url || val.path || '';
+    return src ? { src, empty: false } : { empty: true };
+  }
+  return { empty: true };
 }
 
 const Configuration: React.FC = () => {
@@ -111,13 +137,14 @@ const Configuration: React.FC = () => {
     let mounted = true;
     (async () => {
       try {
-        // Try real API first
-        const resp = await fetch(`${API_PREFIX}/school/config/`, { headers: buildHeaders() });
-        if (resp.ok) {
-          const data = await resp.json();
-          if (mounted) setInitial(data);
-        } else {
-          if (mounted) setInitial(MOCK_CONFIG);
+        // Use httpJson so token refresh happens automatically on 401
+        const { json } = await httpJson(`${API_PREFIX}/school/config/`);
+        if (mounted) {
+          const normalized = { ...(json as any) };
+          // Serializer provides only direct fields (no *_url); normalize existing values
+          normalized.school_logo = fixHost((normalized as any).school_logo || '');
+          normalized.landing_image = fixHost((normalized as any).landing_image || '');
+          setInitial(normalized as any);
         }
       } catch (_) {
         if (mounted) setInitial(MOCK_CONFIG);
@@ -128,40 +155,98 @@ const Configuration: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  const onSubmit = async (values: SchoolConfig) => {
+  // Loosen typing for react-admin form submit handler; we'll validate keys internally
+  const onSubmit = async (values: any) => {
     try {
-      const data: SchoolConfig = { ...values };
-
-  // Handle potential future image uploads (currently using plain URL text inputs)
-      if (data.school_logo) {
-        const s = data.school_logo as any;
-        if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, s.rawFile as File);
-          data.school_logo = url;
-        } else if (typeof s === 'object' && typeof s.src === 'string') {
-          data.school_logo = s.src;
-        }
+      const data: SchoolConfig = { ...values } as SchoolConfig;
+      // Handle image inputs uniformly
+      const logoSel = parseImageSelection((values as any).school_logo);
+      const logoProvided = !logoSel.empty;
+      let logoUploadPerformed = false;
+      let logoCleared = false;
+      if (logoSel.file) {
+        data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, logoSel.file, 'logo');
+        logoUploadPerformed = true;
+      } else if (logoSel.src) {
+        data.school_logo = fixHost(logoSel.src);
+      } else {
+        logoCleared = true;
+        data.school_logo = '';
       }
-      if (data.landing_image) {
-        const s = data.landing_image as any;
-        if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, s.rawFile as File);
-          data.landing_image = url;
-        } else if (typeof s === 'object' && typeof s.src === 'string') {
-          data.landing_image = s.src;
-        }
+
+      const landingSel = parseImageSelection((values as any).landing_image);
+      const landingProvided = !landingSel.empty;
+      let landingUploadPerformed = false;
+      let landingCleared = false;
+      if (landingSel.file) {
+        data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, landingSel.file, 'image');
+        landingUploadPerformed = true;
+      } else if (landingSel.src) {
+        data.landing_image = fixHost(landingSel.src);
+      } else {
+        landingCleared = true;
+        data.landing_image = '';
+      }
+      // Build payload excluding image fields if unchanged (avoid serializer complaining about non-file strings)
+      const payload: any = { ...data };
+      const initialLogo = (initial as any)?.school_logo || '';
+      const initialLanding = (initial as any)?.landing_image || '';
+      const logoUnchanged = !logoUploadPerformed && !logoCleared && (data.school_logo === initialLogo || data.school_logo === '' || !logoProvided);
+      const landingUnchanged = !landingUploadPerformed && !landingCleared && (data.landing_image === initialLanding || data.landing_image === '' || !landingProvided);
+      if (logoUnchanged) {
+        delete payload.school_logo;
+      } else if (logoCleared) {
+        payload.school_logo = null; // explicit clear
+      } else if (logoUploadPerformed) {
+        // Already stored by upload endpoint; omit to avoid second validation
+        delete payload.school_logo;
+      }
+      if (landingUnchanged) {
+        delete payload.landing_image;
+      } else if (landingCleared) {
+        payload.landing_image = null;
+      } else if (landingUploadPerformed) {
+        delete payload.landing_image;
       }
 
       // PUT full config
-      const resp = await fetch(`${API_PREFIX}/school/config/`, {
+      // Use rawFetch for PUT to auto-refresh on 401
+      const putHeaders = buildHeaders();
+      putHeaders.set('Content-Type', 'application/json');
+      const resp = await rawFetch(`${API_PREFIX}/school/config/1/`, {
         method: 'PUT',
-        headers: new Headers({ 'Content-Type': 'application/json', ...Object.fromEntries(buildHeaders().entries()) }),
-        body: JSON.stringify(data),
+        headers: putHeaders,
+        body: JSON.stringify(payload),
       });
       const body = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(body?.detail || body?.message || 'Save failed');
       notify('Configuration saved', { type: 'success' });
-      setInitial(body || data);
+      // Some backends omit image fields in PUT response; fetch full config to update previews
+      try {
+        const { json } = await httpJson(`${API_PREFIX}/school/config/`);
+        const fullRaw = json as any;
+        const full = {
+          ...fullRaw,
+          school_logo: fixHost(fullRaw.school_logo || data.school_logo || (initial as any)?.school_logo || ''),
+          landing_image: fixHost(fullRaw.landing_image || data.landing_image || (initial as any)?.landing_image || ''),
+        } as any;
+        // Preserve just-uploaded URLs if GET lags
+        const next = {
+          ...(full || {}),
+          school_logo: (full?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
+          landing_image: (full?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
+        } as SchoolConfig;
+        setInitial(next);
+      } catch (_) {
+        // Fallback to local data merging so previews remain
+        const next = {
+          ...(initial || {}),
+          ...(body || {}),
+          school_logo: fixHost(body?.school_logo ?? data.school_logo ?? (initial as any)?.school_logo ?? ''),
+          landing_image: fixHost(body?.landing_image ?? data.landing_image ?? (initial as any)?.landing_image ?? ''),
+        } as SchoolConfig;
+        setInitial(next);
+      }
     } catch (e: any) {
       notify(e?.message || 'Save failed', { type: 'error' });
       throw e;
@@ -186,49 +271,67 @@ const Configuration: React.FC = () => {
           <Card>
             <CardHeader title={translate('configuration.title', { defaultValue: 'School Configuration' })} />
             <CardContent>
-              <form noValidate autoComplete="off">
-                <SimpleForm onSubmit={onSubmit} defaultValues={initial} mode="onChange" toolbar={null}>
-                  {/* Basics */}
-                  <TextInput source="school_name" label={translate('configuration.school_name')} fullWidth />
-                  <TextInput source="business_hours" label={translate('configuration.business_hours')} fullWidth />
-                  <TextInput source="email" label={translate('configuration.email')} fullWidth />
-                  <TextInput source="contact_phone1" label={translate('configuration.contact_phone1')} fullWidth />
-                  <TextInput source="contact_phone2" label={translate('configuration.contact_phone2')} fullWidth />
+              <SimpleForm onSubmit={onSubmit} defaultValues={initial}>
+                {/* Basics */}
+                <TextInput source="school_name" label={translate('configuration.school_name')} fullWidth />
+                <TextInput source="business_hours" label={translate('configuration.business_hours')} fullWidth />
+                <TextInput source="email" label={translate('configuration.email')} fullWidth />
+                <TextInput source="contact_phone1" label={translate('configuration.contact_phone1')} fullWidth />
+                <TextInput source="contact_phone2" label={translate('configuration.contact_phone2')} fullWidth />
 
-                  {/* Images (simplified as plain text inputs for now) */}
-                  <TextInput source="school_logo" label={translate('configuration.school_logo')} fullWidth />
-                  <TextInput source="landing_image" label={translate('configuration.landing_image')} fullWidth />
+                {/* Images */}
+                <ImageInput
+                  source="school_logo"
+                  label={translate('configuration.school_logo')}
+                  accept="image/*"
+                  multiple={false}
+                  placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
+                  format={formatImageValue}
+                  parse={parseImageValue}
+                >
+                  <ImageField source="src" />
+                </ImageInput>
+                <ImageInput
+                  source="landing_image"
+                  label={translate('configuration.landing_image')}
+                  accept="image/*"
+                  multiple={false}
+                  placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
+                  format={formatImageValue}
+                  parse={parseImageValue}
+                >
+                  <ImageField source="src" />
+                </ImageInput>
 
-                  {/* Addresses */}
-          <ArrayInput source="addresses" label={translate('configuration.addresses')}>
-                    <SimpleFormIterator inline disableReordering>
-            <TextInput source="line1" label={translate('configuration.address.line1')} fullWidth />
-            <TextInput source="line2" label={translate('configuration.address.line2')} fullWidth />
-            <TextInput source="city" label={translate('configuration.address.city')} />
-            <TextInput source="state" label={translate('configuration.address.state')} />
-            <TextInput source="postal_code" label={translate('configuration.address.postal_code')} />
-            <TextInput source="country" label={translate('configuration.address.country')} />
-                    </SimpleFormIterator>
-                  </ArrayInput>
+                {/* Addresses */}
+        <ArrayInput source="addresses" label={translate('configuration.addresses')}>
+                  <SimpleFormIterator inline>
+          <TextInput source="line1" label={translate('configuration.address.line1')} fullWidth />
+          <TextInput source="line2" label={translate('configuration.address.line2')} fullWidth />
+          <TextInput source="city" label={translate('configuration.address.city')} />
+          <TextInput source="state" label={translate('configuration.address.state')} />
+          <TextInput source="postal_code" label={translate('configuration.address.postal_code')} />
+          <TextInput source="country" label={translate('configuration.address.country')} />
+                  </SimpleFormIterator>
+                </ArrayInput>
 
-                  {/* Landing text (localized object) */}
-                  <TextInput source="landing_text.en" label={translate('configuration.landing_text.en')} multiline fullWidth />
-                  <TextInput source="landing_text.ro" label={translate('configuration.landing_text.ro')} multiline fullWidth />
-                  <TextInput source="landing_text.ru" label={translate('configuration.landing_text.ru')} multiline fullWidth />
+                {/* Landing text (localized object) */}
+                <TextInput source="landing_text.en" label={translate('configuration.landing_text.en')} multiline fullWidth />
+                <TextInput source="landing_text.ro" label={translate('configuration.landing_text.ro')} multiline fullWidth />
+                <TextInput source="landing_text.ru" label={translate('configuration.landing_text.ru')} multiline fullWidth />
 
-                  {/* Social links */}
-                  <TextInput source="social_links.facebook" label={translate('configuration.social_links.facebook')} fullWidth />
-                  <TextInput source="social_links.instagram" label={translate('configuration.social_links.instagram')} fullWidth />
-                  <TextInput source="social_links.twitter" label={translate('configuration.social_links.twitter')} fullWidth />
-                  <TextInput source="social_links.youtube" label={translate('configuration.social_links.youtube')} fullWidth />
+                {/* Social links */}
+                <TextInput source="social_links.facebook" label={translate('configuration.social_links.facebook')} fullWidth />
+                <TextInput source="social_links.instagram" label={translate('configuration.social_links.instagram')} fullWidth />
+                <TextInput source="social_links.twitter" label={translate('configuration.social_links.twitter')} fullWidth />
+                <TextInput source="social_links.youtube" label={translate('configuration.social_links.youtube')} fullWidth />
 
-                  {/* Rules */}
-                  <NumberInput source="rules.min_theory_hours_before_practice" label={translate('configuration.rules.min_theory_hours_before_practice')} />
+                {/* Rules */}
+                <NumberInput source="rules.min_theory_hours_before_practice" label={translate('configuration.rules.min_theory_hours_before_practice')} />
 
-                  {/* Available categories */}
-                  <SelectArrayInput source="available_categories" label={translate('configuration.available_categories')} choices={categoryChoices} optionValue="id" optionText="name" />
-                </SimpleForm>
-              </form>
+                {/* Available categories */}
+                <SelectArrayInput source="available_categories" label={translate('configuration.available_categories')} choices={categoryChoices} optionValue="id" optionText="name" />
+              </SimpleForm>
             </CardContent>
           </Card>
         </Grid>

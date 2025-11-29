@@ -624,5 +624,42 @@
       },
       "viewClasses": "View Classes"
     }
+  },
+  "configuration": {
+    "image": {
+      "placeholder": "Upload image"
+    },
+    "school_logo": "School Logo (URL)",
+    "landing_image": "Landing Image (URL)",
+    "title": "School Configuration",
+    "addresses": "Addresses",
+    "address": {
+      "line1": "Line 1",
+      "line2": "Line 2",
+      "city": "City",
+      "state": "State",
+      "postal_code": "Postal Code",
+      "country": "Country"
+    },
+    "landing_text": {
+      "en": "Landing Text (EN)",
+      "ro": "Landing Text (RO)",
+      "ru": "Landing Text (RU)"
+    },
+    "social_links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "twitter": "Twitter",
+      "youtube": "YouTube"
+    },
+    "rules": {
+      "min_theory_hours_before_practice": "Min theory hours before practice"
+    },
+    "available_categories": "Available Categories",
+    "school_name": "School Name",
+    "business_hours": "Business Hours",
+    "email": "Email",
+    "contact_phone1": "Contact Phone 1",
+    "contact_phone2": "Contact Phone 2"
   }
 }
