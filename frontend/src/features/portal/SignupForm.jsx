@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 import './StudentLogin.css';
-const heroImg = '/assets/login.png';
 import PageIcon from './PageIcon';
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
+import { useSchoolConfig } from './useSchoolConfig';
 
 const Field = ({ label, children }) => (
   <label style={{ display: 'flex', flexDirection: 'column', fontSize: '.9rem', gap: '.25rem' }}>
@@ -48,6 +48,7 @@ const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { config } = useSchoolConfig();
   const [apiMessage, setApiMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   // Use portal namespace (plus common/validation) so keys defined in portal locale JSON resolve
@@ -163,7 +164,7 @@ const SignupForm = () => {
     <div className="student-login-page">
       <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50"><PortalLanguageSelect /></div>
       <div className="hero-section">
-        <img src={heroImg} alt={t('signupHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
+        <img src={config.login_image || '/assets/login.png'} alt={t('signupHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
       </div>
       <div className="form-section">
         <div className="form-container">

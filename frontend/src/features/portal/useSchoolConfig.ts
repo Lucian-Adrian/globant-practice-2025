@@ -9,6 +9,7 @@ export interface SchoolConfig {
   contact_phone1: string;
   contact_phone2: string | null;
   landing_image: string | null;
+  login_image: string | null;  // Falls back to landing_image or static asset
   landing_text: Record<string, string>;
   social_links: Record<string, string>;
   available_categories: string[];
@@ -23,6 +24,7 @@ const DEFAULTS: SchoolConfig = {
   contact_phone1: '+373 69 155 877',
   contact_phone2: null,
   landing_image: '/assets/landing.png',
+  login_image: '/assets/login.png',
   landing_text: {},
   social_links: {},
   available_categories: ['B'],
@@ -36,7 +38,7 @@ async function fetchSchoolConfig(): Promise<SchoolConfig> {
   
   if (fetchPromise) return fetchPromise;
   
-  fetchPromise = (async () => {
+  fetchPromise = (async (): Promise<SchoolConfig> => {
     try {
       const resp = await fetch(`${API_PREFIX}/school/config/`);
       if (!resp.ok) throw new Error('Failed to fetch config');
@@ -49,8 +51,10 @@ async function fetchSchoolConfig(): Promise<SchoolConfig> {
         // Use defaults for images if not set in API
         school_logo: data.school_logo || DEFAULTS.school_logo,
         landing_image: data.landing_image || DEFAULTS.landing_image,
+        // login_image can be a separate field or fallback to landing_image
+        login_image: data.login_image || data.landing_image || DEFAULTS.login_image,
       };
-      return cachedConfig;
+      return cachedConfig!;
     } catch (err) {
       console.warn('Failed to fetch school config, using defaults:', err);
       cachedConfig = DEFAULTS;

@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-const heroImg = '/assets/login.png';
 import PageIcon from './PageIcon';
 import './StudentLogin.css';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
+import { useSchoolConfig } from './useSchoolConfig';
 
 /**
  * StudentLogin
@@ -27,6 +27,7 @@ const StudentLogin = () => {
   // Include 'portal' namespace first so auth/landing keys stored in portal locale JSON resolve correctly
   const { t, i18n } = useTranslation(['portal','common','validation']);
   const navigate = useNavigate();
+  const { config } = useSchoolConfig();
 
   // Mode toggle
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
@@ -314,7 +315,7 @@ const StudentLogin = () => {
     <div className="student-login-page">
       <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50"><PortalLanguageSelect /></div>
       <div className="hero-section">
-        <img src={heroImg} alt={t('loginHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
+        <img src={config.login_image || '/assets/login.png'} alt={t('loginHeroAlt', 'Professional driving instructor with car')} className="hero-image" />
         {mode === 'login' && (
           <div className="hero-motto" aria-hidden>
             {t('guestMotto', "Learn confidently. Drive safely. We're with you every mile.")}
