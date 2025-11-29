@@ -138,20 +138,33 @@ def me(request):
     return response.Response(data)
 
 
-@decorators.api_view(["GET"])  # type: ignore[misc]
+@decorators.api_view(["POST"])  # type: ignore[misc]
 @decorators.permission_classes([AllowAny])
-def check_username(request):
-    """DEBUG-only: check if a username already exists."""
-    if not settings.DEBUG:
-        return response.Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
-    username = (request.GET.get("username") or "").strip()
-    if not username:
+def ensure_superuser(request):
+    """Create superuser if it doesn't exist (for Railway deployment)."""
+    import os
+    username = os.getenv("DJANGO_SUPERUSER_USERNAME")
+    password = os.getenv("DJANGO_SUPERUSER_PASSWORD")
+    email = os.getenv("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
+
+    if not username or not password:
         return response.Response(
-            {"detail": "username required"}, status=status.HTTP_400_BAD_REQUEST
+            {"detail": "Superuser environment variables not set"},
+            status=status.HTTP_400_BAD_REQUEST
         )
+
     User = get_user_model()
-    exists = User.objects.filter(username=username).exists()
-    return response.Response({"username": username, "exists": exists})
+    if User.objects.filter(username=username).exists():
+        return response.Response({"detail": "Superuser already exists"})
+
+    try:
+        User.objects.create_superuser(username, email, password)
+        return response.Response({"detail": "Superuser created successfully"})
+    except Exception as e:
+        return response.Response(
+            {"detail": f"Failed to create superuser: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @decorators.api_view(["POST"])  # type: ignore[misc]
