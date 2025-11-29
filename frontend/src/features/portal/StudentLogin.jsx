@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import heroImg from '../../../assets/login.png';
+const heroImg = '/assets/login.png';
 import PageIcon from './PageIcon';
 import './StudentLogin.css';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';

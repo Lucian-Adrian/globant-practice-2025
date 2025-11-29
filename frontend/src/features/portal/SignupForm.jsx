@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 import './StudentLogin.css';
-import heroImg from '../../../assets/login.png';
+const heroImg = '/assets/login.png';
 import PageIcon from './PageIcon';
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 
