@@ -7,10 +7,12 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import decorators, response, status
 from rest_framework.filters import OrderingFilter
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from ..models import Instructor, InstructorAvailability
 from ..serializers import InstructorSerializer, InstructorAvailabilitySerializer
 from .base import FullCrudViewSet, QSearchFilter
+from ..authentication import SchoolJWTAuthentication
 
 
 class InstructorViewSet(FullCrudViewSet):
@@ -131,6 +133,7 @@ class InstructorAvailabilityViewSet(FullCrudViewSet):
     
     queryset = InstructorAvailability.objects.select_related("instructor").all()
     serializer_class = InstructorAvailabilitySerializer
+    authentication_classes = [SchoolJWTAuthentication]
     filter_backends = [DjangoFilterBackend]
     # Allow filtering by instructor_id and day from the frontend (e.g. ?instructor_id=3)
     # This mirrors the pattern used on other viewsets (students, instructors) and

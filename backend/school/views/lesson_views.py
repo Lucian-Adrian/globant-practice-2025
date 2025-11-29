@@ -14,11 +14,13 @@ from rest_framework.filters import OrderingFilter
 from ..models import Lesson, Payment
 from ..serializers import LessonSerializer, PaymentSerializer
 from .base import FullCrudViewSet
+from ..authentication import SchoolJWTAuthentication
 
 
 class LessonViewSet(FullCrudViewSet):
     queryset = Lesson.objects.select_related("enrollment__student", "instructor", "resource").all()
     serializer_class = LessonSerializer
+    authentication_classes = [SchoolJWTAuthentication]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         "status": ["exact"],

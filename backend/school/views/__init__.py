@@ -23,6 +23,10 @@ from .instructor_views import (
     InstructorAvailabilityViewSet,
     InstructorViewSet,
 )
+from .instructor_auth_views import (
+    instructor_login,
+    instructor_me,
+)
 from .student_views import StudentViewSet
 from .lesson_views import LessonViewSet
 from .lesson_views import PaymentViewSet
@@ -64,6 +68,8 @@ __all__ = [
     # Instructor
     "InstructorViewSet",
     "InstructorAvailabilityViewSet",
+    "instructor_login",
+    "instructor_me",
     # Lesson
     "LessonViewSet",
     # Payment
