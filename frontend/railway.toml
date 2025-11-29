@@ -1,0 +1,11 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[build.args]
+VITE_API_BASE_URL = "https://globant-practice-2025-production.up.railway.app/api"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 100
+startCommand = "serve -s /app -l $PORT"
