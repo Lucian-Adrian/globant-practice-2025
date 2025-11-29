@@ -15,6 +15,7 @@ class StudentAdmin(admin.ModelAdmin):
 class InstructorAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "hire_date")
     search_fields = ("first_name", "last_name", "email")
+    readonly_fields = ("password",)
 
 
 @admin.register(models.InstructorAvailability)

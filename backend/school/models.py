@@ -68,6 +68,7 @@ class Instructor(models.Model):
     email = models.EmailField(unique=True, validators=[EmailValidator()])
     phone_number = models.CharField(max_length=20, unique=True, validators=[django_validate_phone])
     hire_date = models.DateField()
+    password = models.CharField(max_length=128, null=True, blank=True)  # hashed password
     # Store multiple categories as a comma separated list (e.g. "B,BE,C").
     # Simpler than a separate M2M for current scope and easy to expose as multi-checkbox in the UI.
     license_categories = models.CharField(
@@ -78,6 +79,18 @@ class Instructor(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        from django.contrib.auth.hashers import check_password
+
+        return check_password(raw_password, self.password)
+
+    @property
+    def is_authenticated(self):
+        return True
 
     def save(self, *args, **kwargs):
         if self.phone_number:
