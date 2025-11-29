@@ -714,6 +714,9 @@ class ScheduledClassSerializer(serializers.ModelSerializer):
     def get_current_enrollment(self, obj):
         return obj.current_enrollment()
 
+    def get_available_spots(self, obj):
+        return obj.available_spots()
+
     def to_internal_value(self, data):
         """Convert scheduled_time from business timezone interpretation to UTC."""
         data = super().to_internal_value(data)
