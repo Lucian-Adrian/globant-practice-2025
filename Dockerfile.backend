@@ -26,10 +26,17 @@ COPY backend/ .
 RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
 
-# Create startup script
+# Create startup script with superuser creation
 RUN echo '#!/bin/bash' > /app/start.sh && \
-    echo 'PORT=${PORT:-8000}' >> /app/start.sh && \
+    echo 'set -e' >> /app/start.sh && \
+    echo 'echo "[startup] Running migrations..."' >> /app/start.sh && \
     echo 'python manage.py migrate --noinput' >> /app/start.sh && \
+    echo 'if [ "$DJANGO_SUPERUSER_USERNAME" ] && [ "$DJANGO_SUPERUSER_PASSWORD" ]; then' >> /app/start.sh && \
+    echo '  echo "[startup] Creating superuser..."' >> /app/start.sh && \
+    echo '  python manage.py shell -c "from django.contrib.auth import get_user_model;import os;U=get_user_model();u=os.environ.get(\"DJANGO_SUPERUSER_USERNAME\");e=os.environ.get(\"DJANGO_SUPERUSER_EMAIL\",\"admin@example.com\");p=os.environ.get(\"DJANGO_SUPERUSER_PASSWORD\");(U.objects.filter(username=u).exists()) or U.objects.create_superuser(u,e,p)" || echo "[startup] Superuser already exists"' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    echo 'echo "[startup] Starting gunicorn..."' >> /app/start.sh && \
+    echo 'PORT=${PORT:-8000}' >> /app/start.sh && \
     echo 'gunicorn project.wsgi:application --bind 0.0.0.0:$PORT' >> /app/start.sh && \
     chmod +x /app/start.sh
 
