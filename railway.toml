@@ -1,8 +1,6 @@
 [build]
 builder = "NIXPACKS"
-
-[build.nixpacksConfigPath]
-value = "nixpacks.toml"
+nixpacksConfigPath = "nixpacks.toml"
 
 [[services]]
 name = "backend"
