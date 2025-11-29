@@ -1,23 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { API_PREFIX, buildHeaders } from '../../api/httpClient.js';
-
-// Public backend base (env override allowed). Default matches dev docker compose exposed port (HTTP).
-const PUBLIC_BACKEND_BASE = (import.meta as any)?.env?.VITE_BACKEND_PUBLIC_BASE || 'http://localhost:8000';
-
-function fixHost(u: string): string {
-  if (!u) return '';
-  let out = u.trim();
-  if (out.startsWith('blob:')) return out;
-  out = out
-    .replace('http://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('http://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
-    .replace('http://localhost:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://localhost:8000', PUBLIC_BACKEND_BASE);
-  if (out.startsWith('/media/')) out = `${PUBLIC_BACKEND_BASE}${out}`;
-  return out;
-}
+import { fixHost } from '../utils/mediaUrl';
 
 export interface SchoolConfig {
   id?: number;

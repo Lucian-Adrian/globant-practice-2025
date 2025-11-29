@@ -15,24 +15,10 @@ import { Card, CardContent, CardHeader, Grid, Box } from '@mui/material';
 import { useTranslate } from 'react-admin';
 import QuickAddPanel from '../components/QuickAddPanel.tsx';
 import { API_PREFIX, buildHeaders, rawFetch, httpJson } from '../api/httpClient.js';
+import { fixHost, formatImageValue, parseImageValue } from '../shared/utils/mediaUrl';
 import { VEHICLE_CATEGORIES } from '../shared/constants/drivingSchool.js';
 
-// Public backend base (override with Vite env if provided)
-const PUBLIC_BACKEND_BASE = (import.meta as any)?.env?.VITE_BACKEND_PUBLIC_BASE || 'http://localhost:8000';
-
-function fixHost(u: string): string {
-  if (!u) return '';
-  let out = u;
-  // Replace internal docker hostnames with public base
-  out = out
-    .replace('http://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('http://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://0.0.0.0:8000', PUBLIC_BACKEND_BASE);
-  // Prefix bare media path
-  if (out.startsWith('/media/')) out = `${PUBLIC_BACKEND_BASE}${out}`;
-  return out;
-}
+// Using shared fixHost from utils (DRY)
 
 interface Address {
   line1: string;
@@ -301,31 +287,8 @@ const Configuration: React.FC = () => {
                   accept="image/*"
                   multiple={false}
                   placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
-                  format={(val: any) => {
-                    if (!val) return [];
-                    if (typeof val === 'string') return val ? [{ src: val }] : [];
-                    // Support object from API like {path: 'image.jpg'} or {url: '...'}
-                    if (typeof val === 'object' && !Array.isArray(val)) {
-                      const src = val.src || val.url || val.path || '';
-                      return src ? [{ src }] : [];
-                    }
-                    if (Array.isArray(val)) return val;
-                    if (val.src) return [val];
-                    return [];
-                  }}
-                  parse={(val: any) => {
-                    if (!val) return [];
-                    if (Array.isArray(val)) return val;
-                    if (val instanceof File) {
-                      return [{ src: URL.createObjectURL(val), rawFile: val }];
-                    }
-                    if (typeof val === 'string') return val ? [{ src: val }] : [];
-                    if (typeof val === 'object' && (val.src || val.url || val.path)) {
-                      const src = val.src || val.url || val.path;
-                      return src ? [{ src, ...(val.rawFile ? { rawFile: val.rawFile } : {}) }] : [];
-                    }
-                    return [];
-                  }}
+                  format={formatImageValue}
+                  parse={parseImageValue}
                 >
                   <ImageField source="src" />
                 </ImageInput>
@@ -335,30 +298,8 @@ const Configuration: React.FC = () => {
                   accept="image/*"
                   multiple={false}
                   placeholder={translate('configuration.image.placeholder', { defaultValue: 'Upload image' })}
-                  format={(val: any) => {
-                    if (!val) return [];
-                    if (typeof val === 'string') return val ? [{ src: val }] : [];
-                    if (typeof val === 'object' && !Array.isArray(val)) {
-                      const src = val.src || val.url || val.path || '';
-                      return src ? [{ src }] : [];
-                    }
-                    if (Array.isArray(val)) return val;
-                    if (val.src) return [val];
-                    return [];
-                  }}
-                  parse={(val: any) => {
-                    if (!val) return [];
-                    if (Array.isArray(val)) return val;
-                    if (val instanceof File) {
-                      return [{ src: URL.createObjectURL(val), rawFile: val }];
-                    }
-                    if (typeof val === 'string') return val ? [{ src: val }] : [];
-                    if (typeof val === 'object' && (val.src || val.url || val.path)) {
-                      const src = val.src || val.url || val.path;
-                      return src ? [{ src, ...(val.rawFile ? { rawFile: val.rawFile } : {}) }] : [];
-                    }
-                    return [];
-                  }}
+                  format={formatImageValue}
+                  parse={parseImageValue}
                 >
                   <ImageField source="src" />
                 </ImageInput>
