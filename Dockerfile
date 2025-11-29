@@ -25,10 +25,18 @@ COPY backend/ .
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
+
+# Create startup script
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'PORT=${PORT:-8000}' >> /app/start.sh && \
+    echo 'python manage.py migrate --noinput' >> /app/start.sh && \
+    echo 'gunicorn project.wsgi:application --bind 0.0.0.0:$PORT' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
 USER app
 
 # Expose port
 EXPOSE 8000
 
 # Run the application
-CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["/app/start.sh"]
