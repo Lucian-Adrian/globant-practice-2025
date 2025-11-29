@@ -244,6 +244,15 @@ CORS_ALLOW_CREDENTIALS = True
 _frontend = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 CSRF_TRUSTED_ORIGINS = [h for h in [_frontend, "http://localhost", "http://127.0.0.1"] if h]
 
+# Add Railway domains for production
+railway_domains = []
+if os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+    railway_domains.append(f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}")
+if os.getenv("RAILWAY_STATIC_URL"):
+    railway_domains.append(f"https://{os.getenv('RAILWAY_STATIC_URL')}")
+
+CSRF_TRUSTED_ORIGINS.extend(railway_domains)
+
 # Dev flag to disable CSRF protection (ONLY for local development!)
 DISABLE_CSRF = os.getenv("DISABLE_CSRF", "1") == "1"
 
