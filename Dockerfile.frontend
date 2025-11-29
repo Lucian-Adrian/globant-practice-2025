@@ -1,10 +1,10 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
 
-COPY . .
+COPY frontend/ .
 
 # Build the production bundle
 ARG VITE_API_BASE_URL

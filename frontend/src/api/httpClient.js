@@ -3,7 +3,8 @@
 import { fetchUtils } from 'react-admin';
 import { getAccessToken, getRefreshToken, setAccessToken } from '../auth/authProvider';
 
-export const API_PREFIX = '/api';
+// Use VITE_API_BASE_URL if set (production), otherwise use relative /api path (development/proxy)
+export const API_PREFIX = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export function buildHeaders(extra = {}) {
   const h = new Headers(extra instanceof Headers ? extra : { ...extra });
