@@ -1,0 +1,117 @@
+import * as React from "react";
+import { useTranslation } from 'react-i18next';
+import { useAppLocaleState, useI18nForceUpdate } from '../../i18n/index.jsx';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import PeopleIcon from '@mui/icons-material/People';
+
+function getInstructorInitials(): string {
+  try {
+    const raw = localStorage.getItem('instructor_profile');
+    if (!raw) return 'IN';
+    const p = JSON.parse(raw);
+    const f = (p.first_name || '').trim();
+    const l = (p.last_name || '').trim();
+    const initials = `${f ? f[0] : ''}${l ? l[0] : ''}`.toUpperCase();
+    return initials || 'IN';
+  } catch {
+    return 'IN';
+  }
+}
+
+const InstructorNavBar: React.FC = () => {
+  // Force re-render on language changes and async namespace loads across all portal pages
+  useI18nForceUpdate();
+  const [open, setOpen] = React.useState(false);
+  const { t } = useTranslation(['portal', 'common']);
+  const [locale, setLocale] = useAppLocaleState() as [string, (lng: string) => void];
+  const toggle = () => setOpen((v) => !v);
+  const logout = () => {
+    try {
+      localStorage.removeItem('instructor_access_token');
+      localStorage.removeItem('instructor_refresh_token');
+      localStorage.removeItem('instructor_profile');
+    } catch {}
+    window.location.href = '/instructors/login';
+  };
+
+  return (
+    <>
+      <nav className="tw-hidden md:tw-flex tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-50 tw-bg-background/80 tw-backdrop-blur-md tw-border-b tw-border-border">
+        <div className="tw-max-w-7xl tw-mx-auto tw-px-6 tw-py-4 tw-w-full">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <div className="tw-flex tw-items-center tw-gap-3">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
+                <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
+              </div>
+              <div>
+                <h1 className="tw-text-xl tw-font-bold">{t('appName', { ns: 'portal' })}</h1>
+                <p className="tw-text-sm tw-text-muted-foreground">Instructor Portal</p>
+              </div>
+            </div>
+
+            <div className="tw-flex tw-items-center tw-gap-2">
+              {[
+                { path: "/instructors/dashboard", label: t('nav.dashboard', { ns: 'portal', defaultValue: 'Dashboard' }), icon: <DashboardIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/instructors/lessons", label: t('nav.lessons', { ns: 'portal', defaultValue: 'Lessons' }), icon: <MenuBookIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+                { path: "/instructors/availability", label: t('nav.availability', { ns: 'portal', defaultValue: 'Availability' }), icon: <EventAvailableIcon className="tw-w-4 tw-h-4" color="inherit" /> },
+              ].map((item) => (
+                <a key={item.path} href={item.path} className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-all tw-duration-200 hover:tw-bg-secondary hover:tw-scale-105 tw-text-muted-foreground hover:tw-text-foreground">
+                  <span className="tw-flex tw-items-center tw-justify-center" aria-hidden="true">{item.icon}</span>
+                  <span className="tw-select-none">{item.label}</span>
+                </a>
+              ))}
+            </div>
+
+            <div className="tw-flex tw-items-center tw-gap-3">
+              {/* Language toggle visible when logged in */}
+              <div className="tw-relative">
+                <select
+                  aria-label={t('language.label', { ns: 'portal' })}
+                  className="tw-bg-transparent tw-border tw-border-border tw-rounded-md tw-text-sm tw-px-2 tw-py-1 tw-text-muted-foreground hover:tw-text-foreground"
+                  value={(locale || 'en').split('-')[0]}
+                  onChange={(e) => setLocale(e.target.value)}
+                >
+                  <option value="en">{t('language.en', { ns: 'portal' })}</option>
+                  <option value="ro">{t('language.ro', { ns: 'portal' })}</option>
+                  <option value="ru">{t('language.ru', { ns: 'portal' })}</option>
+                </select>
+              </div>
+
+              <div className="tw-relative">
+              <button onClick={toggle} className="tw-w-10 tw-h-10 tw-bg-gradient-card tw-rounded-full tw-flex tw-items-center tw-justify-center tw-border-2 tw-border-primary/20">
+                <div className="tw-w-8 tw-h-8 tw-bg-primary tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                  <span className="tw-text-xs tw-font-bold tw-text-primary-foreground">{getInstructorInitials()}</span>
+                </div>
+              </button>
+              {open && (
+                <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-44 tw-rounded-lg tw-border tw-border-border tw-bg-background tw-shadow-lg">
+                  <button onClick={logout} className="tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm hover:tw-bg-secondary tw-text-red-600">{t('actions.logout', { ns: 'portal', defaultValue: 'Logout' })}</button>
+                </div>
+              )}
+            </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      {/* Mobile Nav Placeholder - can be expanded later */}
+      <div className="md:tw-hidden tw-fixed tw-bottom-0 tw-left-0 tw-right-0 tw-bg-background tw-border-t tw-border-border tw-p-4 tw-flex tw-justify-around tw-z-50">
+         <a href="/instructors/dashboard" className="tw-flex tw-flex-col tw-items-center tw-text-xs tw-text-muted-foreground">
+            <DashboardIcon />
+            <span>Dashboard</span>
+         </a>
+         <a href="/instructors/lessons" className="tw-flex tw-flex-col tw-items-center tw-text-xs tw-text-muted-foreground">
+            <MenuBookIcon />
+            <span>Lessons</span>
+         </a>
+         <a href="/instructors/availability" className="tw-flex tw-flex-col tw-items-center tw-text-xs tw-text-muted-foreground">
+            <EventAvailableIcon />
+            <span>Availability</span>
+         </a>
+      </div>
+    </>
+  );
+};
+
+export default InstructorNavBar;
