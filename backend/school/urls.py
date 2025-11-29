@@ -22,6 +22,8 @@ from .views import (
     student_dashboard,
     student_login,
     student_me,
+    instructor_login,
+    instructor_me,
 )
 
 router = routers.DefaultRouter()
@@ -47,5 +49,7 @@ urlpatterns = [
     path("auth/test/check-username/", check_username, name="auth-check-username"),
     path("auth/student/login/", student_login, name="student-login"),
     path("auth/student/me/", student_me, name="student-me"),
+    path("auth/instructor/login/", instructor_login, name="instructor-login"),
+    path("auth/instructor/me/", instructor_me, name="instructor-me"),
     path("student/dashboard/", student_dashboard, name="student-dashboard"),
 ]
