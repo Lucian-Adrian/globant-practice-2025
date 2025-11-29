@@ -187,6 +187,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class InstructorSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, min_length=6)
+
     class Meta:
         model = Instructor
         fields = [
@@ -197,7 +199,25 @@ class InstructorSerializer(serializers.ModelSerializer):
             "phone_number",
             "hire_date",
             "license_categories",
+            "password",
         ]
+
+    def create(self, validated_data):
+        password = validated_data.pop("password", None)
+        instructor = super().create(validated_data)
+        if password:
+            instructor.set_password(password)
+            instructor.save()
+        return instructor
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        instructor = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instructor
+
         extra_kwargs = {
             "first_name": {
                 "error_messages": {
