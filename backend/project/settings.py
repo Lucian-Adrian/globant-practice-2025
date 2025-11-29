@@ -36,6 +36,15 @@ if "*" not in ALLOWED_HOSTS:
         if h not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(h)
 
+# Railway/production: Allow the Railway-provided domain
+if os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+    ALLOWED_HOSTS.append(os.getenv("RAILWAY_PUBLIC_DOMAIN"))
+
+# CSRF trusted origins for Railway
+CSRF_TRUSTED_ORIGINS = []
+if os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}")
+
 
 # Application definition
 
@@ -57,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files in production
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -90,17 +100,30 @@ WSGI_APPLICATION = "project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        # Provide sane defaults so the container works out-of-the-box if .env is missing
-        "NAME": os.getenv("POSTGRES_DB", "drivingschool"),
-        "USER": os.getenv("POSTGRES_USER", "drivingschool"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "drivingschoolpwd"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+# Railway provides DATABASE_URL; use dj-database-url to parse it
+import dj_database_url
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            # Provide sane defaults so the container works out-of-the-box if .env is missing
+            "NAME": os.getenv("POSTGRES_DB", "drivingschool"),
+            "USER": os.getenv("POSTGRES_USER", "drivingschool"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "drivingschoolpwd"),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
 
 
 # Password validation
@@ -140,6 +163,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = []
+
+# WhiteNoise for serving static files in production
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media files (user-uploaded content)
 MEDIA_URL = "media/"
