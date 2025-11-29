@@ -6,23 +6,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SportsMotorsportsIcon from '@mui/icons-material/SportsMotorsports';
 import PaymentIcon from '@mui/icons-material/Payment';
-import { API_PREFIX, buildHeaders } from '../../api/httpClient.js';
-
-const PUBLIC_BACKEND_BASE = (import.meta as any)?.env?.VITE_BACKEND_PUBLIC_BASE || 'http://localhost:8000';
-function fixHost(u: string): string {
-  if (!u) return '';
-  let out = u.trim();
-  if (out.startsWith('blob:')) return out;
-  out = out
-    .replace('http://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://backend:8000', PUBLIC_BACKEND_BASE)
-    .replace('http://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://0.0.0.0:8000', PUBLIC_BACKEND_BASE)
-    .replace('http://localhost:8000', PUBLIC_BACKEND_BASE)
-    .replace('https://localhost:8000', PUBLIC_BACKEND_BASE);
-  if (out.startsWith('/media/')) out = `${PUBLIC_BACKEND_BASE}${out}`;
-  return out;
-}
+import { useSchoolConfig } from '../../shared/hooks/useSchoolConfig';
 
 function getStudentInitials(): string {
   try {
@@ -54,26 +38,9 @@ const PortalNavBar: React.FC = () => {
     window.location.href = '/login';
   };
 
-  const [logoUrl, setLogoUrl] = React.useState<string>('/assets/logo.png');
-  const [schoolName, setSchoolName] = React.useState<string>('');
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch(`${API_PREFIX}/school/config/`);
-        const ok = res.ok ? res : await fetch(`${API_PREFIX}/school/config/`, { headers: buildHeaders() });
-        if (!ok.ok) return;
-        const data: any = await ok.json();
-        const raw = data?.school_logo_url ?? data?.school_logo ?? '';
-        const normalized = fixHost(raw || '');
-        if (mounted && normalized) setLogoUrl(normalized);
-        if (mounted && typeof data?.school_name === 'string' && data.school_name.trim()) {
-          setSchoolName(data.school_name.trim());
-        }
-      } catch {}
-    })();
-    return () => { mounted = false; };
-  }, []);
+  const { config } = useSchoolConfig();
+  const logoUrl = config.school_logo;
+  const schoolName = config.school_name;
 
   return (
     <>

@@ -136,8 +136,9 @@ const Configuration: React.FC = () => {
         const { json } = await httpJson(`${API_PREFIX}/school/config/`);
         if (mounted) {
           const normalized = { ...(json as any) };
-          normalized.school_logo = fixHost((normalized as any).school_logo || (normalized as any).school_logo_url || '');
-          normalized.landing_image = fixHost((normalized as any).landing_image || (normalized as any).landing_image_url || '');
+          // Serializer provides only direct fields (no *_url); normalize existing values
+          normalized.school_logo = fixHost((normalized as any).school_logo || '');
+          normalized.landing_image = fixHost((normalized as any).landing_image || '');
           setInitial(normalized as any);
         }
       } catch (_) {
@@ -241,8 +242,8 @@ const Configuration: React.FC = () => {
         const fullRaw = json as any;
         const full = {
           ...fullRaw,
-          school_logo: fixHost(fullRaw.school_logo || fullRaw.school_logo_url || data.school_logo || (initial as any)?.school_logo || ''),
-          landing_image: fixHost(fullRaw.landing_image || fullRaw.landing_image_url || data.landing_image || (initial as any)?.landing_image || ''),
+          school_logo: fixHost(fullRaw.school_logo || data.school_logo || (initial as any)?.school_logo || ''),
+          landing_image: fixHost(fullRaw.landing_image || data.landing_image || (initial as any)?.landing_image || ''),
         } as any;
         // Preserve just-uploaded URLs if GET lags
         const next = {
