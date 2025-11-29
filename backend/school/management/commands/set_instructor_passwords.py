@@ -5,7 +5,8 @@ class Command(BaseCommand):
     help = 'Sets a default password for all instructors'
 
     def handle(self, *args, **options):
-        password = "Test123!"
+       // For testing purposes only. DO NOT USE IN PROD
+        // password = "Test123!"
         instructors = Instructor.objects.all()
         count = 0
         for instructor in instructors:
