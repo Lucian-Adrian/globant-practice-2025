@@ -23,9 +23,29 @@ function clearStudentTokens() {
   localStorage.removeItem('student_refresh_token');
 }
 
+// --- Instructor tokens helpers ---
+export function getInstructorAccessToken() { return localStorage.getItem('instructor_access_token'); }
+export function setInstructorAccessToken(tok) { return localStorage.setItem('instructor_access_token', tok); }
+export function getInstructorRefreshToken() { return localStorage.getItem('instructor_refresh_token'); }
+export function setInstructorRefreshToken(tok) { return localStorage.setItem('instructor_refresh_token', tok); }
+export function clearInstructorTokens() {
+  localStorage.removeItem('instructor_access_token');
+  localStorage.removeItem('instructor_refresh_token');
+}
+
 export function buildStudentHeaders(extra = {}) {
   const h = new Headers(extra instanceof Headers ? extra : { ...extra });
   const token = getStudentAccessToken();
+  if (token && !h.has('Authorization')) {
+    h.set('Authorization', `Bearer ${token}`);
+  }
+  return h;
+}
+
+export function buildInstructorHeaders(extra = {}) {
+  const h = new Headers(extra instanceof Headers ? extra : { ...extra });
+  const token = getInstructorAccessToken();
+  // console.debug('[InstructorAuth] Building headers. Token present:', !!token);
   if (token && !h.has('Authorization')) {
     h.set('Authorization', `Bearer ${token}`);
   }
@@ -60,6 +80,22 @@ async function refreshStudentAccessToken() {
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok || !data.access) return null;
     setStudentAccessToken(data.access);
+    return data.access;
+  } catch (_) { return null; }
+}
+
+async function refreshInstructorAccessToken() {
+  const refresh = getInstructorRefreshToken();
+  if (!refresh) return null;
+  try {
+    const resp = await fetch('/api/auth/token/refresh/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || !data.access) return null;
+    setInstructorAccessToken(data.access);
     return data.access;
   } catch (_) { return null; }
 }
@@ -141,8 +177,50 @@ export async function studentRawFetch(url, options = {}) {
       newHeaders.set('Authorization', `Bearer ${token}`);
       resp = await fetch(url, { ...merged, headers: newHeaders, retry: true });
     } else {
-      // If refresh failed, clear tokens for safety
       clearStudentTokens();
+    }
+  }
+  return resp;
+}
+
+// Instructor-aware versions for the portal
+export async function instructorHttpJson(url, options = {}) {
+  const { headers, retry, ...rest } = options;
+  const merged = { ...rest, headers: buildInstructorHeaders(headers) };
+  try {
+    return await fetchUtils.fetchJson(url, merged);
+  } catch (err) {
+    const status = err?.status;
+    if (!retry && (status === 401 || status === 403)) {
+      const token = await refreshInstructorAccessToken();
+      if (token) {
+        const newHeaders = new Headers(merged.headers || {});
+        newHeaders.set('Authorization', `Bearer ${token}`);
+        return fetchUtils.fetchJson(url, { ...merged, headers: newHeaders, retry: true });
+      } else {
+        // If refresh failed, clear tokens
+        clearInstructorTokens();
+      }
+    }
+    if (err && !err.message) {
+      err.message = `HTTP Error ${status || 'unknown'}`;
+    }
+    throw err;
+  }
+}
+
+export async function instructorRawFetch(url, options = {}) {
+  const { headers, retry, ...rest } = options;
+  const merged = { ...rest, headers: buildInstructorHeaders(headers) };
+  let resp = await fetch(url, merged);
+  if (!retry && (resp.status === 401 || resp.status === 403)) {
+    const token = await refreshInstructorAccessToken();
+    if (token) {
+      const newHeaders = new Headers(merged.headers || {});
+      newHeaders.set('Authorization', `Bearer ${token}`);
+      resp = await fetch(url, { ...merged, headers: newHeaders, retry: true });
+    } else {
+      clearInstructorTokens();
     }
   }
   return resp;

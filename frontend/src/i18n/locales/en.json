@@ -4,6 +4,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "lessons": "Lessons",
+    "availability": "Availability",
     "progress": "Progress",
     "practice": "Practice",
     "payments": "Payments"
@@ -433,7 +434,8 @@
       "loading": "Loading availability…",
       "empty": "No availability slots.",
       "nav": { "prev": "Previous week", "next": "Next week" },
-      "tooltip": { "slotAvailable": "Click to select", "slotUnavailable": "Not available" }
+      "tooltip": { "slotAvailable": "Click to select", "slotUnavailable": "Not available" },
+      "description": "View your weekly availability schedule below. Green slots indicate when you are available for lessons."
     },
     "lesson": { "label": "Lesson", "at": "at" },
     "paymentsPortal": {
@@ -534,5 +536,26 @@
     "checking": "Checking...",
     "available": "Available",
     "unavailable": "Unavailable"
+  },
+  "instructor": {
+    "motto": "Empowering the next generation of drivers.",
+    "login": "Instructor Portal",
+    "loginIntro": "Please log in with your instructor credentials.",
+    "welcome": "Welcome, {{name}}",
+    "upcomingLessons": "Upcoming Lessons",
+    "noLessons": "No upcoming lessons scheduled.",
+    "availability": "Availability",
+    "manageAvailability": "Manage your working hours."
+  },
+  "instructorPortal": {
+    "availability": {
+      "title": "My Availability",
+      "noAvailability": "No availability set. Please contact admin to set your schedule.",
+      "noHours": "No hours available"
+    },
+    "lessons": {
+      "title": "My Lessons",
+      "noLessons": "No lessons found."
+    }
   }
 }

@@ -12,6 +12,10 @@ import Payments from './features/portal/Payments.tsx';
 import DashboardStudent from './features/portal/DashboardStudent.tsx';
 import StudentLogin from './features/portal/StudentLogin.jsx';
 import StudentDashboard from './features/portal/StudentDashboard.jsx';
+import InstructorLogin from './features/instructor-portal/InstructorLogin.jsx';
+import InstructorDashboard from './features/instructor-portal/InstructorDashboard.tsx';
+import InstructorLessons from './features/instructor-portal/InstructorLessons.jsx';
+import InstructorAvailability from './features/instructor-portal/InstructorAvailability.jsx';
 import TestJWT from './TestJWT.jsx';
 import { initI18n } from "./i18n/index.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -47,6 +51,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/TestJWT" element={<TestJWT />} />
         <Route path="/landing" element={<LandingStudent />} />
         <Route path="/dashboard" element={<DashboardStudent />} />
+        <Route path="/instructor/login" element={<InstructorLogin />} />
+        <Route path="/instructors/login" element={<InstructorLogin />} />
+        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+        <Route path="/instructors/dashboard" element={<InstructorDashboard />} />
+        <Route path="/instructors/lessons" element={<InstructorLessons />} />
+        <Route path="/instructors/availability" element={<InstructorAvailability />} />
+        <Route path="/instructor" element={<Navigate to="/instructor/login" replace />} />
+        <Route path="/instructors" element={<Navigate to="/instructors/login" replace />} />
         <Route path="/" element={<LandingPublic />} />
         <Route path="/dash" element={<StudentDashboard />} />
       </Routes>
