@@ -1,26 +1,5 @@
 [build]
 builder = "NIXPACKS"
-nixpacksConfigPath = "nixpacks.toml"
 
-[[services]]
-name = "backend"
-directory = "backend"
-
-[services.build]
-builder = "NIXPACKS"
-
-[services.deploy]
-startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn project.wsgi:application --bind 0.0.0.0:$PORT"
-healthcheckPath = "/api/"
-healthcheckTimeout = 300
-
-[[services]]
-name = "frontend"
-directory = "frontend"
-
-[services.build]
-builder = "NIXPACKS"
-buildCommand = "npm install && npm run build"
-
-[services.deploy]
-startCommand = "npm run preview -- --host 0.0.0.0 --port $PORT"
+[deploy]
+startCommand = "cd backend && python manage.py migrate --noinput && gunicorn project.wsgi:application --bind 0.0.0.0:$PORT"
