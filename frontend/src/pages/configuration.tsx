@@ -104,6 +104,25 @@ async function uploadImageTo(endpoint: string, file: File, fieldName: 'logo' | '
   return fixHost(raw);
 }
 
+// Helper to consistently interpret ImageInput values
+function parseImageSelection(val: any): { src?: string; file?: File; empty: boolean } {
+  if (!val) return { empty: true };
+  if (Array.isArray(val)) {
+    const item = val[0];
+    if (!item) return { empty: true };
+    if (item.rawFile instanceof File) return { file: item.rawFile as File, empty: false };
+    const src = item.src || item.url || item.path || '';
+    return src ? { src, empty: false } : { empty: true };
+  }
+  if (val instanceof File) return { file: val, empty: false };
+  if (typeof val === 'string') return val ? { src: val, empty: false } : { empty: true };
+  if (typeof val === 'object') {
+    const src = val.src || val.url || val.path || '';
+    return src ? { src, empty: false } : { empty: true };
+  }
+  return { empty: true };
+}
+
 const Configuration: React.FC = () => {
   const notify = useNotify();
   const [loading, setLoading] = useState(true);
@@ -140,51 +159,31 @@ const Configuration: React.FC = () => {
   const onSubmit = async (values: any) => {
     try {
       const data: SchoolConfig = { ...values } as SchoolConfig;
-      // Handle image inputs (ImageInput returns array of items)
-      const logoVal: any = (values as any).school_logo;
+      // Handle image inputs uniformly
+      const logoSel = parseImageSelection((values as any).school_logo);
+      const logoProvided = !logoSel.empty;
       let logoUploadPerformed = false;
       let logoCleared = false;
-      if (Array.isArray(logoVal) && logoVal.length) {
-        const item = logoVal[0];
-        if (item.rawFile instanceof File) {
-          data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, item.rawFile as File, 'logo');
-          logoUploadPerformed = true;
-        } else if (item.src) {
-          data.school_logo = fixHost(item.src);
-        }
-      } else if (typeof logoVal === 'string') {
-        data.school_logo = fixHost(logoVal); // fallback plain string
-      } else if (logoVal instanceof File) {
-        data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, logoVal, 'logo');
+      if (logoSel.file) {
+        data.school_logo = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, logoSel.file, 'logo');
         logoUploadPerformed = true;
-      } else if (logoVal && typeof logoVal === 'object') {
-        const src = logoVal.src || logoVal.url || logoVal.path || '';
-        data.school_logo = fixHost(src);
-      } else if (!logoVal) {
+      } else if (logoSel.src) {
+        data.school_logo = fixHost(logoSel.src);
+      } else {
         logoCleared = true;
-        data.school_logo = ''; // mark cleared
+        data.school_logo = '';
       }
 
-      const landingVal: any = (values as any).landing_image;
+      const landingSel = parseImageSelection((values as any).landing_image);
+      const landingProvided = !landingSel.empty;
       let landingUploadPerformed = false;
       let landingCleared = false;
-      if (Array.isArray(landingVal) && landingVal.length) {
-        const item = landingVal[0];
-        if (item.rawFile instanceof File) {
-          data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, item.rawFile as File, 'image');
-          landingUploadPerformed = true;
-        } else if (item.src) {
-          data.landing_image = fixHost(item.src);
-        }
-      } else if (typeof landingVal === 'string') {
-        data.landing_image = fixHost(landingVal);
-      } else if (landingVal instanceof File) {
-        data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, landingVal, 'image');
+      if (landingSel.file) {
+        data.landing_image = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, landingSel.file, 'image');
         landingUploadPerformed = true;
-      } else if (landingVal && typeof landingVal === 'object') {
-        const src = landingVal.src || landingVal.url || landingVal.path || '';
-        data.landing_image = fixHost(src);
-      } else if (!landingVal) {
+      } else if (landingSel.src) {
+        data.landing_image = fixHost(landingSel.src);
+      } else {
         landingCleared = true;
         data.landing_image = '';
       }
@@ -192,8 +191,8 @@ const Configuration: React.FC = () => {
       const payload: any = { ...data };
       const initialLogo = (initial as any)?.school_logo || '';
       const initialLanding = (initial as any)?.landing_image || '';
-      const logoUnchanged = !logoUploadPerformed && !logoCleared && (data.school_logo === initialLogo || data.school_logo === '' || typeof logoVal === 'undefined');
-      const landingUnchanged = !landingUploadPerformed && !landingCleared && (data.landing_image === initialLanding || data.landing_image === '' || typeof landingVal === 'undefined');
+      const logoUnchanged = !logoUploadPerformed && !logoCleared && (data.school_logo === initialLogo || data.school_logo === '' || !logoProvided);
+      const landingUnchanged = !landingUploadPerformed && !landingCleared && (data.landing_image === initialLanding || data.landing_image === '' || !landingProvided);
       if (logoUnchanged) {
         delete payload.school_logo;
       } else if (logoCleared) {
