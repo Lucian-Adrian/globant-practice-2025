@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /app
+# Check and create superuser
 python manage.py shell -c "
 from django.contrib.auth import get_user_model
 User = get_user_model()
