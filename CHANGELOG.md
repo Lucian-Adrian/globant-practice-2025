@@ -11,9 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Timezone Handling
 - Fixed timezone mismatch between ScheduledClassPattern and ScheduledClass scheduling
-- Pattern-generated classes now correctly interpret times as business timezone (Europe/Chisinau)
-- Individual class scheduling now properly converts input times from business timezone to UTC storage
-- Ensured consistent timezone handling across all scheduling operations
 
 #### Code Quality
 - Ensured shell scripts use LF line endings for Docker container compatibility
@@ -176,12 +173,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ([#79](https://github.com/Lucian-Adrian/globant-practice-2025/pull/79))
 - Reverted dev branch to stable state
 - Repository cleanup and stabilization
-
-### Internal
-- Merged 50 pull requests consolidating team work
-- Established modular code architecture for better maintainability
-- Created comprehensive TypeScript type system for portal components
-- Implemented consistent error handling across frontend and backend
 
 ## [0.1.3] - 2025-10-31
 
