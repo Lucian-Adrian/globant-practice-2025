@@ -25,14 +25,14 @@ class SchoolConfigViewSet(
 
     def get_object(self):
         """
-        Returnează mereu instanța singleton (pk=1). O creează dacă nu există.
+        Always returns the singleton instance (pk=1). Creates it if it doesn't exist.
         """
         obj, created = SchoolConfig.objects.get_or_create(pk=1)
         return obj
 
     def list(self, request, *args, **kwargs):
         """
-        Suprascriem list() ca să întoarcă un singur obiect, nu o listă.
+        Override list() to return a single object instead of a list.
         """
         instance = self.get_object()
         serializer = self.get_serializer(instance, context={"request": request})
@@ -86,7 +86,7 @@ class SchoolConfigViewSet(
         """
         Upload landing page image.
 
-        Acceptă un fișier imagine în multipart/form-data sub una din cheile:
+        Accepts an image file in multipart/form-data under one of the keys:
         - 'image'
         - 'file'
         """

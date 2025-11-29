@@ -564,8 +564,7 @@
     "phoneInvalid": "Неверный номер телефона",
     "licenseCategoriesRequired": "Требуется хотя бы одна категория",
     "licenseCategoriesInvalid": "Неверные категории: {{categories}}"
-  }
-  ,
+  },
   "configuration": {
     "image": {
       "placeholder": "Загрузить изображение"

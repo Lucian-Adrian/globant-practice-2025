@@ -611,8 +611,7 @@
       },
       "viewClasses": "View Classes"
     }
-  }
-  ,
+  },
   "configuration": {
     "image": {
       "placeholder": "Upload image"

@@ -611,8 +611,7 @@
       },
       "viewClasses": "Просмотр занятий"
     }
-  }
-  ,
+  },
   "configuration": {
     "image": {
       "placeholder": "Загрузить изображение"

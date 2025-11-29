@@ -564,8 +564,7 @@
     "phoneInvalid": "Număr de telefon invalid",
     "licenseCategoriesRequired": "Este necesară cel puțin o categorie",
     "licenseCategoriesInvalid": "Categorii invalide: {{categories}}"
-  }
-  ,
+  },
   "configuration": {
     "image": {
       "placeholder": "Încarcă imagine"
