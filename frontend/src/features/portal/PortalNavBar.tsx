@@ -6,6 +6,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SportsMotorsportsIcon from '@mui/icons-material/SportsMotorsports';
 import PaymentIcon from '@mui/icons-material/Payment';
+import { useSchoolConfig } from './useSchoolConfig';
 
 function getStudentInitials(): string {
   try {
@@ -27,6 +28,7 @@ const PortalNavBar: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const { t } = useTranslation(['portal', 'common']);
   const [locale, setLocale] = useAppLocaleState() as [string, (lng: string) => void];
+  const { config } = useSchoolConfig();
   const toggle = () => setOpen((v) => !v);
   const logout = () => {
     try {
@@ -44,10 +46,10 @@ const PortalNavBar: React.FC = () => {
           <div className="tw-flex tw-items-center tw-justify-between">
             <div className="tw-flex tw-items-center tw-gap-3">
               <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-flex tw-items-center tw-justify-center tw-shadow-glow">
-                <img src="/assets/logo.png" alt="DriveAdmin logo" className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
+                <img src={config.school_logo || '/assets/logo.png'} alt={`${config.school_name} logo`} className="tw-w-10 tw-h-10 tw-object-contain tw-rounded-xl" />
               </div>
               <div>
-                <h1 className="tw-text-xl tw-font-bold">{t('appName', { ns: 'portal' })}</h1>
+                <h1 className="tw-text-xl tw-font-bold">{config.school_name || t('appName', { ns: 'portal' })}</h1>
                 <p className="tw-text-sm tw-text-muted-foreground">{t('studentPortal', { ns: 'portal' })}</p>
               </div>
             </div>

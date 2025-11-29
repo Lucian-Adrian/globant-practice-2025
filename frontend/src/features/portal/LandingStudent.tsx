@@ -2,6 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
+import { useSchoolConfig } from './useSchoolConfig';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -89,7 +90,7 @@ const StatCard: React.FC<{
   </CardRoot>
 );
 
-const NavBar: React.FC = () => {
+const NavBar: React.FC<{ logoUrl?: string; schoolName?: string }> = ({ logoUrl = '/assets/logo.png', schoolName }) => {
   const { t } = useTranslation('portal');
   return (
     <>
@@ -98,8 +99,8 @@ const NavBar: React.FC = () => {
           <div className="tw-flex tw-items-center tw-justify-between">
             {/* Brand */}
             <div className="tw-flex tw-items-center tw-space-x-2">
-              <img src="/assets/logo.png" alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
-              <span className="tw-text-xl tw-font-bold tw-text-gray-900">{t('appName', { ns: 'portal', defaultValue: 'DriveAdmin' })}</span>
+              <img src={logoUrl} alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
+              <span className="tw-text-xl tw-font-bold tw-text-gray-900">{schoolName || t('appName', { ns: 'portal', defaultValue: 'DriveAdmin' })}</span>
             </div>
             {/* Nav Links */}
             <div className="tw-flex tw-items-center tw-space-x-6">
@@ -132,13 +133,14 @@ const NavBar: React.FC = () => {
 const LandingStudent: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('portal');
+  const { config } = useSchoolConfig();
   return (
   <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
       {/* Language selector top-right (portal specific) */}
       <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50">
         <PortalLanguageSelect />
       </div>
-      <NavBar />
+      <NavBar logoUrl={config.school_logo || undefined} schoolName={config.school_name} />
       <Container className="tw-pb-10">
         <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8 tw-mt-2">
           {/* Left: copy like LandingPublic hero */}

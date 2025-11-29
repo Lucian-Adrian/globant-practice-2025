@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useIsLoggedIn } from "../../auth/useIsLoggedIn";
 import PortalLanguageSelect from './PortalLanguageSelect.jsx';
 import { useI18nForceUpdate } from '../../i18n/index.jsx';
+import { useSchoolConfig } from './useSchoolConfig';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -51,7 +52,7 @@ const ArrowRight: React.FC<{ className?: string }> = ({ className = "" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
 );
 
-const NavBar: React.FC = () => {
+const NavBar: React.FC<{ logoUrl?: string; schoolName?: string }> = ({ logoUrl = '/assets/logo.png', schoolName }) => {
   const navigate = useNavigate();
   const loggedIn = useIsLoggedIn();
   const { t } = useTranslation('portal');
@@ -62,8 +63,8 @@ const NavBar: React.FC = () => {
         <div className="tw-flex tw-items-center tw-justify-between">
           {/* Logo / Brand */}
           <div className="tw-flex tw-items-center tw-space-x-2">
-            <img src="/assets/logo.png" alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
-            <span className="tw-text-xl tw-font-bold tw-text-gray-900">{t('appName', { defaultValue: 'DriveAdmin' })}</span>
+            <img src={logoUrl} alt={t('portal.landing.public.img.alt.logo')} className="tw-w-10 tw-h-10 tw-object-contain" />
+            <span className="tw-text-xl tw-font-bold tw-text-gray-900">{schoolName || t('appName', { defaultValue: 'DriveAdmin' })}</span>
           </div>
 
             {/* Navigation Menu */}
@@ -114,6 +115,7 @@ const LandingPublic: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('portal');
   useI18nForceUpdate();
+  const { config } = useSchoolConfig();
 
   return (
     <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
@@ -121,7 +123,7 @@ const LandingPublic: React.FC = () => {
       <div className="tw-fixed tw-top-2 tw-right-2 tw-z-50">
         <PortalLanguageSelect />
       </div>
-      <NavBar />
+      <NavBar logoUrl={config.school_logo || undefined} schoolName={config.school_name} />
       {/* Spacer for fixed rounded navbar (height ~ 56 + top margin) */}
       <div className="tw-h-28" />
       <Container className="tw-pb-10">
@@ -149,7 +151,7 @@ const LandingPublic: React.FC = () => {
             <div className="tw-w-full md:tw-w-11/12 lg:tw-w-4/5">
               {/* use natural image aspect ratio, no absolute cropping */}
               <img
-                src="/assets/landing.png"
+                src={config.landing_image || '/assets/landing.png'}
                 alt={t('portal.landing.public.img.alt.hero')}
                 className="tw-w-full tw-h-auto tw-block"
                 loading="lazy"
