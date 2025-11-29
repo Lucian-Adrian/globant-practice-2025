@@ -1,7 +1,4 @@
 {
-  "buttons": {
-    "checkAvailability": "Check Availability"
-  },
   "scheduledclasspatternlist": {
     "id": "ID",
     "name": "Name",
@@ -119,7 +116,8 @@
     },
     "message": {
       "error": "Error",
-      "invalid_form": "Invalid form"
+      "invalid_form": "Invalid form",
+      "clear_array_input": "Clear list"
     },
     "validation": {
       "required": "Required"
@@ -135,6 +133,9 @@
     }
   },
   "common": {
+    "buttons": {
+      "checkAvailability": "Check Availability"
+    },
     "welcome": "Welcome to School Portal",
     "connect": "Connect",
     "signupTitle": "Student Signup",
@@ -286,6 +287,12 @@
       "not_available": "Not available - click to add",
       "failed_saving_availabilities": "Failed saving availabilities",
       "time_label": "Time"
+    },
+    "availability": {
+      "allAvailable": "All selected times are available",
+      "notAvailable": "Not available",
+      "available": "Instructor is available at this time",
+      "checkFailed": "Failed to check availability"
     }
   },
   "validation": {
@@ -313,7 +320,9 @@
     "studentNotEnrolledToCourseNames": "The following students are not enrolled in the chosen course: {{names}}.",
     "capacityBelowSelected": "Max students cannot be lower than number of selected students.",
     "selectedStudentsExceedCapacity": "Selected students exceed room capacity.",
-    "atLeastOneRecurrence": "At least one recurrence is required"
+    "atLeastOneRecurrence": "At least one recurrence is required",
+    "selectInstructorFirst": "Please select an instructor first",
+    "selectTimeFirst": "Please select a scheduled time first"
   },
   "resources": {
     "students": {
@@ -500,7 +509,8 @@
         "students": "Students",
         "current_enrollment": "Current enrollment",
         "available_spots": "Available spots",
-        "pattern": "Pattern"
+        "pattern": "Pattern",
+        "recurrences": "Recurrences"
       },
       "helper": "Create a scheduled class to start planning lessons.",
       "create": "Create Scheduled Class"

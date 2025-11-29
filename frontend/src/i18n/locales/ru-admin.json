@@ -1,7 +1,4 @@
 {
-  "buttons": {
-    "checkAvailability": "Проверить Доступность"
-  },
   "scheduledclasspatternlist": {
     "id": "ИД",
     "name": "Название",
@@ -119,7 +116,8 @@
     },
     "message": {
       "error": "Ошибка",
-      "invalid_form": "Неверная форма"
+      "invalid_form": "Неверная форма",
+      "clear_array_input": "Очистить список"
     },
     "validation": {
       "required": "Обязательно"
@@ -135,6 +133,9 @@
     }
   },
   "common": {
+    "buttons": {
+      "checkAvailability": "Проверить Доступность"
+    },
     "welcome": "Добро пожаловать в школьный портал",
     "connect": "Подключиться",
     "signupTitle": "Регистрация студента",
@@ -286,6 +287,12 @@
       "not_available": "Недоступен - нажмите, чтобы добавить",
       "failed_saving_availabilities": "Ошибка при сохранении доступности",
       "time_label": "Время"
+    },
+    "availability": {
+      "allAvailable": "Все выбранные времена доступны",
+      "notAvailable": "Недоступно",
+      "available": "Инструктор доступен в это время",
+      "checkFailed": "Ошибка при проверке доступности"
     }
   },
   "validation": {
@@ -313,7 +320,9 @@
     "studentNotEnrolledToCourseNames": "Следующие студенты не записаны на выбранный курс: {{names}}.",
     "capacityBelowSelected": "Макс. число студентов не может быть меньше количества выбранных студентов.",
     "selectedStudentsExceedCapacity": "Количество выбранных студентов превышает вместимость аудитории.",
-    "atLeastOneRecurrence": "Требуется хотя бы одно повторение"
+    "atLeastOneRecurrence": "Требуется хотя бы одно повторение",
+    "selectInstructorFirst": "Пожалуйста, сначала выберите инструктора",
+    "selectTimeFirst": "Пожалуйста, сначала выберите запланированное время"
   },
   "resources": {
     "students": {
@@ -500,7 +509,8 @@
         "students": "Студенты",
         "current_enrollment": "Текущая запись",
         "available_spots": "Доступные места",
-        "pattern": "Шаблон"
+        "pattern": "Шаблон",
+        "recurrences": "Повторения"
       },
       "helper": "Создайте запланированное занятие, чтобы начать планирование уроков.",
       "create": "Создать запланированное занятие"

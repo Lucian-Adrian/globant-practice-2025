@@ -1,7 +1,4 @@
 {
-  "buttons": {
-    "checkAvailability": "Verifică Disponibilitatea"
-  },
   "scheduledclasspatternlist": {
     "id": "ID",
     "name": "Nume",
@@ -119,7 +116,8 @@
     },
     "message": {
       "error": "Eroare",
-      "invalid_form": "Formular invalid"
+      "invalid_form": "Formular invalid",
+      "clear_array_input": "Curăță lista"
     },
     "validation": {
       "required": "Obligatoriu"
@@ -135,6 +133,9 @@
     }
   },
   "common": {
+    "buttons": {
+      "checkAvailability": "Verifică Disponibilitatea"
+    },
     "welcome": "Bine ați venit la Portalul Școlii",
     "connect": "Conectează-te",
     "signupTitle": "Înregistrare Student",
@@ -286,6 +287,12 @@
       "not_available": "Indisponibil - click pentru a adăuga",
       "failed_saving_availabilities": "Eșec la salvarea disponibilităților",
       "time_label": "Timp"
+    },
+    "availability": {
+      "allAvailable": "Toate orele selectate sunt disponibile",
+      "notAvailable": "Indisponibil",
+      "available": "Instructorul este disponibil la această oră",
+      "checkFailed": "Eșec la verificarea disponibilității"
     }
   },
   "validation": {
@@ -313,7 +320,9 @@
     "studentNotEnrolledToCourseNames": "Următorii studenți nu sunt înscriși la cursul ales: {{names}}.",
     "capacityBelowSelected": "Numărul maxim nu poate fi mai mic decât numărul de studenți selectați.",
     "selectedStudentsExceedCapacity": "Numărul de studenți selectați depășește capacitatea sălii.",
-    "atLeastOneRecurrence": "Este necesară cel puțin o recurență"
+    "atLeastOneRecurrence": "Este necesară cel puțin o recurență",
+    "selectInstructorFirst": "Vă rugăm să selectați mai întâi un instructor",
+    "selectTimeFirst": "Vă rugăm să selectați mai întâi o oră programată"
   },
   "resources": {
     "students": {
@@ -500,7 +509,8 @@
         "students": "Studenți",
         "current_enrollment": "Înscriși curent",
         "available_spots": "Locuri disponibile",
-        "pattern": "Model"
+        "pattern": "Model",
+        "recurrences": "Recurențe"
       },
       "helper": "Creați o clasă programată pentru a începe planificarea lecțiilor.",
       "create": "Creați clasă programată"

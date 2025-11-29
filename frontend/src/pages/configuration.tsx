@@ -112,7 +112,7 @@ const Configuration: React.FC = () => {
     (async () => {
       try {
         // Try real API first
-        const resp = await fetch(`${API_PREFIX}/v1/school/config/`, { headers: buildHeaders() });
+        const resp = await fetch(`${API_PREFIX}/school/config/`, { headers: buildHeaders() });
         if (resp.ok) {
           const data = await resp.json();
           if (mounted) setInitial(data);
@@ -136,7 +136,7 @@ const Configuration: React.FC = () => {
       if (data.school_logo) {
         const s = data.school_logo as any;
         if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/v1/school/config/upload_logo/`, s.rawFile as File);
+          const url = await uploadImageTo(`${API_PREFIX}/school/config/upload_logo/`, s.rawFile as File);
           data.school_logo = url;
         } else if (typeof s === 'object' && typeof s.src === 'string') {
           data.school_logo = s.src;
@@ -145,7 +145,7 @@ const Configuration: React.FC = () => {
       if (data.landing_image) {
         const s = data.landing_image as any;
         if (s.rawFile instanceof File) {
-          const url = await uploadImageTo(`${API_PREFIX}/v1/school/config/upload_landing_image/`, s.rawFile as File);
+          const url = await uploadImageTo(`${API_PREFIX}/school/config/upload_landing_image/`, s.rawFile as File);
           data.landing_image = url;
         } else if (typeof s === 'object' && typeof s.src === 'string') {
           data.landing_image = s.src;
@@ -153,7 +153,7 @@ const Configuration: React.FC = () => {
       }
 
       // PUT full config
-      const resp = await fetch(`${API_PREFIX}/v1/school/config/`, {
+      const resp = await fetch(`${API_PREFIX}/school/config/`, {
         method: 'PUT',
         headers: new Headers({ 'Content-Type': 'application/json', ...Object.fromEntries(buildHeaders().entries()) }),
         body: JSON.stringify(data),
@@ -186,47 +186,49 @@ const Configuration: React.FC = () => {
           <Card>
             <CardHeader title={translate('configuration.title', { defaultValue: 'School Configuration' })} />
             <CardContent>
-              <SimpleForm onSubmit={onSubmit} defaultValues={initial}>
-                {/* Basics */}
-                <TextInput source="school_name" label={translate('configuration.school_name')} fullWidth />
-                <TextInput source="business_hours" label={translate('configuration.business_hours')} fullWidth />
-                <TextInput source="email" label={translate('configuration.email')} fullWidth />
-                <TextInput source="contact_phone1" label={translate('configuration.contact_phone1')} fullWidth />
-                <TextInput source="contact_phone2" label={translate('configuration.contact_phone2')} fullWidth />
+              <form noValidate autoComplete="off">
+                <SimpleForm onSubmit={onSubmit} defaultValues={initial} mode="onChange" toolbar={null}>
+                  {/* Basics */}
+                  <TextInput source="school_name" label={translate('configuration.school_name')} fullWidth />
+                  <TextInput source="business_hours" label={translate('configuration.business_hours')} fullWidth />
+                  <TextInput source="email" label={translate('configuration.email')} fullWidth />
+                  <TextInput source="contact_phone1" label={translate('configuration.contact_phone1')} fullWidth />
+                  <TextInput source="contact_phone2" label={translate('configuration.contact_phone2')} fullWidth />
 
-                {/* Images (simplified as plain text inputs for now) */}
-                <TextInput source="school_logo" label={translate('configuration.school_logo')} fullWidth />
-                <TextInput source="landing_image" label={translate('configuration.landing_image')} fullWidth />
+                  {/* Images (simplified as plain text inputs for now) */}
+                  <TextInput source="school_logo" label={translate('configuration.school_logo')} fullWidth />
+                  <TextInput source="landing_image" label={translate('configuration.landing_image')} fullWidth />
 
-                {/* Addresses */}
-        <ArrayInput source="addresses" label={translate('configuration.addresses')}>
-                  <SimpleFormIterator inline>
-          <TextInput source="line1" label={translate('configuration.address.line1')} fullWidth />
-          <TextInput source="line2" label={translate('configuration.address.line2')} fullWidth />
-          <TextInput source="city" label={translate('configuration.address.city')} />
-          <TextInput source="state" label={translate('configuration.address.state')} />
-          <TextInput source="postal_code" label={translate('configuration.address.postal_code')} />
-          <TextInput source="country" label={translate('configuration.address.country')} />
-                  </SimpleFormIterator>
-                </ArrayInput>
+                  {/* Addresses */}
+          <ArrayInput source="addresses" label={translate('configuration.addresses')}>
+                    <SimpleFormIterator inline disableReordering>
+            <TextInput source="line1" label={translate('configuration.address.line1')} fullWidth />
+            <TextInput source="line2" label={translate('configuration.address.line2')} fullWidth />
+            <TextInput source="city" label={translate('configuration.address.city')} />
+            <TextInput source="state" label={translate('configuration.address.state')} />
+            <TextInput source="postal_code" label={translate('configuration.address.postal_code')} />
+            <TextInput source="country" label={translate('configuration.address.country')} />
+                    </SimpleFormIterator>
+                  </ArrayInput>
 
-                {/* Landing text (localized object) */}
-                <TextInput source="landing_text.en" label={translate('configuration.landing_text.en')} multiline fullWidth />
-                <TextInput source="landing_text.ro" label={translate('configuration.landing_text.ro')} multiline fullWidth />
-                <TextInput source="landing_text.ru" label={translate('configuration.landing_text.ru')} multiline fullWidth />
+                  {/* Landing text (localized object) */}
+                  <TextInput source="landing_text.en" label={translate('configuration.landing_text.en')} multiline fullWidth />
+                  <TextInput source="landing_text.ro" label={translate('configuration.landing_text.ro')} multiline fullWidth />
+                  <TextInput source="landing_text.ru" label={translate('configuration.landing_text.ru')} multiline fullWidth />
 
-                {/* Social links */}
-                <TextInput source="social_links.facebook" label={translate('configuration.social_links.facebook')} fullWidth />
-                <TextInput source="social_links.instagram" label={translate('configuration.social_links.instagram')} fullWidth />
-                <TextInput source="social_links.twitter" label={translate('configuration.social_links.twitter')} fullWidth />
-                <TextInput source="social_links.youtube" label={translate('configuration.social_links.youtube')} fullWidth />
+                  {/* Social links */}
+                  <TextInput source="social_links.facebook" label={translate('configuration.social_links.facebook')} fullWidth />
+                  <TextInput source="social_links.instagram" label={translate('configuration.social_links.instagram')} fullWidth />
+                  <TextInput source="social_links.twitter" label={translate('configuration.social_links.twitter')} fullWidth />
+                  <TextInput source="social_links.youtube" label={translate('configuration.social_links.youtube')} fullWidth />
 
-                {/* Rules */}
-                <NumberInput source="rules.min_theory_hours_before_practice" label={translate('configuration.rules.min_theory_hours_before_practice')} />
+                  {/* Rules */}
+                  <NumberInput source="rules.min_theory_hours_before_practice" label={translate('configuration.rules.min_theory_hours_before_practice')} />
 
-                {/* Available categories */}
-                <SelectArrayInput source="available_categories" label={translate('configuration.available_categories')} choices={categoryChoices} optionValue="id" optionText="name" />
-              </SimpleForm>
+                  {/* Available categories */}
+                  <SelectArrayInput source="available_categories" label={translate('configuration.available_categories')} choices={categoryChoices} optionValue="id" optionText="name" />
+                </SimpleForm>
+              </form>
             </CardContent>
           </Card>
         </Grid>
