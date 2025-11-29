@@ -138,6 +138,25 @@ vi.mock('../i18n/index.jsx', () => ({
         if (field === 'duration_minutes') return 'Duration Minutes';
       }
       // For scheduled class patterns fields
+      if (key.startsWith('resources.scheduled-class-patterns.fields.')) {
+        const field = key.replace('resources.scheduled-class-patterns.fields.', '');
+        if (field === 'start_date') return 'Pattern Start Date';
+        if (field === 'name') return 'Name';
+        if (field === 'course') return 'Course';
+        if (field === 'instructor') return 'Instructor';
+        if (field === 'resource') return 'Resource';
+        if (field === 'day') return 'Day';
+        if (field === 'time') return 'Time';
+        if (field === 'num_lessons') return 'Number of Lessons';
+        if (field === 'duration_minutes') return 'Duration (min)';
+        if (field === 'max_students') return 'Max Students';
+        if (field === 'default_duration_minutes') return 'Default Duration (min)';
+        if (field === 'default_max_students') return 'Default Max Students';
+        if (field === 'status') return 'Status';
+        if (field === 'students') return 'Students';
+        if (field === 'recurrences') return 'Recurrences';
+      }
+      // Legacy key support for scheduled class patterns
       if (key.startsWith('resources.scheduledclasspatterns.fields.')) {
         const field = key.replace('resources.scheduledclasspatterns.fields.', '');
         if (field === 'start_date') return 'Pattern Start Date';

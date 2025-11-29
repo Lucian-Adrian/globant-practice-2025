@@ -1,4 +1,7 @@
 {
+  "buttons": {
+    "checkAvailability": "Проверить Доступность"
+  },
   "scheduledclasspatternlist": {
     "id": "ИД",
     "name": "Название",

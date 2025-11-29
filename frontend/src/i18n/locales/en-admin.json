@@ -1,4 +1,7 @@
 {
+  "buttons": {
+    "checkAvailability": "Check Availability"
+  },
   "scheduledclasspatternlist": {
     "id": "ID",
     "name": "Name",

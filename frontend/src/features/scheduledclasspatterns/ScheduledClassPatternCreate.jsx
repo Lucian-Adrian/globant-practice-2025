@@ -24,20 +24,20 @@ export default function ScheduledClassPatternCreate(props) {
         };
       }}>
       <SimpleForm>
-        <TextInput source="name" label={t('resources.scheduledclasspatterns.fields.name', 'Name')} validate={[required()]} />
+        <TextInput source="name" label={t('resources.scheduled-class-patterns.fields.name', 'Name')} validate={[required()]} />
         <ReferenceInput source="course_id" reference="classes" perPage={100} filter={{ type: 'THEORY' }}>
-          <SelectInput label={t('resources.scheduledclasspatterns.fields.course', 'Course')} optionText="name" optionValue="id" validate={[required()]} />
+          <SelectInput label={t('resources.scheduled-class-patterns.fields.course', 'Course')} optionText="name" optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="instructor_id" reference="instructors" perPage={100}>
-          <SelectInput label={t('resources.scheduledclasspatterns.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
+          <SelectInput label={t('resources.scheduled-class-patterns.fields.instructor', 'Instructor')} optionText={(r) => `${r.first_name} ${r.last_name}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         <ReferenceInput source="resource_id" reference="resources" perPage={100} filter={{ max_capacity_gte: 3 }}>
-          <SelectInput label={t('resources.scheduledclasspatterns.fields.resource', 'Resource (Classroom)')} optionText={(r) => r.name || `${r.make} ${r.model}`} optionValue="id" validate={[required()]} />
+          <SelectInput label={t('resources.scheduled-class-patterns.fields.resource', 'Resource (Classroom)')} optionText={(r) => r.name || `${r.make} ${r.model}`} optionValue="id" validate={[required()]} />
         </ReferenceInput>
         
-        <ArrayInput source="recurrences" label={t('resources.scheduledclasspatterns.fields.recurrences', 'Recurrences')} validate={[required()]}>
+        <ArrayInput source="recurrences" label={t('resources.scheduled-class-patterns.fields.recurrences', 'Recurrences')} validate={[required()]}>
           <SimpleFormIterator>
-            <SelectInput source="day" label={t('resources.scheduledclasspatterns.fields.day', 'Day')} choices={[
+            <SelectInput source="day" label={t('resources.scheduled-class-patterns.fields.day', 'Day')} choices={[
               { id: 'MONDAY', name: t('common.days.MONDAY', 'Monday') },
               { id: 'TUESDAY', name: t('common.days.TUESDAY', 'Tuesday') },
               { id: 'WEDNESDAY', name: t('common.days.WEDNESDAY', 'Wednesday') },
@@ -46,7 +46,7 @@ export default function ScheduledClassPatternCreate(props) {
               { id: 'SATURDAY', name: t('common.days.SATURDAY', 'Saturday') },
               { id: 'SUNDAY', name: t('common.days.SUNDAY', 'Sunday') },
             ]} validate={[required()]} />
-            <TextInput source="time" label={t('resources.scheduledclasspatterns.fields.time', 'Time')} validate={[required(), validateTimeFormat(t)]} />
+            <TextInput source="time" label={t('resources.scheduled-class-patterns.fields.time', 'Time')} validate={[required(), validateTimeFormat(t)]} />
           </SimpleFormIterator>
         </ArrayInput>
 
@@ -54,14 +54,14 @@ export default function ScheduledClassPatternCreate(props) {
 
         <DateInput 
           source="start_date" 
-          label={t('scheduledclasspatterncreate.patternStartDate', 'Pattern Start Date')} 
+          label={t('resources.scheduled-class-patterns.fields.start_date', 'Pattern Start Date')} 
           validate={[required()]}
         />
-        <NumberInput source="num_lessons" label={t('scheduledclasspatterncreate.numberOfLessons', 'Number of Lessons')} validate={[required()]} />
-        <NumberInput source="default_duration_minutes" label={t('scheduledclasspatterncreate.defaultDurationMin', 'Default Duration (min)')} defaultValue={60} />
-        <NumberInput source="default_max_students" label={t('scheduledclasspatterncreate.defaultMaxStudents', 'Default Max Students')} />
+        <NumberInput source="num_lessons" label={t('resources.scheduled-class-patterns.fields.num_lessons', 'Number of Lessons')} validate={[required()]} />
+        <NumberInput source="default_duration_minutes" label={t('resources.scheduled-class-patterns.fields.default_duration_minutes', 'Default Duration (min)')} defaultValue={60} />
+        <NumberInput source="default_max_students" label={t('resources.scheduled-class-patterns.fields.default_max_students', 'Default Max Students')} />
         {/* Removed: status - patterns don't have status, only generated classes do */}
-        <CourseStudentsInput translationKey="resources.scheduledclasspatterns.fields.students" />
+        <CourseStudentsInput translationKey="resources.scheduled-class-patterns.fields.students" />
       </SimpleForm>
     </Create>
   );

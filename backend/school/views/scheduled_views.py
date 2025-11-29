@@ -285,9 +285,8 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
             "times",
             "start_date",
             "num_lessons",
-            "duration_minutes",
-            "max_students",
-            "status",
+            "default_duration_minutes",
+            "default_max_students",
             "created_at",
         ]
         qs = self.filter_queryset(self.get_queryset())
@@ -305,9 +304,8 @@ class ScheduledClassPatternViewSet(FullCrudViewSet):
                 ",".join(obj.times) if obj.times else "",
                 obj.start_date.isoformat() if obj.start_date else "",
                 obj.num_lessons,
-                obj.duration_minutes,
-                obj.max_students,
-                obj.status,
+                obj.default_duration_minutes,
+                obj.default_max_students,
                 obj.created_at.isoformat() if obj.created_at else "",
             ])
         resp = HttpResponse(buffer.getvalue(), content_type="text/csv")

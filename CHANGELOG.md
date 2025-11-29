@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### Timezone Handling
+- Fixed timezone mismatch between ScheduledClassPattern and ScheduledClass scheduling
+- Pattern-generated classes now correctly interpret times as business timezone (Europe/Chisinau)
+- Individual class scheduling now properly converts input times from business timezone to UTC storage
+- Ensured consistent timezone handling across all scheduling operations
+
+#### Code Quality
+- Ensured shell scripts use LF line endings for Docker container compatibility
+
 ## [0.2.0] - 2025-11-28
 
 ### Added

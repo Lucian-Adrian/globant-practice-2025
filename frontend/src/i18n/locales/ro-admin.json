@@ -1,4 +1,7 @@
 {
+  "buttons": {
+    "checkAvailability": "Verifică Disponibilitatea"
+  },
   "scheduledclasspatternlist": {
     "id": "ID",
     "name": "Nume",

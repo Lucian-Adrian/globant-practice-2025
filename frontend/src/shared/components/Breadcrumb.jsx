@@ -12,15 +12,17 @@ const Breadcrumb = () => {
 
   // Define resource labels
   const resourceLabels = {
-    'scheduledclasspatterns': t('resources.scheduledclasspatterns.name', 'Scheduled Class Patterns'),
-    'scheduledclasses': t('resources.scheduledclasses.name', 'Scheduled Classes'),
+    'scheduled-class-patterns': t('resources.scheduled-class-patterns.name', 'Scheduled Class Patterns'),
+    'scheduled-classes': t('resources.scheduled-classes.name', 'Scheduled Classes'),
     'students': t('resources.students.name', 'Students'),
     'instructors': t('resources.instructors.name', 'Instructors'),
     'courses': t('resources.courses.name', 'Courses'),
+    'classes': t('resources.classes.name', 'Courses'),
     'resources': t('resources.resources.name', 'Resources'),
     'enrollments': t('resources.enrollments.name', 'Enrollments'),
     'lessons': t('resources.lessons.name', 'Lessons'),
     'payments': t('resources.payments.name', 'Payments'),
+    'instructor-availabilities': t('resources.instructor-availabilities.name', 'Instructor Availabilities'),
   };
 
   const breadcrumbs = [
