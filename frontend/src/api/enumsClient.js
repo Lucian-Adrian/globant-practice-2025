@@ -1,11 +1,13 @@
 // Moved from src/enumsClient.js
+import { API_PREFIX } from './httpClient';
+
 let cachedEnums = null;
 let cachedEtag = null;
 let lastFetchTs = 0;
 let inflight = null; // promise guard
 let attempt = 0;
 
-const ENDPOINT = '/api/meta/enums/';
+const ENDPOINT = `${API_PREFIX}/meta/enums/`;
 const MAX_AGE_MS = 60 * 1000;
 
 export async function fetchEnums(force = false) {
