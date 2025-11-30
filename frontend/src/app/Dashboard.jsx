@@ -9,6 +9,7 @@ import {
   Group as GroupIcon,
   BarChart as BarChartIcon
 } from '@mui/icons-material';
+import { API_PREFIX } from '../api/httpClient';
 
 const fallbackStats = {
   todayScheduled: 2,
@@ -29,7 +30,7 @@ const fallbackStats = {
 
 async function fetchLessonStatistics() {
   try {
-    const resp = await fetch('/api/utils/lesson-stats/');
+    const resp = await fetch(`${API_PREFIX}/utils/lesson-stats/`);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
 
@@ -191,7 +192,7 @@ export default function Dashboard() {
     let mounted = true;
     (async () => {
       try {
-        const resp = await fetch('/api/utils/summary/');
+        const resp = await fetch(`${API_PREFIX}/utils/summary/`);
         if (!resp.ok) throw new Error('Failed to load');
         const json = await resp.json();
         if (mounted) setData(json);
