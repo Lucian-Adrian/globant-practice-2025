@@ -164,3 +164,46 @@ Uses `papaparse` library:
 ALWAYS CHECK CONTRIBUTING.md AND PROJECT-SPECIFIC GUIDELINES IF PRESENT.
 
 
+
+
+## Development Guidelines
+
+
+### Documentation First
+- Document new features in the appropriate `docs/` subdirectory before implementation
+- Update `changelog.md` with notable changes using semantic versioning
+- Keep `docs/file_structure.md` current as the codebase evolves
+
+
+### Code Organization
+- Backend code → document in `docs/backend/`
+- Frontend code → document in `docs/frontend/`
+- Database changes → document in `docs/db/`
+- Track milestones in `docs/progress/`
+
+
+### Contribution Workflow
+- Follow patterns documented in `contributing.md`
+- Use descriptive commit messages referencing the affected component (e.g., `[backend] Add user authentication`)
+
+
+## Notes for AI Agents
+
+
+- This is a greenfield project - prioritize clean, maintainable patterns from the start
+- When creating new components, update `docs/file_structure.md` accordingly
+- Prefer Romanian language for user-facing content where appropriate (Moldova context)
+
+
+
+
+Criteria to write code:
+KiSS
+OOP
+DRY
+SOLID
+Separation of Concerns
+Modularity
+Readability
+clean code
+open-closed principle
