@@ -1,5 +1,7 @@
 // Moved from src/authProvider.js
 // Minimal JWT authProvider for react-admin
+import { API_PREFIX } from '../api/httpClient';
+
 const ACCESS_KEY = 'ds_access_token';
 const REFRESH_KEY = 'ds_refresh_token';
 
@@ -15,7 +17,7 @@ export const authProvider = {
     const start = Date.now();
     let resp, data;
     try {
-      resp = await fetch('/api/auth/token/', {
+      resp = await fetch(`${API_PREFIX}/auth/token/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -92,7 +94,7 @@ export const authProvider = {
       throw new Error('No refresh token available');
     }
     try {
-      const resp = await fetch('/api/auth/token/refresh/', {
+      const resp = await fetch(`${API_PREFIX}/auth/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh })

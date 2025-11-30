@@ -37,7 +37,7 @@ async function refreshAccessToken() {
   const refresh = getRefreshToken();
   if (!refresh) return null;
   try {
-    const resp = await fetch('/api/auth/token/refresh/', {
+    const resp = await fetch(`${API_PREFIX}/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh }),
@@ -53,7 +53,7 @@ async function refreshStudentAccessToken() {
   const refresh = getStudentRefreshToken();
   if (!refresh) return null;
   try {
-    const resp = await fetch('/api/auth/token/refresh/', {
+    const resp = await fetch(`${API_PREFIX}/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh }),
